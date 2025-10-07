@@ -229,6 +229,10 @@ class ListView(WidgetComponentBase):
     """Optional status header displayed above the list."""
     theme: Literal["light", "dark"] | None = None
     """Force light or dark theme for this subtree."""
+    dir: Literal["ltr", "rtl", "auto"] | None = None
+    """Text direction for list content."""
+    lang: str | None = None
+    """Language code for list content."""
 
 
 class CardAction(TypedDict):
@@ -269,6 +273,10 @@ class Card(WidgetComponentBase):
     """Cancel action button shown in the card footer."""
     theme: Literal["light", "dark"] | None = None
     """Force light or dark theme for this subtree."""
+    dir: Literal["ltr", "rtl", "auto"] | None = None
+    """Text direction for card content."""
+    lang: str | None = None
+    """Language code for card content."""
 
 
 class Markdown(WidgetComponentBase):
@@ -279,6 +287,10 @@ class Markdown(WidgetComponentBase):
     """Markdown source string to render."""
     streaming: bool | None = None
     """Applies streaming-friendly transitions for incremental updates."""
+    dir: Literal["ltr", "rtl", "auto"] | None = None
+    """Text direction: 'ltr' for left-to-right, 'rtl' for right-to-left, 'auto' for automatic detection."""
+    lang: str | None = None
+    """Language code (ISO 639-1), e.g., 'ar' for Arabic, 'en' for English, 'he' for Hebrew."""
 
 
 class Text(WidgetComponentBase):
@@ -317,6 +329,10 @@ class Text(WidgetComponentBase):
     """Limit text to a maximum number of lines (line clamp)."""
     editable: Literal[False] | EditableProps | None = None
     """Enable inline editing for this text node."""
+    dir: Literal["ltr", "rtl", "auto"] | None = None
+    """Text direction for RTL language support."""
+    lang: str | None = None
+    """Language code (ISO 639-1) for proper text rendering and accessibility."""
 
 
 class Title(WidgetComponentBase):
@@ -343,6 +359,10 @@ class Title(WidgetComponentBase):
     """Truncate overflow with ellipsis."""
     maxLines: int | None = None
     """Limit text to a maximum number of lines (line clamp)."""
+    dir: Literal["ltr", "rtl", "auto"] | None = None
+    """Text direction for RTL language support."""
+    lang: str | None = None
+    """Language code for proper text rendering."""
 
 
 class Caption(WidgetComponentBase):
@@ -369,6 +389,10 @@ class Caption(WidgetComponentBase):
     """Truncate overflow with ellipsis."""
     maxLines: int | None = None
     """Limit text to a maximum number of lines (line clamp)."""
+    dir: Literal["ltr", "rtl", "auto"] | None = None
+    """Text direction for RTL language support."""
+    lang: str | None = None
+    """Language code for proper text rendering."""
 
 
 class Badge(WidgetComponentBase):
@@ -616,6 +640,10 @@ class Button(WidgetComponentBase):
     """Extend the button to 100% of the available width."""
     disabled: bool | None = None
     """Disable interactions and apply disabled styles."""
+    dir: Literal["ltr", "rtl", "auto"] | None = None
+    """Text direction for button label."""
+    lang: str | None = None
+    """Language code for button label."""
 
 
 class Spacer(WidgetComponentBase):
@@ -753,6 +781,10 @@ class Input(WidgetComponentBase):
     """Controls gutter on the edges of the input; overrides value from `size`."""
     pill: bool | None = None
     """Determines if the input should be fully rounded (pill)."""
+    dir: Literal["ltr", "rtl", "auto"] | None = None
+    """Text direction for input text."""
+    lang: str | None = None
+    """Language code for keyboard layout and spell-check."""
 
 
 class Label(WidgetComponentBase):
@@ -777,6 +809,10 @@ class Label(WidgetComponentBase):
 
     Primitive color token: e.g. `red-100`, `blue-900`, `gray-500`
     """
+    dir: Literal["ltr", "rtl", "auto"] | None = None
+    """Text direction for label text."""
+    lang: str | None = None
+    """Language code for label text."""
 
 
 class RadioOption(TypedDict):
@@ -846,6 +882,10 @@ class Textarea(WidgetComponentBase):
     """Maximum number of rows when auto-resizing."""
     allowAutofillExtensions: bool | None = None
     """Allow password managers / autofill extensions to appear."""
+    dir: Literal["ltr", "rtl", "auto"] | None = None
+    """Text direction for textarea content."""
+    lang: str | None = None
+    """Language code for keyboard layout and spell-check."""
 
 
 class Transition(WidgetComponentBase):
