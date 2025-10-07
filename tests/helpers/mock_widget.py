@@ -3,7 +3,7 @@ import re
 import uuid
 from datetime import datetime, timedelta
 from typing import Annotated, Any, AsyncIterator, Callable, Literal, assert_never
-
+from pathlib import Path
 from agents import Agent, Runner
 from anyio import sleep
 from pydantic import BaseModel, Field, TypeAdapter
@@ -622,9 +622,11 @@ class SampleWidget(BaseModel):
                 else "Fetched widgets",
             )
             yield ActionOutput.from_widget(self.render(next_state))
-
+            
+        
         elif action.type == "sample.draft_email":
-            with open("../README.md", "r") as f:
+            readme_path = Path(__file__).parent.parent.parent / "README.md"
+            with open(readme_path, "r") as f:
                 readme = f.read()
 
             body_text = Runner.run_streamed(
