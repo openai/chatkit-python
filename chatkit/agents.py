@@ -386,41 +386,41 @@ async def stream_agent_response(
         async for event in _merge_generators(result.stream_events(), queue_iterator):
             # Events emitted from agent context helpers
             if isinstance(event, _EventWrapper):
-                event = event.event
+                unwrapped_event = event.event
                 if (
-                    event.type == "thread.item.added"
-                    or event.type == "thread.item.done"
+                    unwrapped_event.type == "thread.item.added"
+                    or unwrapped_event.type == "thread.item.done"
                 ):
                     # End the current workflow if visual item is added after it
                     if (
                         ctx.workflow_item
-                        and ctx.workflow_item.id != event.item.id
-                        and event.item.type != "client_tool_call"
-                        and event.item.type != "hidden_context_item"
+                        and ctx.workflow_item.id != unwrapped_event.item.id
+                        and unwrapped_event.item.type != "client_tool_call"
+                        and unwrapped_event.item.type != "hidden_context_item"
                     ):
                         yield end_workflow(ctx.workflow_item)
 
                     # track the current workflow if one is added
                     if (
-                        event.type == "thread.item.added"
-                        and event.item.type == "workflow"
+                        unwrapped_event.type == "thread.item.added"
+                        and unwrapped_event.item.type == "workflow"
                     ):
-                        ctx.workflow_item = event.item
+                        ctx.workflow_item = unwrapped_event.item
 
                     # track integration produced items so we can clean them up if
                     # there is a guardrail tripwire
-                    produced_items.add(event.item.id)
-                yield event
+                    produced_items.add(unwrapped_event.item.id)
+                yield unwrapped_event
                 continue
 
             if event.type == "run_item_stream_event":
-                event = event.item
+                run_item = event.item
                 if (
-                    event.type == "tool_call_item"
-                    and event.raw_item.type == "function_call"
+                    run_item.type == "tool_call_item"
+                    and run_item.raw_item.type == "function_call"
                 ):
-                    current_tool_call = event.raw_item.call_id
-                    current_item_id = event.raw_item.id
+                    current_tool_call = run_item.raw_item.call_id
+                    current_item_id = run_item.raw_item.id
                     assert current_item_id
                     produced_items.add(current_item_id)
                 continue
@@ -430,42 +430,42 @@ async def stream_agent_response(
                 continue
 
             # Handle Responses events
-            event = event.data
-            if event.type == "response.content_part.added":
-                if event.part.type == "reasoning_text":
+            response_event = event.data
+            if response_event.type == "response.content_part.added":
+                if response_event.part.type == "reasoning_text":
                     continue
-                content = _convert_content(event.part)
+                content = _convert_content(response_event.part)
                 yield ThreadItemUpdated(
-                    item_id=event.item_id,
+                    item_id=response_event.item_id,
                     update=AssistantMessageContentPartAdded(
-                        content_index=event.content_index,
+                        content_index=response_event.content_index,
                         content=content,
                     ),
                 )
-            elif event.type == "response.output_text.delta":
+            elif response_event.type == "response.output_text.delta":
                 yield ThreadItemUpdated(
-                    item_id=event.item_id,
+                    item_id=response_event.item_id,
                     update=AssistantMessageContentPartTextDelta(
-                        content_index=event.content_index,
-                        delta=event.delta,
+                        content_index=response_event.content_index,
+                        delta=response_event.delta,
                     ),
                 )
-            elif event.type == "response.output_text.done":
+            elif response_event.type == "response.output_text.done":
                 yield ThreadItemUpdated(
-                    item_id=event.item_id,
+                    item_id=response_event.item_id,
                     update=AssistantMessageContentPartDone(
-                        content_index=event.content_index,
+                        content_index=response_event.content_index,
                         content=AssistantMessageContent(
-                            text=event.text,
+                            text=response_event.text,
                             annotations=[],
                         ),
                     ),
                 )
-            elif event.type == "response.output_text.annotation.added":
+            elif response_event.type == "response.output_text.annotation.added":
                 # Ignore annotation-added events; annotations are reflected in the final item content.
                 continue
-            elif event.type == "response.output_item.added":
-                item = event.item
+            elif response_event.type == "response.output_item.added":
+                item = response_event.item
                 if item.type == "reasoning" and not ctx.workflow_item:
                     ctx.workflow_item = WorkflowItem(
                         id=ctx.generate_id("workflow"),
@@ -488,7 +488,7 @@ async def stream_agent_response(
                             created_at=datetime.now(),
                         ),
                     )
-            elif event.type == "response.reasoning_summary_text.delta":
+            elif response_event.type == "response.reasoning_summary_text.delta":
                 if not ctx.workflow_item:
                     continue
 
@@ -498,9 +498,9 @@ async def stream_agent_response(
                     and len(ctx.workflow_item.workflow.tasks) == 0
                 ):
                     streaming_thought = StreamingThoughtTracker(
-                        item_id=event.item_id,
-                        index=event.summary_index,
-                        task=ThoughtTask(content=event.delta),
+                        item_id=response_event.item_id,
+                        index=response_event.summary_index,
+                        task=ThoughtTask(content=response_event.delta),
                     )
                     ctx.workflow_item.workflow.tasks.append(streaming_thought.task)
                     yield ThreadItemUpdated(
@@ -513,10 +513,10 @@ async def stream_agent_response(
                 elif (
                     streaming_thought
                     and streaming_thought.task in ctx.workflow_item.workflow.tasks
-                    and event.item_id == streaming_thought.item_id
-                    and event.summary_index == streaming_thought.index
+                    and response_event.item_id == streaming_thought.item_id
+                    and response_event.summary_index == streaming_thought.index
                 ):
-                    streaming_thought.task.content += event.delta
+                    streaming_thought.task.content += response_event.delta
                     yield ThreadItemUpdated(
                         item_id=ctx.workflow_item.id,
                         update=WorkflowTaskUpdated(
@@ -526,23 +526,24 @@ async def stream_agent_response(
                             ),
                         ),
                     )
-            elif event.type == "response.reasoning_summary_text.done":
+            elif response_event.type == "response.reasoning_summary_text.done":
                 if ctx.workflow_item:
+                    update: WorkflowTaskUpdated | WorkflowTaskAdded
                     if (
                         streaming_thought
                         and streaming_thought.task in ctx.workflow_item.workflow.tasks
-                        and event.item_id == streaming_thought.item_id
-                        and event.summary_index == streaming_thought.index
+                        and response_event.item_id == streaming_thought.item_id
+                        and response_event.summary_index == streaming_thought.index
                     ):
                         task = streaming_thought.task
-                        task.content = event.text
+                        task.content = response_event.text
                         streaming_thought = None
                         update = WorkflowTaskUpdated(
                             task=task,
                             task_index=ctx.workflow_item.workflow.tasks.index(task),
                         )
                     else:
-                        task = ThoughtTask(content=event.text)
+                        task = ThoughtTask(content=response_event.text)
                         ctx.workflow_item.workflow.tasks.append(task)
                         update = WorkflowTaskAdded(
                             task=task,
@@ -552,8 +553,8 @@ async def stream_agent_response(
                         item_id=ctx.workflow_item.id,
                         update=update,
                     )
-            elif event.type == "response.output_item.done":
-                item = event.item
+            elif response_event.type == "response.output_item.done":
+                item = response_event.item
                 if item.type == "message":
                     produced_items.add(item.id)
                     yield ThreadItemDoneEvent(
@@ -614,7 +615,7 @@ TWidget = TypeVar("TWidget", bound=Markdown | Text)
 async def accumulate_text(
     events: AsyncIterator[StreamEvent],
     base_widget: TWidget,
-) -> AsyncIterator[TWidget]:
+) -> AsyncIterator[Markdown | Text]:
     text = ""
     yield base_widget
     async for event in events:
@@ -698,7 +699,7 @@ class ThreadItemConverter:
         Convert a TaskItem into input item(s) to send to the model.
         Returns WorkflowItem.response_items by default.
         """
-        messages = []
+        messages: list[TResponseInputItem] = []
         for task in item.workflow.tasks:
             if task.type != "custom" or (not task.title and not task.content):
                 continue
@@ -719,7 +720,7 @@ class ThreadItemConverter:
                     role="user",
                 )
             )
-        return messages
+        return messages if messages else None
 
     def widget_to_input(
         self, item: WidgetItem
