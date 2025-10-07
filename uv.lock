@@ -150,65 +150,6 @@ wheels = [
 ]
 
 [[package]]
-name = "chatkit"
-version = "0.1.0"
-source = { virtual = "." }
-dependencies = [
-    { name = "openai" },
-    { name = "openai-agents" },
-    { name = "pydantic" },
-    { name = "uvicorn" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "debugpy" },
-    { name = "fastapi" },
-    { name = "flask" },
-    { name = "mkdocs" },
-    { name = "mkdocs-gen-files" },
-    { name = "mkdocs-material" },
-    { name = "mkdocstrings", extra = ["python"] },
-    { name = "mypy" },
-    { name = "psycopg2-binary" },
-    { name = "pyright" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "python-multipart" },
-    { name = "ruff" },
-]
-lint = [
-    { name = "ruff" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "openai" },
-    { name = "openai-agents", specifier = ">=0.3.2" },
-    { name = "pydantic" },
-    { name = "uvicorn" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "debugpy" },
-    { name = "fastapi" },
-    { name = "flask" },
-    { name = "mkdocs" },
-    { name = "mkdocs-gen-files" },
-    { name = "mkdocs-material" },
-    { name = "mkdocstrings", extras = ["python"] },
-    { name = "mypy" },
-    { name = "psycopg2-binary" },
-    { name = "pyright" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "python-multipart" },
-    { name = "ruff", specifier = "==0.9.2" },
-]
-lint = [{ name = "ruff" }]
-
-[[package]]
 name = "click"
 version = "8.3.0"
 source = { registry = "https://pypi.org/simple" }
@@ -875,6 +816,65 @@ sdist = { url = "https://files.pythonhosted.org/packages/a4/37/2b4f828840d3ff32d
 wheels = [
     { url = "https://files.pythonhosted.org/packages/65/59/fd49fd2c3184c0d5fedb8c9c456ae9852154828bca7ee69dce004ea83188/openai_agents-0.3.3-py3-none-any.whl", hash = "sha256:aa2c74e010b923c09f166e63a51fae8c850c62df8581b84bafcbe5bd208d1505", size = 210893, upload-time = "2025-09-30T23:20:22.037Z" },
 ]
+
+[[package]]
+name = "openai-chatkit"
+version = "0.0.2"
+source = { virtual = "." }
+dependencies = [
+    { name = "openai" },
+    { name = "openai-agents" },
+    { name = "pydantic" },
+    { name = "uvicorn" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "debugpy" },
+    { name = "fastapi" },
+    { name = "flask" },
+    { name = "mkdocs" },
+    { name = "mkdocs-gen-files" },
+    { name = "mkdocs-material" },
+    { name = "mkdocstrings", extra = ["python"] },
+    { name = "mypy" },
+    { name = "psycopg2-binary" },
+    { name = "pyright" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "python-multipart" },
+    { name = "ruff" },
+]
+lint = [
+    { name = "ruff" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "openai" },
+    { name = "openai-agents", specifier = ">=0.3.2" },
+    { name = "pydantic" },
+    { name = "uvicorn" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "debugpy" },
+    { name = "fastapi" },
+    { name = "flask" },
+    { name = "mkdocs" },
+    { name = "mkdocs-gen-files" },
+    { name = "mkdocs-material" },
+    { name = "mkdocstrings", extras = ["python"] },
+    { name = "mypy" },
+    { name = "psycopg2-binary" },
+    { name = "pyright" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "python-multipart" },
+    { name = "ruff", specifier = "==0.9.2" },
+]
+lint = [{ name = "ruff" }]
 
 [[package]]
 name = "packaging"

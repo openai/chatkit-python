@@ -276,6 +276,16 @@ class ChatKitServer(ABC, Generic[TContext]):
         input_user_message: UserMessageItem | None,
         context: TContext,
     ) -> AsyncIterator[ThreadStreamEvent]:
+        """Stream `ThreadStreamEvent` instances for a new user message.
+
+        Args:
+            thread: Metadata for the thread being processed.
+            input_user_message: The incoming message the server should respond to, if any.
+            context: Arbitrary per-request context provided by the caller.
+
+        Returns:
+            An async iterator that yields events representing the server's response.
+        """
         pass
 
     async def add_feedback(  # noqa: B027
