@@ -813,6 +813,7 @@ class EntitySource(SourceBase):
     id: str
     icon: str | None = None
     preview: Literal["lazy"] | None = None
+    data: dict[str, Any] = Field(default_factory=dict)
 
 
 Source = Annotated[
