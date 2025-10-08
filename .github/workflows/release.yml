@@ -15,7 +15,7 @@ jobs:
     name: Release PyPI
     environment:
       name: pypi
-      url: https://pypi.org/p/openai-agents
+      url: https://pypi.org/p/openai-chatkit
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -31,6 +31,6 @@ jobs:
 
       - name: Build package
         run: make build
-      
+
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
