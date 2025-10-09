@@ -1,5 +1,6 @@
 from abc import ABC
-from enum import StrEnum
+
+from ._compat import StrEnum
 
 
 # Not a closed enum, new error codes can and will be added as needed
