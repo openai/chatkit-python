@@ -333,7 +333,7 @@ class ChatKitServer(ABC, Generic[TContext]):
                 return self._serialize(self._to_thread_response(thread))
             case ThreadsListReq():
                 params = request.params
-                threads = await self.store.load_threads(
+                thread_meta_page = await self.store.load_threads(
                     limit=params.limit or DEFAULT_PAGE_SIZE,
                     after=params.after,
                     order=params.order,
@@ -341,10 +341,11 @@ class ChatKitServer(ABC, Generic[TContext]):
                 )
                 return self._serialize(
                     Page(
-                        has_more=threads.has_more,
-                        after=threads.after,
+                        has_more=thread_meta_page.has_more,
+                        after=thread_meta_page.after,
                         data=[
-                            self._to_thread_response(thread) for thread in threads.data
+                            self._to_thread_response(thread_meta)
+                            for thread_meta in thread_meta_page.data
                         ],
                     )
                 )
@@ -388,12 +389,12 @@ class ChatKitServer(ABC, Generic[TContext]):
                 ]
                 return self._serialize(items)
             case ThreadsUpdateReq():
-                thread = await self.store.load_thread(
+                thread_meta = await self.store.load_thread(
                     request.params.thread_id, context=context
                 )
-                thread.title = request.params.title
-                await self.store.save_thread(thread, context=context)
-                return self._serialize(self._to_thread_response(thread))
+                thread_meta.title = request.params.title
+                await self.store.save_thread(thread_meta, context=context)
+                return self._serialize(self._to_thread_response(thread_meta))
             case ThreadsDeleteReq():
                 await self.store.delete_thread(
                     request.params.thread_id, context=context
@@ -439,25 +440,25 @@ class ChatKitServer(ABC, Generic[TContext]):
                     yield event
 
             case ThreadsAddUserMessageReq():
-                thread = await self.store.load_thread(
+                thread_meta = await self.store.load_thread(
                     request.params.thread_id, context=context
                 )
                 user_message = await self._build_user_message_item(
-                    request.params.input, thread, context
+                    request.params.input, thread_meta, context
                 )
                 async for event in self._process_new_thread_item_respond(
-                    thread,
+                    thread_meta,
                     user_message,
                     context,
                 ):
                     yield event
 
             case ThreadsAddClientToolOutputReq():
-                thread = await self.store.load_thread(
+                thread_meta = await self.store.load_thread(
                     request.params.thread_id, context=context
                 )
                 items = await self.store.load_thread_items(
-                    thread.id, None, 1, "desc", context
+                    thread_meta.id, None, 1, "desc", context
                 )
                 tool_call = next(
                     (
@@ -470,29 +471,29 @@ class ChatKitServer(ABC, Generic[TContext]):
                 )
                 if not tool_call:
                     raise ValueError(
-                        f"Last thread item in {thread.id} was not a ClientToolCallItem"
+                        f"Last thread item in {thread_meta.id} was not a ClientToolCallItem"
                     )
 
                 tool_call.output = request.params.result
                 tool_call.status = "completed"
 
-                await self.store.save_item(thread.id, tool_call, context=context)
+                await self.store.save_item(thread_meta.id, tool_call, context=context)
 
                 # Safety against dangling pending tool calls if there are
                 # multiple in a row, which should be impossible, and
                 # integrations should ultimately filter out pending tool calls
                 # when creating input response messages.
-                await self._cleanup_pending_client_tool_call(thread, context)
+                await self._cleanup_pending_client_tool_call(thread_meta, context)
 
                 async for event in self._process_events(
-                    thread,
+                    thread_meta,
                     context,
-                    lambda: self.respond(thread, None, context),
+                    lambda: self.respond(thread_meta, None, context),
                 ):
                     yield event
 
             case ThreadsRetryAfterItemReq():
-                thread_metadata = await self.store.load_thread(
+                thread_meta = await self.store.load_thread(
                     request.params.thread_id, context=context
                 )
 
@@ -518,29 +519,29 @@ class ChatKitServer(ABC, Generic[TContext]):
                             request.params.thread_id, item.id, context=context
                         )
                     async for event in self._process_events(
-                        thread_metadata,
+                        thread_meta,
                         context,
                         lambda: self.respond(
-                            thread_metadata,
+                            thread_meta,
                             user_message_item,
                             context,
                         ),
                     ):
                         yield event
             case ThreadsCustomActionReq():
-                thread_metadata = await self.store.load_thread(
+                thread_meta = await self.store.load_thread(
                     request.params.thread_id, context=context
                 )
 
-                item: ThreadItem | None = None
+                sender: ThreadItem | None = None
                 if request.params.item_id:
-                    item = await self.store.load_item(
+                    sender = await self.store.load_item(
                         request.params.thread_id,
                         request.params.item_id,
                         context=context,
                     )
 
-                if item and not isinstance(item, WidgetItem):
+                if sender and not isinstance(sender, WidgetItem):
                     # shouldn't happen if the caller is using the API correctly.
                     yield ErrorEvent(
                         code=ErrorCode.STREAM_ERROR,
@@ -549,12 +550,12 @@ class ChatKitServer(ABC, Generic[TContext]):
                     return
 
                 async for event in self._process_events(
-                    thread_metadata,
+                    thread_meta,
                     context,
                     lambda: self.action(
-                        thread_metadata,
+                        thread_meta,
                         request.params.action,
-                        item,
+                        sender if isinstance(sender, WidgetItem) else None,
                         context,
                     ),
                 ):
