@@ -522,3 +522,4 @@ class MyChatKitServer(ChatKitServer):
     async def load_attachment(..., context) -> Attachment:
         # check context["userId"] has access to the file
 ```
+pip install openai-chatkit
