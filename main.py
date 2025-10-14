@@ -1,11 +1,13 @@
 from fastapi import FastAPI, Request
-from chatkit.server import ChatKitServer
+from chatkit.store import SQLiteStore
+from my_server import MyChatKitServer  # import your class
 
 app = FastAPI()
+store = SQLiteStore("sqlite.db")
 
-# Update this if you have custom agent/workflow initialization!
-server = ChatKitServer()
+server = MyChatKitServer(store)
 
 @app.post("/chatkit")
 async def chatkit_endpoint(request: Request):
-    return await server.chatkit_endpoint(request)
+    result = await server.process(await request.body(), {})
+    return result
