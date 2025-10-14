@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+openai
+chatkit
+openai-agents
+psycopg[binary]
