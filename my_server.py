@@ -1,5 +1,5 @@
 from chatkit.server import ChatKitServer
-from chatkit.store import SQLiteStore  # or your preferred Store
+from postgres_store import PostgresStore  # or your preferred Store
 from chatkit.types import ThreadMetadata, UserMessageItem, ThreadStreamEvent
 from typing import Any, AsyncIterator
 
