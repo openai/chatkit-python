@@ -707,7 +707,7 @@ class CustomSummary(BaseModel):
     """Custom summary for a workflow."""
 
     title: str
-    icon: str | None = None
+    icon: IconName | None = None
 
 
 class DurationSummary(BaseModel):
@@ -735,7 +735,7 @@ class CustomTask(BaseTask):
 
     type: Literal["custom"] = "custom"
     title: str | None = None
-    icon: str | None = None
+    icon: IconName | None = None
     content: str | None = None
 
 
@@ -811,7 +811,7 @@ class EntitySource(SourceBase):
 
     type: Literal["entity"] = "entity"
     id: str
-    icon: str | None = None
+    icon: IconName | None = None
     preview: Literal["lazy"] | None = None
     data: dict[str, Any] = Field(default_factory=dict)
 
@@ -831,29 +831,56 @@ FeedbackKind = Literal["positive", "negative"]
 
 
 IconName = Literal[
+    "agent",
     "analytics",
     "atom",
+    "batch",
     "bolt",
     "book-open",
     "book-closed",
+    "book-clock",
+    "bug",
     "calendar",
     "chart",
+    "check",
+    "check-circle",
+    "check-circle-filled",
+    "chevron-left",
+    "chevron-right",
     "circle-question",
     "compass",
+    "confetti",
     "cube",
+    "desktop",
+    "document",
+    "dot",
+    "dots-horizontal",
+    "dots-vertical",
+    "empty-circle",
+    "external-link",
     "globe",
     "keys",
     "lab",
     "images",
+    "info",
     "lifesaver",
     "lightbulb",
+    "mail",
     "map-pin",
+    "maps",
+    "mobile",
     "name",
     "notebook",
     "notebook-pencil",
     "page-blank",
+    "phone",
+    "play",
+    "plus",
     "profile",
     "profile-card",
+    "reload",
+    "star",
+    "star-filled",
     "search",
     "sparkle",
     "sparkle-double",
@@ -861,6 +888,9 @@ IconName = Literal[
     "square-image",
     "square-text",
     "suitcase",
+    "settings-slider",
+    "user",
+    "wreath",
     "write",
     "write-alt",
     "write-alt2",
