@@ -707,7 +707,7 @@ class CustomSummary(BaseModel):
     """Custom summary for a workflow."""
 
     title: str
-    icon: str | None = None
+    icon: IconName | None = None
 
 
 class DurationSummary(BaseModel):
@@ -735,7 +735,7 @@ class CustomTask(BaseTask):
 
     type: Literal["custom"] = "custom"
     title: str | None = None
-    icon: str | None = None
+    icon: IconName | None = None
     content: str | None = None
 
 
@@ -811,7 +811,7 @@ class EntitySource(SourceBase):
 
     type: Literal["entity"] = "entity"
     id: str
-    icon: str | None = None
+    icon: IconName | None = None
     preview: Literal["lazy"] | None = None
     data: dict[str, Any] = Field(default_factory=dict)
 
