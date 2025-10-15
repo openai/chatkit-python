@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request
-from chatkit.store import PostgresStore
+from postgres_store import PostgresStore
 from my_server import MyChatKitServer  # import your custom server class
 
 app = FastAPI()
