@@ -9,8 +9,8 @@ from psycopg.rows import tuple_row
 from psycopg.types.json import Json
 from pydantic import BaseModel
 
-from .request_context import RequestContext
-from .sample_widget import SampleWidget
+from request_context import RequestContext
+from sample_widget import SampleWidget
 
 class ThreadData(BaseModel):
     thread: ThreadMetadata
