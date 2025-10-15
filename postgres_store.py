@@ -220,7 +220,7 @@ class PostgresStore(Store[RequestContext]):
                     (item_id, thread_id, context.user_id),
                 )
             conn.commit()
-        async def add_thread_item(
+    async def add_thread_item(
         self, thread_id: str, item: ThreadItem, context: RequestContext
     ) -> None:
         # For compatibility; implement as alias for save_item.
