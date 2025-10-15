@@ -27,6 +27,7 @@ from agents._run_impl import QueueCompleteSentinel
 from openai.types.responses import (
     EasyInputMessageParam,
     ResponseFileSearchToolCall,
+    ResponseFunctionWebSearch,
     ResponseInputContentParam,
     ResponseInputTextParam,
     ResponseOutputItemAddedEvent,
@@ -38,6 +39,10 @@ from openai.types.responses.response_content_part_added_event import (
     ResponseContentPartAddedEvent,
 )
 from openai.types.responses.response_file_search_tool_call import Result
+from openai.types.responses.response_function_web_search import (
+    ActionSearch,
+    ActionSearchSource,
+)
 from openai.types.responses.response_output_text import (
     AnnotationFileCitation as ResponsesAnnotationFileCitation,
 )
@@ -52,6 +57,9 @@ from openai.types.responses.response_output_text import (
 )
 from openai.types.responses.response_text_delta_event import ResponseTextDeltaEvent
 from openai.types.responses.response_text_done_event import ResponseTextDoneEvent
+from openai.types.responses.response_web_search_call_searching_event import (
+    ResponseWebSearchCallSearchingEvent,
+)
 
 from chatkit.agents import (
     AgentContext,
@@ -75,6 +83,7 @@ from chatkit.types import (
     FileSource,
     InferenceOptions,
     Page,
+    SearchTask,
     TaskItem,
     ThoughtTask,
     Thread,
@@ -1168,6 +1177,106 @@ async def test_workflow_streams_first_thought():
             await anext(stream)
     except StopAsyncIteration:
         pass
+
+
+async def test_stream_agent_response_tracks_web_search_tasks():
+    mock_store.add_thread_item.reset_mock()
+    context = AgentContext(
+        previous_response_id=None, thread=thread, store=mock_store, request_context=None
+    )
+    result = make_result()
+
+    call = ResponseFunctionWebSearch(
+        id="ws_1",
+        action=ActionSearch(type="search", query="latest news", sources=[]),
+        status="in_progress",
+        type="web_search_call",
+    )
+    tool_call_item = ToolCallItem(agent=Agent(name="Assistant"), raw_item=call)
+    result.add_event(
+        RunItemStreamEvent(
+            name="tool_called",
+            item=tool_call_item,
+        )
+    )
+    result.add_event(
+        RawResponsesStreamEvent(
+            type="raw_response_event",
+            data=ResponseWebSearchCallSearchingEvent(
+                item_id=call.id,
+                output_index=0,
+                sequence_number=0,
+                type="response.web_search_call.searching",
+            ),
+        )
+    )
+    completed_call = ResponseFunctionWebSearch(
+        id=call.id,
+        action=ActionSearch(
+            type="search",
+            query="latest news",
+            sources=[ActionSearchSource(type="url", url="https://example.com")],
+        ),
+        status="completed",
+        type="web_search_call",
+    )
+    result.add_event(
+        RawResponsesStreamEvent(
+            type="raw_response_event",
+            data=ResponseOutputItemDoneEvent(
+                type="response.output_item.done",
+                item=completed_call,
+                output_index=0,
+                sequence_number=1,
+            ),
+        )
+    )
+
+    result.done()
+
+    events = await all_events(stream_agent_response(context, result))
+
+    workflow_added = next(
+        (
+            event
+            for event in events
+            if isinstance(event, ThreadItemAddedEvent)
+            and event.item.type == "workflow"
+        ),
+        None,
+    )
+    assert workflow_added is not None
+
+    search_task_added = next(
+        (
+            event
+            for event in events
+            if isinstance(event, ThreadItemUpdated)
+            and isinstance(event.update, WorkflowTaskAdded)
+            and isinstance(event.update.task, SearchTask)
+        ),
+        None,
+    )
+    assert search_task_added is not None
+    assert search_task_added.update.task.queries == ["latest news"]
+
+    search_task_completed = next(
+        (
+            event
+            for event in events
+            if isinstance(event, ThreadItemUpdated)
+            and isinstance(event.update, WorkflowTaskUpdated)
+            and isinstance(event.update.task, SearchTask)
+            and event.update.task.status_indicator == "complete"
+        ),
+        None,
+    )
+    assert search_task_completed is not None
+    assert any(
+        isinstance(source, URLSource) and source.url == "https://example.com"
+        for source in search_task_completed.update.task.sources
+    )
+    assert mock_store.add_thread_item.await_count == 1
 
 
 async def test_workflow_ends_on_message():
