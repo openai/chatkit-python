@@ -3,8 +3,7 @@ from postgres_store import PostgresStore
 from my_server import MyChatKitServer  # import your custom server class
 
 app = FastAPI()
-store = PostgresStore()  # Use PostgresStore as your backend
-
+store = PostgresStore()  # This will read DATABASE_URL and connect
 server = MyChatKitServer(store)
 
 @app.post("/chatkit")

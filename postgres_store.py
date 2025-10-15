@@ -9,6 +9,9 @@ from psycopg.rows import tuple_row
 from psycopg.types.json import Json
 from pydantic import BaseModel
 
+from .request_context import RequestContext
+from .sample_widget import SampleWidget
+
 class ThreadData(BaseModel):
     thread: ThreadMetadata
 
@@ -18,7 +21,10 @@ class ItemData(BaseModel):
 class AttachmentData(BaseModel):
     attachment: Attachment
 
-class PostgresStore(Store):
+class SampleWidgetData(BaseModel):
+    widget: SampleWidget
+
+class PostgresStore(Store[RequestContext]):
     """Chat data store backed by Render Postgres."""
 
     def __init__(self) -> None:
@@ -49,6 +55,7 @@ class PostgresStore(Store):
                     )
                     """
                 )
+
                 cur.execute(
                     """
                     CREATE TABLE IF NOT EXISTS items (
@@ -60,6 +67,7 @@ class PostgresStore(Store):
                     )
                     """
                 )
+
                 cur.execute(
                     """
                     CREATE TABLE IF NOT EXISTS attachments (
@@ -70,12 +78,14 @@ class PostgresStore(Store):
                     )
                     """
                 )
+
                 cur.execute(
                     """
                     CREATE INDEX IF NOT EXISTS items_thread_user_created_idx
                         ON items (thread_id, user_id, created_at DESC)
                     """
                 )
+
                 cur.execute(
                     """
                     CREATE INDEX IF NOT EXISTS threads_user_created_idx
@@ -84,8 +94,11 @@ class PostgresStore(Store):
                 )
             conn.commit()
 
-    async def load_thread(self, thread_id: str, context: Any) -> ThreadMetadata:
+    async def load_thread(
+        self, thread_id: str, context: RequestContext
+    ) -> ThreadMetadata:
         user_id = context.user_id
+
         with self._connection() as conn:
             with conn.cursor(row_factory=tuple_row) as cur:
                 cur.execute(
@@ -97,7 +110,9 @@ class PostgresStore(Store):
                     raise NotFoundError(f"Thread {thread_id} not found")
                 return ThreadData.model_validate(row[0]).thread
 
-    async def save_thread(self, thread: ThreadMetadata, context: Any) -> None:
+    async def save_thread(
+        self, thread: ThreadMetadata, context: RequestContext
+    ) -> None:
         with self._connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(
@@ -111,8 +126,97 @@ class PostgresStore(Store):
                         thread.id,
                         thread.user_id,
                         thread.created_at,
-                        Json(thread.model_dump()),
+                        Json(
+                            ThreadData(thread=thread).model_dump(
+                                mode="json", round_trip=True
+                            )
+                        ),
                     ),
                 )
             conn.commit()
-# You can add the rest of the methods (items, attachments, etc.) similarly if you need full coverage.
+
+    async def save_item(
+        self, thread_id: str, item: ThreadItem, context: RequestContext
+    ) -> None:
+        with self._connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO items (id, thread_id, user_id, created_at, data)
+                    VALUES (%s, %s, %s, %s, %s)
+                    ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data,
+                        created_at = EXCLUDED.created_at
+                    """,
+                    (
+                        item.id,
+                        thread_id,
+                        context.user_id,
+                        item.created_at,
+                        Json(
+                            ItemData(item=item).model_dump(
+                                mode="json", round_trip=True
+                            )
+                        ),
+                    ),
+                )
+            conn.commit()
+
+    async def load_item(
+        self, thread_id: str, item_id: str, context: RequestContext
+    ) -> ThreadItem:
+        with self._connection() as conn:
+            with conn.cursor(row_factory=tuple_row) as cur:
+                cur.execute(
+                    """
+                    SELECT data
+                    FROM items
+                    WHERE id = %s AND thread_id = %s AND user_id = %s
+                    """,
+                    (item_id, thread_id, context.user_id),
+                )
+                row = cur.fetchone()
+                if row is None:
+                    raise NotFoundError(
+                        f"Item {item_id} not found in thread {thread_id}"
+                    )
+                return ItemData.model_validate(row[0]).item
+
+    async def delete_thread(
+        self, thread_id: str, context: RequestContext
+    ) -> None:
+        with self._connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "DELETE FROM items WHERE thread_id = %s AND user_id = %s",
+                    (thread_id, context.user_id),
+                )
+                cur.execute(
+                    "DELETE FROM threads WHERE id = %s AND user_id = %s",
+                    (thread_id, context.user_id),
+                )
+            conn.commit()
+
+    async def delete_attachment(
+        self, attachment_id: str, context: RequestContext
+    ) -> None:
+        with self._connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "DELETE FROM attachments WHERE id = %s AND user_id = %s",
+                    (attachment_id, context.user_id),
+                )
+            conn.commit()
+
+    async def delete_thread_item(
+        self, thread_id: str, item_id: str, context: RequestContext
+    ) -> None:
+        with self._connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    DELETE FROM items
+                    WHERE id = %s AND thread_id = %s AND user_id = %s
+                    """,
+                    (item_id, thread_id, context.user_id),
+                )
+            conn.commit()
