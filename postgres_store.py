@@ -220,3 +220,106 @@ class PostgresStore(Store[RequestContext]):
                     (item_id, thread_id, context.user_id),
                 )
             conn.commit()
+        async def add_thread_item(
+        self, thread_id: str, item: ThreadItem, context: RequestContext
+    ) -> None:
+        # For compatibility; implement as alias for save_item.
+        await self.save_item(thread_id, item, context)
+
+    async def load_attachment(
+        self, attachment_id: str, context: RequestContext
+    ) -> Attachment:
+        with self._connection() as conn:
+            with conn.cursor(row_factory=tuple_row) as cur:
+                cur.execute(
+                    """
+                    SELECT data
+                    FROM attachments
+                    WHERE id = %s AND user_id = %s
+                    """,
+                    (attachment_id, context.user_id),
+                )
+                row = cur.fetchone()
+                if row is None:
+                    raise NotFoundError(
+                        f"Attachment {attachment_id} not found"
+                    )
+                return Attachment.model_validate(row[0]['attachment'])
+
+    async def save_attachment(
+        self, attachment: Attachment, context: RequestContext
+    ) -> None:
+        with self._connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO attachments (id, user_id, data)
+                    VALUES (%s, %s, %s)
+                    ON CONFLICT (id, user_id)
+                    DO UPDATE SET data = EXCLUDED.data
+                    """,
+                    (
+                        attachment.id,
+                        context.user_id,
+                        Json({"attachment": attachment.model_dump(mode="json", round_trip=True)}),
+                    ),
+                )
+            conn.commit()
+
+    async def load_thread_items(
+        self, thread_id: str, context: RequestContext, limit: int = 50, before: str | None = None
+    ) -> Page[ThreadItem]:
+        with self._connection() as conn:
+            with conn.cursor(row_factory=tuple_row) as cur:
+                # Pagination support if needed (using created_at).
+                if before:
+                    cur.execute(
+                        """
+                        SELECT data FROM items
+                        WHERE thread_id = %s AND user_id = %s AND id < %s
+                        ORDER BY created_at DESC LIMIT %s
+                        """,
+                        (thread_id, context.user_id, before, limit)
+                    )
+                else:
+                    cur.execute(
+                        """
+                        SELECT data FROM items
+                        WHERE thread_id = %s AND user_id = %s
+                        ORDER BY created_at DESC LIMIT %s
+                        """,
+                        (thread_id, context.user_id, limit)
+                    )
+                rows = cur.fetchall()
+                items = [ThreadItem.model_validate(row[0]['item']) for row in rows]
+                # For production, implement `Page` correctly. Minimal example:
+                next_cursor = items[-1].id if items else None
+                return Page(items=items, next_cursor=next_cursor)
+
+    async def load_threads(
+        self, context: RequestContext, limit: int = 50, before: str | None = None
+    ) -> Page[ThreadMetadata]:
+        with self._connection() as conn:
+            with conn.cursor(row_factory=tuple_row) as cur:
+                if before:
+                    cur.execute(
+                        """
+                        SELECT data FROM threads
+                        WHERE user_id = %s AND id < %s
+                        ORDER BY created_at DESC LIMIT %s
+                        """,
+                        (context.user_id, before, limit)
+                    )
+                else:
+                    cur.execute(
+                        """
+                        SELECT data FROM threads
+                        WHERE user_id = %s
+                        ORDER BY created_at DESC LIMIT %s
+                        """,
+                        (context.user_id, limit)
+                    )
+                rows = cur.fetchall()
+                threads = [ThreadMetadata.model_validate(row[0]['thread']) for row in rows]
+                next_cursor = threads[-1].id if threads else None
+                return Page(items=threads, next_cursor=next_cursor)
