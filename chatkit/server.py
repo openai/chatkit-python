@@ -3,14 +3,7 @@ from abc import ABC, abstractmethod
 from collections.abc import AsyncIterator
 from contextlib import contextmanager
 from datetime import datetime
-from typing import (
-    Any,
-    AsyncGenerator,
-    AsyncIterable,
-    Callable,
-    Generic,
-    assert_never,
-)
+from typing import Any, AsyncGenerator, AsyncIterable, Callable, Generic
 
 import agents
 from agents.models.chatcmpl_helpers import (
@@ -24,6 +17,7 @@ from typing_extensions import TypeVar
 
 from chatkit.errors import CustomStreamError, StreamError
 
+from ._compat import assert_never
 from .logger import logger
 from .store import AttachmentStore, Store, StoreItemType, default_generate_id
 from .types import (
