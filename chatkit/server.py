@@ -423,10 +423,7 @@ class ChatKitServer(ABC, Generic[TContext]):
                     created_at=datetime.now(),
                     items=Page(),
                 )
-                await self.store.save_thread(
-                    ThreadMetadata(**thread.model_dump()),
-                    context=context,
-                )
+                await self.store.save_thread(thread, context=context)
                 yield ThreadCreatedEvent(thread=self._to_thread_response(thread))
                 user_message = await self._build_user_message_item(
                     request.params.input, thread, context
