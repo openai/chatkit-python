@@ -306,7 +306,7 @@ class ChatKitServer(ABC, Generic[TContext]):
     ) -> AsyncIterator[ThreadStreamEvent]:
         raise NotImplementedError(
             "The action() method must be overridden to react to actions. "
-            "See https://github.com/OpenAI-Early-Access/chatkit/blob/main/docs/widgets.md#widget-actions"
+            "See https://github.com/openai/chatkit-python/blob/main/docs/widgets.md#widget-actions"
         )
 
     async def process(
@@ -423,7 +423,10 @@ class ChatKitServer(ABC, Generic[TContext]):
                     created_at=datetime.now(),
                     items=Page(),
                 )
-                await self.store.save_thread(thread, context=context)
+                await self.store.save_thread(
+                    ThreadMetadata(**thread.model_dump()),
+                    context=context,
+                )
                 yield ThreadCreatedEvent(thread=self._to_thread_response(thread))
                 user_message = await self._build_user_message_item(
                     request.params.input, thread, context
