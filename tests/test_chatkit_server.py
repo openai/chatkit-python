@@ -362,6 +362,62 @@ async def test_saves_thread_metadata():
         assert events[-1].type == "thread.updated"
 
 
+async def test_metadata_preserved_in_thread_response():
+    """Test that metadata is preserved when _to_thread_response converts ThreadMetadata/Thread to Thread."""
+
+    async def responder(
+        thread: ThreadMetadata, input: UserMessageItem | None, context: Any
+    ) -> AsyncIterator[ThreadStreamEvent]:
+        # Set metadata on the thread
+        thread.metadata["test_key"] = "test_value"
+        thread.metadata["another_key"] = {"nested": "data"}
+        return
+        yield
+
+    with make_server(responder) as server:
+        events = await server.process_streaming(
+            ThreadsCreateReq(
+                params=ThreadCreateParams(
+                    input=UserMessageInput(
+                        content=[UserMessageTextContent(text="Hello, world!")],
+                        attachments=[],
+                        inference_options=InferenceOptions(),
+                    )
+                )
+            )
+        )
+
+        # The ThreadCreatedEvent won't have metadata because it's sent before responder runs
+        # This is expected behavior
+        thread_created_event = next(
+            event for event in events if event.type == "thread.created"
+        )
+        assert thread_created_event.thread.metadata == {}, (
+            "ThreadCreatedEvent should have empty metadata initially"
+        )
+
+        # The ThreadUpdatedEvent should have the metadata set by the responder
+        # This tests that _to_thread_response preserves metadata
+        thread_updated_event = next(
+            event for event in events if event.type == "thread.updated"
+        )
+        assert thread_updated_event.thread.metadata == {
+            "test_key": "test_value",
+            "another_key": {"nested": "data"},
+        }, (
+            f"Metadata not preserved in ThreadUpdatedEvent: {thread_updated_event.thread.metadata}"
+        )
+
+        # Also verify metadata is saved in the store
+        stored_thread = await server.store.load_thread(
+            thread_created_event.thread.id, DEFAULT_CONTEXT
+        )
+        assert stored_thread.metadata == {
+            "test_key": "test_value",
+            "another_key": {"nested": "data"},
+        }, f"Metadata not saved in store: {stored_thread.metadata}"
+
+
 async def test_saves_thread_locked_fields():
     async def responder(
         thread: ThreadMetadata, input: UserMessageItem | None, context: Any
