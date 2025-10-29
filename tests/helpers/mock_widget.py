@@ -2,11 +2,12 @@ import os
 import re
 import uuid
 from datetime import datetime, timedelta
-from typing import Annotated, Any, AsyncIterator, Callable, Literal, assert_never
+from typing import Annotated, Any, AsyncIterator, Callable, Literal
 
 from agents import Agent, Runner
 from anyio import sleep
 from pydantic import BaseModel, Field, TypeAdapter
+from typing_extensions import assert_never
 
 from chatkit.actions import Action, ActionConfig
 from chatkit.types import ThreadStreamEvent
