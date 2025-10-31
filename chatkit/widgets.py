@@ -4,7 +4,6 @@ from datetime import datetime
 from typing import (
     Annotated,
     Literal,
-    NotRequired,
 )
 
 from pydantic import (
@@ -13,7 +12,7 @@ from pydantic import (
     Field,
     model_serializer,
 )
-from typing_extensions import TypedDict
+from typing_extensions import NotRequired, TypedDict
 
 from chatkit.actions import ActionConfig
 
