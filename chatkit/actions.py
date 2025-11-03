@@ -24,7 +24,7 @@ TPayload = TypeVar("TPayload")
 
 class Action(BaseModel, Generic[TType, TPayload]):
     type: TType = Field(default=TType, frozen=True)  # pyright: ignore
-    payload: TPayload
+    payload: TPayload | None = None
 
     @classmethod
     def create(
