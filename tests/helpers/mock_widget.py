@@ -615,6 +615,7 @@ class SampleWidget(BaseModel):
         generate: Callable[[], AsyncIterator[ThreadStreamEvent]],
         save: Callable[[], AsyncIterator[ThreadStreamEvent]],
     ) -> AsyncIterator[ActionOutput]:
+        assert action.payload is not None, "Action payload is required"
         if action.type == "sample.show_widget":
             next_state = Index(
                 selected=action.payload.widget,
