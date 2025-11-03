@@ -21,4 +21,4 @@ We will increment patch versions for non-breaking changes:
 ### 1.1.0
 
 - `CustomSummary`, `CustomTask`, and `EntitySource` types have been updated to restrict `icon` to `IconName`.
-- All `_to_input` methods on `ThreadItemConverter` have been updated to be asynchronous.
+- All `ThreadItemConverter` methods have been updated to be asynchronous.
