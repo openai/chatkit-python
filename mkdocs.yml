@@ -53,6 +53,7 @@ nav:
           - store: api/chatkit/store.md
           - types: api/chatkit/types.md
           - widgets: api/chatkit/widgets.md
+  - Release process / changelog: release.md
   - ChatKit JS Docs: https://openai.github.io/chatkit-js/
 markdown_extensions:
   - pymdownx.superfences:
