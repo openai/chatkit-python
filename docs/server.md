@@ -323,7 +323,7 @@ class MyThreadConverter(ThreadItemConverter):
 
         # ..handle other attachment types
 
-    def hidden_context_to_input(self, item: HiddenContextItem) -> Message:
+    async def hidden_context_to_input(self, item: HiddenContextItem) -> Message:
         return Message(
             type="message",
             role="system",
@@ -335,7 +335,7 @@ class MyThreadConverter(ThreadItemConverter):
             ],
         )
 
-    def tag_to_message_content(self, tag: UserMessageTagContent):
+    async def tag_to_message_content(self, tag: UserMessageTagContent):
         tag_context = await retrieve_context_for_tag(tag.id)
         return ResponseInputTextParam(
             type="input_text",
