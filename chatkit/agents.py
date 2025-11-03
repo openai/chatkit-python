@@ -7,7 +7,6 @@ from typing import (
     Annotated,
     Any,
     AsyncGenerator,
-    Awaitable,
     Generic,
     Sequence,
     TypeVar,
@@ -634,9 +633,9 @@ class ThreadItemConverter:
     Other item types are converted automatically.
     """
 
-    def attachment_to_message_content(
+    async def attachment_to_message_content(
         self, attachment: Attachment
-    ) -> Awaitable[ResponseInputContentParam]:
+    ) -> ResponseInputContentParam:
         """
         Convert an attachment in a user message into a message content part to send to the model.
         Required when attachments are enabled.
@@ -645,7 +644,7 @@ class ThreadItemConverter:
             "An Attachment was included in a UserMessageItem but Converter.attachment_to_message_content was not implemented"
         )
 
-    def tag_to_message_content(
+    async def tag_to_message_content(
         self, tag: UserMessageTagContent
     ) -> ResponseInputContentParam:
         """
@@ -801,7 +800,7 @@ class ThreadItemConverter:
 
             tag_content: ResponseInputMessageContentListParam = [
                 # should return summarized text items
-                self.tag_to_message_content(tag)
+                await self.tag_to_message_content(tag)
                 for tag in uniq_tags
             ]
 
