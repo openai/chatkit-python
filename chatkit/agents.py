@@ -7,7 +7,6 @@ from typing import (
     Annotated,
     Any,
     AsyncGenerator,
-    Awaitable,
     Generic,
     Sequence,
     TypeVar,
