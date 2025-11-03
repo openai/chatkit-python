@@ -707,7 +707,8 @@ class CustomSummary(BaseModel):
     """Custom summary for a workflow."""
 
     title: str
-    icon: IconName | None = None
+    # IconName is the only supported type but we allow str for backwards compatibility
+    icon: IconName | str | None = None
 
 
 class DurationSummary(BaseModel):
@@ -735,7 +736,8 @@ class CustomTask(BaseTask):
 
     type: Literal["custom"] = "custom"
     title: str | None = None
-    icon: IconName | None = None
+    # IconName is the only supported type but we allow str for backwards compatibility
+    icon: IconName | str | None = None
     content: str | None = None
 
 
@@ -811,7 +813,8 @@ class EntitySource(SourceBase):
 
     type: Literal["entity"] = "entity"
     id: str
-    icon: IconName | None = None
+    # IconName is the only supported type but we allow str for backwards compatibility
+    icon: IconName | str | None = None
     preview: Literal["lazy"] | None = None
     data: dict[str, Any] = Field(default_factory=dict)
 
