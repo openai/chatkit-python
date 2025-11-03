@@ -656,7 +656,7 @@ class ThreadItemConverter:
             "A Tag was included in a UserMessageItem but Converter.tag_to_message_content is not implemented"
         )
 
-    def hidden_context_to_input(
+    async def hidden_context_to_input(
         self, item: HiddenContextItem
     ) -> TResponseInputItem | list[TResponseInputItem] | None:
         """
@@ -667,7 +667,7 @@ class ThreadItemConverter:
             "HiddenContextItem were present in a user message but Converter.hidden_context_to_input was not implemented"
         )
 
-    def task_to_input(
+    async def task_to_input(
         self, item: TaskItem
     ) -> TResponseInputItem | list[TResponseInputItem] | None:
         """
@@ -692,7 +692,7 @@ class ThreadItemConverter:
             role="user",
         )
 
-    def workflow_to_input(
+    async def workflow_to_input(
         self, item: WorkflowItem
     ) -> TResponseInputItem | list[TResponseInputItem] | None:
         """
@@ -722,7 +722,7 @@ class ThreadItemConverter:
             )
         return messages
 
-    def widget_to_input(
+    async def widget_to_input(
         self, item: WidgetItem
     ) -> TResponseInputItem | list[TResponseInputItem] | None:
         """
@@ -892,16 +892,16 @@ class ThreadItemConverter:
                 out = await self.end_of_turn_to_input(item) or []
                 return out if isinstance(out, list) else [out]
             case WidgetItem():
-                out = self.widget_to_input(item) or []
+                out = await self.widget_to_input(item) or []
                 return out if isinstance(out, list) else [out]
             case WorkflowItem():
-                out = self.workflow_to_input(item) or []
+                out = await self.workflow_to_input(item) or []
                 return out if isinstance(out, list) else [out]
             case TaskItem():
-                out = self.task_to_input(item) or []
+                out = await self.task_to_input(item) or []
                 return out if isinstance(out, list) else [out]
             case HiddenContextItem():
-                out = self.hidden_context_to_input(item) or []
+                out = await self.hidden_context_to_input(item) or []
                 return out if isinstance(out, list) else [out]
             case _:
                 assert_never(item)
