@@ -469,7 +469,7 @@ async def test_input_item_converter_to_input_items_mixed():
 
 async def test_input_item_converter_user_input_with_tags():
     class MyThreadItemConverter(ThreadItemConverter):
-        def tag_to_message_content(self, tag):
+        async def tag_to_message_content(self, tag):
             return ResponseInputTextParam(
                 type="input_text", text=tag.text + " " + tag.data["key"]
             )
