@@ -1022,6 +1022,7 @@ WidgetComponent = Annotated[
     | Divider
     | Icon
     | Image
+    | ListView
     | ListViewItem
     | Button
     | Checkbox
