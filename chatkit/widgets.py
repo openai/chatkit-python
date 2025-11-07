@@ -14,7 +14,8 @@ from pydantic import (
 )
 from typing_extensions import NotRequired, TypedDict
 
-from chatkit.actions import ActionConfig
+from .actions import ActionConfig
+from .icons import IconName
 
 
 class ThemeColor(TypedDict):
@@ -1039,69 +1040,5 @@ WidgetComponent = Annotated[
 """Union of all renderable widget components."""
 
 
-WidgetIcon = Literal[
-    "agent",
-    "analytics",
-    "atom",
-    "batch",
-    "bolt",
-    "book-open",
-    "book-clock",
-    "book-closed",
-    "bug",
-    "calendar",
-    "chart",
-    "check",
-    "check-circle",
-    "check-circle-filled",
-    "chevron-left",
-    "chevron-right",
-    "circle-question",
-    "compass",
-    "confetti",
-    "cube",
-    "desktop",
-    "document",
-    "dot",
-    "dots-horizontal",
-    "dots-vertical",
-    "empty-circle",
-    "external-link",
-    "globe",
-    "keys",
-    "lab",
-    "images",
-    "info",
-    "lifesaver",
-    "lightbulb",
-    "mail",
-    "map-pin",
-    "maps",
-    "mobile",
-    "name",
-    "notebook",
-    "notebook-pencil",
-    "page-blank",
-    "phone",
-    "play",
-    "plus",
-    "profile",
-    "profile-card",
-    "reload",
-    "star",
-    "star-filled",
-    "search",
-    "sparkle",
-    "sparkle-double",
-    "square-code",
-    "square-image",
-    "square-text",
-    "suitcase",
-    "settings-slider",
-    "user",
-    "wreath",
-    "write",
-    "write-alt",
-    "write-alt2",
-]
+WidgetIcon = IconName
 """Icon names accepted by widgets that render icons."""
