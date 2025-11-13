@@ -37,12 +37,6 @@ from openai.types.responses.response_output_message import Content
 from openai.types.responses.response_output_text import (
     Annotation as ResponsesAnnotation,
 )
-from openai.types.responses.response_output_text import (
-    AnnotationContainerFileCitation,
-    AnnotationFileCitation,
-    AnnotationFilePath,
-    AnnotationURLCitation,
-)
 from pydantic import BaseModel, ConfigDict, SkipValidation, TypeAdapter
 from typing_extensions import assert_never
 
@@ -232,19 +226,10 @@ def _convert_content(content: Content) -> AssistantMessageContent:
 
 def _convert_annotation(raw_annotation: object) -> Annotation | None:
     # There is a bug in the OpenAPI client that sometimes parses the annotation delta event into the wrong class
-    # resulting into annotation being a dict.
-    match raw_annotation:
-        case (
-            AnnotationFileCitation()
-            | AnnotationURLCitation()
-            | AnnotationContainerFileCitation()
-            | AnnotationFilePath()
-        ):
-            annotation = raw_annotation
-        case _:
-            annotation = TypeAdapter[ResponsesAnnotation](
-                ResponsesAnnotation
-            ).validate_python(raw_annotation)
+    # resulting into annotation being a dict or untyped object instead instead of a ResponsesAnnotation
+    annotation = TypeAdapter[ResponsesAnnotation](ResponsesAnnotation).validate_python(
+        raw_annotation
+    )
 
     if annotation.type == "file_citation":
         filename = annotation.filename
