@@ -39,6 +39,9 @@ from openai.types.responses.response_content_part_added_event import (
 )
 from openai.types.responses.response_file_search_tool_call import Result
 from openai.types.responses.response_output_text import (
+    AnnotationContainerFileCitation as ResponsesAnnotationContainerFileCitation,
+)
+from openai.types.responses.response_output_text import (
     AnnotationFileCitation as ResponsesAnnotationFileCitation,
 )
 from openai.types.responses.response_output_text import (
@@ -64,6 +67,7 @@ from chatkit.types import (
     Annotation,
     AssistantMessageContent,
     AssistantMessageContentPartAdded,
+    AssistantMessageContentPartAnnotationAdded,
     AssistantMessageContentPartDone,
     AssistantMessageContentPartTextDelta,
     AssistantMessageItem,
@@ -790,7 +794,17 @@ async def test_stream_agent_response_maps_events():
                     sequence_number=3,
                 ),
             ),
-            None,
+            ThreadItemUpdated(
+                item_id="123",
+                update=AssistantMessageContentPartAnnotationAdded(
+                    content_index=0,
+                    annotation_index=0,
+                    annotation=Annotation(
+                        source=FileSource(filename="file.txt", title="file.txt"),
+                        index=5,
+                    ),
+                ),
+            ),
         ),
     ],
 )
@@ -808,6 +822,91 @@ async def test_event_mapping(raw_event, expected_event):
         assert events == [expected_event]
     else:
         assert events == []
+
+
+async def test_stream_agent_response_emits_annotation_added_events():
+    context = AgentContext(
+        previous_response_id=None, thread=thread, store=mock_store, request_context=None
+    )
+    result = make_result()
+    item_id = "item_123"
+
+    def add_annotation_event(annotation, sequence_number):
+        result.add_event(
+            RawResponsesStreamEvent(
+                type="raw_response_event",
+                data=Mock(
+                    type="response.output_text.annotation.added",
+                    annotation=annotation,
+                    content_index=0,
+                    item_id=item_id,
+                    annotation_index=sequence_number,
+                    output_index=0,
+                    sequence_number=sequence_number,
+                ),
+            )
+        )
+
+    add_annotation_event(
+        ResponsesAnnotationFileCitation(
+            type="file_citation",
+            file_id="file_invalid",
+            filename="",
+            index=0,
+        ),
+        sequence_number=0,
+    )
+    add_annotation_event(
+        ResponsesAnnotationContainerFileCitation(
+            type="container_file_citation",
+            container_id="container_1",
+            file_id="file_123",
+            filename="container.txt",
+            start_index=0,
+            end_index=3,
+        ),
+        sequence_number=1,
+    )
+    add_annotation_event(
+        ResponsesAnnotationURLCitation(
+            type="url_citation",
+            url="https://example.com",
+            title="Example",
+            start_index=1,
+            end_index=5,
+        ),
+        sequence_number=2,
+    )
+    result.done()
+
+    events = await all_events(stream_agent_response(context, result))
+    assert events == [
+        ThreadItemUpdated(
+            item_id=item_id,
+            update=AssistantMessageContentPartAnnotationAdded(
+                content_index=0,
+                annotation_index=0,
+                annotation=Annotation(
+                    source=FileSource(filename="container.txt", title="container.txt"),
+                    index=3,
+                ),
+            ),
+        ),
+        ThreadItemUpdated(
+            item_id=item_id,
+            update=AssistantMessageContentPartAnnotationAdded(
+                content_index=0,
+                annotation_index=1,
+                annotation=Annotation(
+                    source=URLSource(
+                        url="https://example.com",
+                        title="Example",
+                    ),
+                    index=5,
+                ),
+            ),
+        ),
+    ]
 
 
 @pytest.mark.parametrize("throw_guardrail", ["input", "output"])
@@ -942,6 +1041,14 @@ async def test_stream_agent_response_assistant_message_content_types():
                                     index=0,
                                     filename="test.txt",
                                 ),
+                                ResponsesAnnotationContainerFileCitation(
+                                    type="container_file_citation",
+                                    container_id="container_1",
+                                    file_id="f_456",
+                                    filename="container.txt",
+                                    start_index=0,
+                                    end_index=3,
+                                ),
                                 ResponsesAnnotationURLCitation(
                                     type="url_citation",
                                     url="https://www.google.com",
@@ -993,6 +1100,13 @@ async def test_stream_agent_response_assistant_message_content_types():
                         title="test.txt",
                     ),
                     index=0,
+                ),
+                Annotation(
+                    source=FileSource(
+                        filename="container.txt",
+                        title="container.txt",
+                    ),
+                    index=3,
                 ),
                 Annotation(
                     source=URLSource(
