@@ -24,7 +24,7 @@ TPayload = TypeVar("TPayload")
 
 class Action(BaseModel, Generic[TType, TPayload]):
     type: TType = Field(default=TType, frozen=True)  # pyright: ignore
-    payload: TPayload = None # pyright: ignore - default to None to allow no-payload actions
+    payload: TPayload = None  # pyright: ignore - default to None to allow no-payload actions
 
     @classmethod
     def create(

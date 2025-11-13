@@ -1,6 +1,6 @@
 import asyncio
-from collections import defaultdict
 import json
+from collections import defaultdict
 from collections.abc import AsyncIterator
 from datetime import datetime
 from inspect import cleandoc
@@ -215,7 +215,9 @@ class AgentContext(BaseModel, Generic[TContext]):
 
 def _convert_content(content: Content) -> AssistantMessageContent:
     if content.type == "output_text":
-        annotations = [_convert_annotation(annotation) for annotation in content.annotations]
+        annotations = [
+            _convert_annotation(annotation) for annotation in content.annotations
+        ]
         annotations = [a for a in annotations if a is not None]
         return AssistantMessageContent(
             text=content.text,
@@ -228,17 +230,21 @@ def _convert_content(content: Content) -> AssistantMessageContent:
         )
 
 
-def _convert_annotation(
-    raw_annotation: object
-) -> Annotation | None:
+def _convert_annotation(raw_annotation: object) -> Annotation | None:
     # There is a bug in the OpenAPI client that sometimes parses the annotation delta event into the wrong class
     # resulting into annotation being a dict.
     match raw_annotation:
-        case AnnotationFileCitation() | AnnotationURLCitation() | AnnotationContainerFileCitation() | AnnotationFilePath():
+        case (
+            AnnotationFileCitation()
+            | AnnotationURLCitation()
+            | AnnotationContainerFileCitation()
+            | AnnotationFilePath()
+        ):
             annotation = raw_annotation
         case _:
-            annotation = TypeAdapter[ResponsesAnnotation](ResponsesAnnotation).validate_python(raw_annotation)
-
+            annotation = TypeAdapter[ResponsesAnnotation](
+                ResponsesAnnotation
+            ).validate_python(raw_annotation)
 
     if annotation.type == "file_citation":
         filename = annotation.filename
@@ -246,9 +252,9 @@ def _convert_annotation(
             return None
 
         return Annotation(
-                source=FileSource(filename=filename, title=filename),
-                index=annotation.index,
-            )
+            source=FileSource(filename=filename, title=filename),
+            index=annotation.index,
+        )
 
     if annotation.type == "url_citation":
         return Annotation(
@@ -265,9 +271,9 @@ def _convert_annotation(
             return None
 
         return Annotation(
-                source=FileSource(filename=filename, title=filename),
-                index=annotation.end_index,
-            )
+            source=FileSource(filename=filename, title=filename),
+            index=annotation.end_index,
+        )
 
     return None
 
@@ -368,7 +374,9 @@ async def stream_agent_response(
     produced_items = set()
     streaming_thought: None | StreamingThoughtTracker = None
     # item_id -> content_index -> annotation count
-    item_annotation_count: defaultdict[str, defaultdict[int, int]] = defaultdict(lambda: defaultdict(int))
+    item_annotation_count: defaultdict[str, defaultdict[int, int]] = defaultdict(
+        lambda: defaultdict(int)
+    )
 
     # check if the last item in the thread was a workflow or a client tool call
     # if it was a client tool call, check if the second last item was a workflow
@@ -486,15 +494,19 @@ async def stream_agent_response(
                 if annotation:
                     # Manually track annotation indices per content part in case we drop an annotation that
                     # we can't convert to our internal representation (e.g. missing filename).
-                    annotation_index = item_annotation_count[event.item_id][event.content_index]
-                    item_annotation_count[event.item_id][event.content_index] = annotation_index + 1
+                    annotation_index = item_annotation_count[event.item_id][
+                        event.content_index
+                    ]
+                    item_annotation_count[event.item_id][event.content_index] = (
+                        annotation_index + 1
+                    )
                     yield ThreadItemUpdated(
                         item_id=event.item_id,
                         update=AssistantMessageContentPartAnnotationAdded(
                             content_index=event.content_index,
                             annotation_index=annotation_index,
                             annotation=annotation,
-                        )
+                        ),
                     )
                 continue
             elif event.type == "response.output_item.added":
