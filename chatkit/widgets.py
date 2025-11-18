@@ -709,7 +709,7 @@ class Checkbox(WidgetComponentBase):
     """The name of the form control field used when submitting forms."""
     label: str | None = None
     """Optional label text rendered next to the checkbox."""
-    defaultChecked: str | None = None
+    defaultChecked: bool | None = None
     """The initial checked state of the checkbox."""
     onChangeAction: ActionConfig | None = None
     """Action dispatched when the checked state changes."""
