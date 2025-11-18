@@ -150,7 +150,7 @@ Checkbox input component.
 | `type` | `Checkbox` | 'Checkbox' |
 | `name` | `str` |  |
 | `label` | `str | None` | None |
-| `defaultChecked` | `str | None` | None |
+| `defaultChecked` | `bool | None` | None |
 | `onChangeAction` | `ActionConfig | None` | None |
 | `disabled` | `bool | None` | None |
 | `required` | `bool | None` | None |

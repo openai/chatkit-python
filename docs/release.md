@@ -18,6 +18,15 @@ We will increment patch versions for non-breaking changes:
 
 ## Breaking change changelog
 
+### 1.3.0
+
+- Fixed the type for the `defaultChecked` property of `Checkbox` widgets, updating it from `string` to `bool`.
+
+### 1.2.0
+
+- Updated `agents.stream_agent_response` to add annotation parts as they are received rather than adding all the annotations at the end after the response is completed.
+- Added support for rendering `container_file_citation`.
+
 ### 1.1.0
 
 - `CustomSummary`, `CustomTask`, and `EntitySource` types have been updated to restrict `icon` to `IconName`.
