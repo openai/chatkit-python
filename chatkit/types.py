@@ -284,12 +284,16 @@ class ThreadItemAddedEvent(BaseModel):
     item: ThreadItem
 
 
-class ThreadItemUpdated(BaseModel):
+class ThreadItemUpdatedEvent(BaseModel):
     """Event describing an update to an existing thread item."""
 
     type: Literal["thread.item.updated"] = "thread.item.updated"
     item_id: str
     update: ThreadItemUpdate
+
+
+# Type alias for backwards compatibility
+ThreadItemUpdated = ThreadItemUpdatedEvent
 
 
 class ThreadItemDoneEvent(BaseModel):
