@@ -690,10 +690,26 @@ class ThreadItemConverter:
     ) -> TResponseInputItem | list[TResponseInputItem] | None:
         """
         Convert a HiddenContextItem into input item(s) to send to the model.
-        Required when HiddenContextItem are used.
+        Required to override when HiddenContextItems with non-string content are used.
         """
-        raise NotImplementedError(
-            "HiddenContextItem were present in a user message but Converter.hidden_context_to_input was not implemented"
+        if not isinstance(item.content, str):
+            raise NotImplementedError(
+                "HiddenContextItems with non-string content were present in a user message but a Converter.hidden_context_to_input was not implemented"
+            )
+
+        text = (
+            "Hidden context for the agent (not shown to the user):\n"
+            f"<HiddenContext>\n{item.content}\n</HiddenContext>"
+        )
+        return Message(
+            type="message",
+            content=[
+                ResponseInputTextParam(
+                    type="input_text",
+                    text=text,
+                )
+            ],
+            role="user",
         )
 
     async def task_to_input(
