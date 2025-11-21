@@ -49,7 +49,7 @@ from chatkit.types import (
     ThreadItemDoneEvent,
     ThreadItemRemovedEvent,
     ThreadItemReplacedEvent,
-    ThreadItemUpdated,
+    ThreadItemUpdatedEvent,
     ThreadListParams,
     ThreadMetadata,
     ThreadRetryAfterItemParams,
@@ -756,7 +756,7 @@ async def test_calls_action():
         actions.append((action, sender))
         assert sender
 
-        yield ThreadItemUpdated(
+        yield ThreadItemUpdatedEvent(
             item_id=sender.id,
             update=WidgetRootUpdated(
                 widget=Card(
@@ -807,7 +807,7 @@ async def test_calls_action():
 
         assert len(events) == 1
         assert events[0].type == "thread.item.updated"
-        assert isinstance(events[0], ThreadItemUpdated)
+        assert isinstance(events[0], ThreadItemUpdatedEvent)
         assert events[0].update.type == "widget.root.updated"
         assert events[0].update.widget == Card(children=[Text(value="Email sent!")])
 
@@ -1090,17 +1090,17 @@ async def test_returns_widget_item_generator():
     assert isinstance(events[0].item, WidgetItem)
     assert events[0].item.widget == Card(children=[Text(id="text", value="")])
 
-    assert isinstance(events[1], ThreadItemUpdated)
+    assert isinstance(events[1], ThreadItemUpdatedEvent)
     assert events[1].update.type == "widget.streaming_text.value_delta"
     assert events[1].update.component_id == "text"
     assert events[1].update.delta == "Hel"
 
-    assert isinstance(events[2], ThreadItemUpdated)
+    assert isinstance(events[2], ThreadItemUpdatedEvent)
     assert events[2].update.type == "widget.streaming_text.value_delta"
     assert events[2].update.component_id == "text"
     assert events[2].update.delta == "lo,"
 
-    assert isinstance(events[3], ThreadItemUpdated)
+    assert isinstance(events[3], ThreadItemUpdatedEvent)
     assert events[3].update.type == "widget.streaming_text.value_delta"
     assert events[3].update.component_id == "text"
     assert events[3].update.delta == " world"
@@ -1128,7 +1128,7 @@ async def test_returns_widget_item_generator_full_replace():
     assert isinstance(events[0].item, WidgetItem)
     assert events[0].item.widget == Card(children=[Text(id="text", value="Hello")])
 
-    assert isinstance(events[1], ThreadItemUpdated)
+    assert isinstance(events[1], ThreadItemUpdatedEvent)
     assert events[1].update.type == "widget.root.updated"
     assert events[1].update.widget == Card(children=[Text(id="text", value="World")])
 

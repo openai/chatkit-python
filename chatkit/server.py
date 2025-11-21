@@ -47,7 +47,7 @@ from .types import (
     ThreadItemDoneEvent,
     ThreadItemRemovedEvent,
     ThreadItemReplacedEvent,
-    ThreadItemUpdated,
+    ThreadItemUpdatedEvent,
     ThreadMetadata,
     ThreadsAddClientToolOutputReq,
     ThreadsAddUserMessageReq,
@@ -209,7 +209,7 @@ async def stream_widget(
         try:
             new_state = await widget.__anext__()
             for update in diff_widget(last_state, new_state):
-                yield ThreadItemUpdated(
+                yield ThreadItemUpdatedEvent(
                     item_id=item_id,
                     update=update,
                 )
