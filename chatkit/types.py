@@ -637,6 +637,7 @@ class UserMessageTagContent(BaseModel):
     id: str
     text: str
     data: dict[str, Any]
+    group: str | None = None
     interactive: bool = False
 
 
@@ -813,8 +814,13 @@ class EntitySource(SourceBase):
     type: Literal["entity"] = "entity"
     id: str
     icon: IconName | None = None
-    preview: Literal["lazy"] | None = None
     data: dict[str, Any] = Field(default_factory=dict)
+
+    preview: Literal["lazy"] | None = Field(
+        default=None,
+        deprecated=True,
+        description="This field is ignored. Please use the entities.onRequestPreview ChatKit.js option instead.",
+    )
 
 
 Source = Annotated[
