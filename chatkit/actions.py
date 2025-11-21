@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any, Generic, Literal, TypeVar, get_args, get_origin
 
 from pydantic import BaseModel, Field
+from typing_extensions import deprecated
 
 Handler = Literal["client", "server"]
 LoadingBehavior = Literal["auto", "none", "self", "container"]
@@ -11,6 +12,12 @@ DEFAULT_HANDLER: Handler = "server"
 DEFAULT_LOADING_BEHAVIOR: LoadingBehavior = "auto"
 
 
+direct_usage_of_action_classes_deprecated = deprecated(
+    "Direct usage of Action classes are deprecated; use WidgetTemplate to build widgets from .widget files/definitions instead."
+)
+
+
+@direct_usage_of_action_classes_deprecated
 class ActionConfig(BaseModel):
     type: str
     payload: Any = None
@@ -22,6 +29,7 @@ TType = TypeVar("TType", bound=str)
 TPayload = TypeVar("TPayload")
 
 
+@direct_usage_of_action_classes_deprecated
 class Action(BaseModel, Generic[TType, TPayload]):
     type: TType = Field(default=TType, frozen=True)  # pyright: ignore
     payload: TPayload = None  # pyright: ignore - default to None to allow no-payload actions

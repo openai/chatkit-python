@@ -18,14 +18,19 @@ from pydantic import (
     TypeAdapter,
     model_serializer,
 )
-from typing_extensions import NotRequired, TypedDict
+from typing_extensions import NotRequired, TypedDict, deprecated
 
 from .actions import ActionConfig
 from .icons import IconName
 
 env = Environment(undefined=StrictUndefined)
 
+direct_usage_of_named_widget_types_deprecated = deprecated(
+    "Direct usage of named widget classes are deprecated; use WidgetTemplate to build widgets from .widget files/definitions instead."
+)
 
+
+@direct_usage_of_named_widget_types_deprecated
 class ThemeColor(TypedDict):
     """Color values for light and dark themes."""
 
@@ -35,6 +40,7 @@ class ThemeColor(TypedDict):
     """Color to use when the theme is light."""
 
 
+@direct_usage_of_named_widget_types_deprecated
 class Spacing(TypedDict):
     """Shorthand spacing values applied to a widget."""
 
@@ -52,6 +58,7 @@ class Spacing(TypedDict):
     """Vertical spacing; accepts a spacing unit or CSS string."""
 
 
+@direct_usage_of_named_widget_types_deprecated
 class Border(TypedDict):
     """Border style definition for an edge."""
 
@@ -72,6 +79,7 @@ class Border(TypedDict):
     """Border line style."""
 
 
+@direct_usage_of_named_widget_types_deprecated
 class Borders(TypedDict):
     """Composite border configuration applied across edges."""
 
@@ -89,6 +97,7 @@ class Borders(TypedDict):
     """Vertical borders or thickness in px."""
 
 
+@direct_usage_of_named_widget_types_deprecated
 class MinMax(TypedDict):
     """Integer minimum/maximum bounds."""
 
@@ -98,6 +107,7 @@ class MinMax(TypedDict):
     """Maximum value (inclusive)."""
 
 
+@direct_usage_of_named_widget_types_deprecated
 class EditableProps(TypedDict):
     """Editable field options for text widgets."""
 
@@ -187,6 +197,7 @@ class WidgetComponentBase(BaseModel):
         return dumped
 
 
+@direct_usage_of_named_widget_types_deprecated
 class WidgetStatusWithFavicon(TypedDict):
     """Widget status representation using a favicon."""
 
@@ -198,6 +209,7 @@ class WidgetStatusWithFavicon(TypedDict):
     """Show a frame around the favicon for contrast."""
 
 
+@direct_usage_of_named_widget_types_deprecated
 class WidgetStatusWithIcon(TypedDict):
     """Widget status representation using an icon."""
 
@@ -211,6 +223,7 @@ WidgetStatus = WidgetStatusWithFavicon | WidgetStatusWithIcon
 """Union for representing widget status messaging."""
 
 
+@direct_usage_of_named_widget_types_deprecated
 class ListViewItem(WidgetComponentBase):
     """Single row inside a ``ListView`` component."""
 
@@ -225,6 +238,7 @@ class ListViewItem(WidgetComponentBase):
     """Y-axis alignment for content within the list item."""
 
 
+@direct_usage_of_named_widget_types_deprecated
 class ListView(WidgetComponentBase):
     """Container component for rendering collections of list items."""
 
@@ -239,6 +253,7 @@ class ListView(WidgetComponentBase):
     """Force light or dark theme for this subtree."""
 
 
+@direct_usage_of_named_widget_types_deprecated
 class CardAction(TypedDict):
     """Configuration for confirm/cancel actions within a card."""
 
@@ -248,6 +263,7 @@ class CardAction(TypedDict):
     """Declarative action dispatched to the host application."""
 
 
+@direct_usage_of_named_widget_types_deprecated
 class Card(WidgetComponentBase):
     """Versatile container used for structuring widget content."""
 
@@ -279,6 +295,7 @@ class Card(WidgetComponentBase):
     """Force light or dark theme for this subtree."""
 
 
+@direct_usage_of_named_widget_types_deprecated
 class Markdown(WidgetComponentBase):
     """Widget rendering Markdown content, optionally streamed."""
 
@@ -289,6 +306,7 @@ class Markdown(WidgetComponentBase):
     """Applies streaming-friendly transitions for incremental updates."""
 
 
+@direct_usage_of_named_widget_types_deprecated
 class Text(WidgetComponentBase):
     """Widget rendering plain text with typography controls."""
 
@@ -327,6 +345,7 @@ class Text(WidgetComponentBase):
     """Enable inline editing for this text node."""
 
 
+@direct_usage_of_named_widget_types_deprecated
 class Title(WidgetComponentBase):
     """Widget rendering prominent headline text."""
 
@@ -353,6 +372,7 @@ class Title(WidgetComponentBase):
     """Limit text to a maximum number of lines (line clamp)."""
 
 
+@direct_usage_of_named_widget_types_deprecated
 class Caption(WidgetComponentBase):
     """Widget rendering supporting caption text."""
 
@@ -379,6 +399,7 @@ class Caption(WidgetComponentBase):
     """Limit text to a maximum number of lines (line clamp)."""
 
 
+@direct_usage_of_named_widget_types_deprecated
 class Badge(WidgetComponentBase):
     """Small badge indicating status or categorization."""
 
@@ -397,6 +418,7 @@ class Badge(WidgetComponentBase):
     """Determines if the badge should be fully rounded (pill)."""
 
 
+@direct_usage_of_named_widget_types_deprecated
 class BoxBase(BaseModel):
     """Shared layout props for flexible container widgets."""
 
@@ -449,6 +471,7 @@ class BoxBase(BaseModel):
     """Aspect ratio of the box (e.g., 16/9); number or CSS string."""
 
 
+@direct_usage_of_named_widget_types_deprecated
 class Box(WidgetComponentBase, BoxBase):
     """Generic flex container with direction control."""
 
@@ -457,18 +480,21 @@ class Box(WidgetComponentBase, BoxBase):
     """Flex direction for content within this container."""
 
 
+@direct_usage_of_named_widget_types_deprecated
 class Row(WidgetComponentBase, BoxBase):
     """Horizontal flex container."""
 
     type: Literal["Row"] = Field(default="Row", frozen=True)  # pyright: ignore
 
 
+@direct_usage_of_named_widget_types_deprecated
 class Col(WidgetComponentBase, BoxBase):
     """Vertical flex container."""
 
     type: Literal["Col"] = Field(default="Col", frozen=True)  # pyright: ignore
 
 
+@direct_usage_of_named_widget_types_deprecated
 class Form(WidgetComponentBase, BoxBase):
     """Form wrapper capable of submitting ``onSubmitAction``."""
 
@@ -479,6 +505,7 @@ class Form(WidgetComponentBase, BoxBase):
     """Flex direction for laying out form children."""
 
 
+@direct_usage_of_named_widget_types_deprecated
 class Divider(WidgetComponentBase):
     """Visual divider separating content sections."""
 
@@ -498,6 +525,7 @@ class Divider(WidgetComponentBase):
     """Flush the divider to the container edge, removing surrounding padding."""
 
 
+@direct_usage_of_named_widget_types_deprecated
 class Icon(WidgetComponentBase):
     """Icon component referencing a built-in icon name."""
 
@@ -516,6 +544,7 @@ class Icon(WidgetComponentBase):
     """Size of the icon; accepts an icon size token."""
 
 
+@direct_usage_of_named_widget_types_deprecated
 class Image(WidgetComponentBase):
     """Image component with sizing and fitting controls."""
 
@@ -580,6 +609,7 @@ class Image(WidgetComponentBase):
     """Flex growth/shrink factor."""
 
 
+@direct_usage_of_named_widget_types_deprecated
 class Button(WidgetComponentBase):
     """Button component optionally wired to an action."""
 
@@ -626,6 +656,7 @@ class Button(WidgetComponentBase):
     """Disable interactions and apply disabled styles."""
 
 
+@direct_usage_of_named_widget_types_deprecated
 class Spacer(WidgetComponentBase):
     """Flexible spacer used to push content apart."""
 
@@ -634,6 +665,7 @@ class Spacer(WidgetComponentBase):
     """Minimum size the spacer should occupy along the flex direction."""
 
 
+@direct_usage_of_named_widget_types_deprecated
 class SelectOption(TypedDict):
     """Selectable option used by the ``Select`` widget."""
 
@@ -647,6 +679,7 @@ class SelectOption(TypedDict):
     """Displayed as secondary text below the option `label`."""
 
 
+@direct_usage_of_named_widget_types_deprecated
 class Select(WidgetComponentBase):
     """Select dropdown component."""
 
@@ -675,6 +708,7 @@ class Select(WidgetComponentBase):
     """Disable interactions and apply disabled styles."""
 
 
+@direct_usage_of_named_widget_types_deprecated
 class DatePicker(WidgetComponentBase):
     """Date picker input component."""
 
@@ -709,6 +743,7 @@ class DatePicker(WidgetComponentBase):
     """Disable interactions and apply disabled styles."""
 
 
+@direct_usage_of_named_widget_types_deprecated
 class Checkbox(WidgetComponentBase):
     """Checkbox input component."""
 
@@ -727,6 +762,7 @@ class Checkbox(WidgetComponentBase):
     """Mark the checkbox as required for form submission."""
 
 
+@direct_usage_of_named_widget_types_deprecated
 class Input(WidgetComponentBase):
     """Single-line text input component."""
 
@@ -763,6 +799,7 @@ class Input(WidgetComponentBase):
     """Determines if the input should be fully rounded (pill)."""
 
 
+@direct_usage_of_named_widget_types_deprecated
 class Label(WidgetComponentBase):
     """Form label associated with a field."""
 
@@ -787,6 +824,7 @@ class Label(WidgetComponentBase):
     """
 
 
+@direct_usage_of_named_widget_types_deprecated
 class RadioOption(TypedDict):
     """Option inside a ``RadioGroup`` widget."""
 
@@ -798,6 +836,7 @@ class RadioOption(TypedDict):
     """Disables a specific radio option."""
 
 
+@direct_usage_of_named_widget_types_deprecated
 class RadioGroup(WidgetComponentBase):
     """Grouped radio input control."""
 
@@ -820,6 +859,7 @@ class RadioGroup(WidgetComponentBase):
     """Mark the group as required for form submission."""
 
 
+@direct_usage_of_named_widget_types_deprecated
 class Textarea(WidgetComponentBase):
     """Multiline text input component."""
 
@@ -856,6 +896,7 @@ class Textarea(WidgetComponentBase):
     """Allow password managers / autofill extensions to appear."""
 
 
+@direct_usage_of_named_widget_types_deprecated
 class Transition(WidgetComponentBase):
     """Wrapper enabling transitions for a child component."""
 
@@ -864,6 +905,7 @@ class Transition(WidgetComponentBase):
     """The child component to animate layout changes for."""
 
 
+@direct_usage_of_named_widget_types_deprecated
 class Chart(WidgetComponentBase):
     """Data visualization component for simple bar/line/area charts."""
 
@@ -908,6 +950,7 @@ class Chart(WidgetComponentBase):
     """Aspect ratio of the chart area (e.g., 16/9); number or CSS string."""
 
 
+@direct_usage_of_named_widget_types_deprecated
 class XAxisConfig(TypedDict):
     """Configuration object for the X axis."""
 
@@ -939,6 +982,7 @@ CurveType = Literal[
 """Interpolation curve types for `area` and `line` series."""
 
 
+@direct_usage_of_named_widget_types_deprecated
 class BarSeries(BaseModel):
     """A bar series plotted from a numeric `dataKey`. Supports stacking."""
 
@@ -961,6 +1005,7 @@ class BarSeries(BaseModel):
     """
 
 
+@direct_usage_of_named_widget_types_deprecated
 class AreaSeries(BaseModel):
     """An area series plotted from a numeric `dataKey`. Supports stacking and curves."""
 
@@ -985,6 +1030,7 @@ class AreaSeries(BaseModel):
     """Interpolation curve type used to connect points."""
 
 
+@direct_usage_of_named_widget_types_deprecated
 class LineSeries(BaseModel):
     """A line series plotted from a numeric `dataKey`. Supports curves."""
 
@@ -1012,12 +1058,6 @@ Series = Annotated[
     Field(discriminator="type"),
 ]
 """Union of all supported chart series types."""
-
-
-WidgetRoot = Annotated[
-    Card | ListView,
-    Field(discriminator="type"),
-]
 
 
 class DynamicWidgetComponent(WidgetComponentBase):
@@ -1071,24 +1111,10 @@ class DynamicWidgetRoot(DynamicWidgetComponent):
     type: Literal["Card", "ListView"]  # pyright: ignore
 
 
-class BasicRoot(WidgetComponentBase):
+class BasicRoot(DynamicWidgetComponent):
     """Layout root capable of nesting components or other roots."""
 
     type: Literal["Basic"] = Field(default="Basic", frozen=True)  # pyright: ignore
-    children: list[WidgetComponent | WidgetRoot]
-    """Children to render inside this root. Can include widget components or nested roots."""
-    theme: Literal["light", "dark"] | None = None
-    """Force light or dark theme for this subtree."""
-    direction: Literal["row", "col"] | None = None
-    """Flex direction for laying out direct children."""
-    gap: int | str | None = None
-    """Gap between direct children; spacing unit or CSS string."""
-    padding: float | str | Spacing | None = None
-    """Inner padding; spacing unit, CSS string, or padding object."""
-    align: Alignment | None = None
-    """Cross-axis alignment of children."""
-    justify: Justification | None = None
-    """Main-axis distribution of children."""
 
 
 WidgetComponent = StrictWidgetComponent | DynamicWidgetComponent
