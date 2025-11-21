@@ -13,18 +13,7 @@ from chatkit.widgets import (
     Text,
     WidgetRoot,
     WidgetTemplate,
-    env,
 )
-
-
-def dyn_comp(data: dict[str, Any]) -> DynamicWidgetComponent:
-    """Helper to build dynamic components while keeping type checkers happy."""
-    return DynamicWidgetComponent.model_validate(data)
-
-
-def to_template(payload: dict[str, Any]):
-    """Helper to build a Jinja template from a widget payload."""
-    return env.from_string(json.dumps(payload))
 
 
 @pytest.mark.parametrize(
