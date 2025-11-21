@@ -1005,6 +1005,27 @@ Series = Annotated[
 ]
 """Union of all supported chart series types."""
 
+
+class BasicRoot(WidgetComponentBase):
+    """Layout root capable of nesting components or other roots."""
+
+    type: Literal["Basic"] = Field(default="Basic", frozen=True)  # pyright: ignore
+    children: list[WidgetComponent | WidgetRoot]
+    """Children to render inside this root. Can include widget components or nested roots."""
+    theme: Literal["light", "dark"] | None = None
+    """Force light or dark theme for this subtree."""
+    direction: Literal["row", "col"] | None = None
+    """Flex direction for laying out direct children."""
+    gap: int | str | None = None
+    """Gap between direct children; spacing unit or CSS string."""
+    padding: float | str | Spacing | None = None
+    """Inner padding; spacing unit, CSS string, or padding object."""
+    align: Alignment | None = None
+    """Cross-axis alignment of children."""
+    justify: Justification | None = None
+    """Main-axis distribution of children."""
+
+
 WidgetRoot = Annotated[
     Card | ListView,
     Field(discriminator="type"),
