@@ -1,0 +1,71 @@
+{
+  "type": "Card",
+  "children": [
+    {
+      "type": "Col",
+      "align": "center",
+      "gap": 4,
+      "padding": 4,
+      "children": [
+        {
+          "type": "Box",
+          "background": "green-400",
+          "radius": "full",
+          "padding": 3,
+          "children": [
+            {
+              "type": "Icon",
+              "name": "check",
+              "size": "3xl",
+              "color": "white"
+            }
+          ]
+        },
+        {
+          "type": "Col",
+          "align": "center",
+          "gap": 1,
+          "children": [
+            {
+              "type": "Title",
+              "value": "Enable notification"
+            },
+            {
+              "type": "Text",
+              "value": "Notify me when this item ships",
+              "color": "secondary"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Row",
+      "children": [
+        {
+          "type": "Button",
+          "label": "Yes",
+          "block": true,
+          "onClickAction": {
+            "type": "notification.settings",
+            "payload": {
+              "enable": true
+            }
+          }
+        },
+        {
+          "type": "Button",
+          "label": "No",
+          "block": true,
+          "variant": "outline",
+          "onClickAction": {
+            "type": "notification.settings",
+            "payload": {
+              "enable": true
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

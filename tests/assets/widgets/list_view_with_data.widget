@@ -1,0 +1,121 @@
+{
+  "version": "1.0",
+  "name": "list_view_with_data",
+  "template": "{\"type\":\"ListView\",\"children\":[{%- set _c -%}{%-for item in items -%},{\"type\":\"ListViewItem\",\"key\":{{ (item.id) | tojson }},\"gap\":5,\"onClickAction\":{\"type\":\"line.select\",\"payload\":{\"id\":{{ (item.id) | tojson }}}},\"children\":[{\"type\":\"Box\",\"background\":{{ (item.color) | tojson }},\"radius\":\"full\",\"size\":25},{\"type\":\"Text\",\"value\":{{ (item.label) | tojson }},\"size\":\"sm\"}]}{%-endfor-%}{%- endset -%}{{- (_c[1:] if _c and _c[0] == ',' else _c) -}}]}",
+  "jsonSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "label": {
+              "type": "string"
+            },
+            "color": {
+              "type": "string",
+              "enum": [
+                "blue-500",
+                "orange-500",
+                "purple-500"
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "label",
+            "color"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    "required": [
+      "items"
+    ],
+    "additionalProperties": false
+  },
+  "outputJsonPreview": {
+    "type": "ListView",
+    "children": [
+      {
+        "type": "ListViewItem",
+        "key": "blue",
+        "gap": 5,
+        "onClickAction": {
+          "type": "line.select",
+          "payload": {
+            "id": "blue"
+          }
+        },
+        "children": [
+          {
+            "type": "Box",
+            "background": "blue-500",
+            "radius": "full",
+            "size": 25
+          },
+          {
+            "type": "Text",
+            "value": "Blue line",
+            "size": "sm"
+          }
+        ]
+      },
+      {
+        "type": "ListViewItem",
+        "key": "orange",
+        "gap": 5,
+        "onClickAction": {
+          "type": "line.select",
+          "payload": {
+            "id": "orange"
+          }
+        },
+        "children": [
+          {
+            "type": "Box",
+            "background": "orange-500",
+            "radius": "full",
+            "size": 25
+          },
+          {
+            "type": "Text",
+            "value": "Orange line",
+            "size": "sm"
+          }
+        ]
+      },
+      {
+        "type": "ListViewItem",
+        "key": "purple",
+        "gap": 5,
+        "onClickAction": {
+          "type": "line.select",
+          "payload": {
+            "id": "purple"
+          }
+        },
+        "children": [
+          {
+            "type": "Box",
+            "background": "purple-500",
+            "radius": "full",
+            "size": 25
+          },
+          {
+            "type": "Text",
+            "value": "Purple line",
+            "size": "sm"
+          }
+        ]
+      }
+    ]
+  },
+  "encodedWidget": "eyJpZCI6ImIyZTVmZTllLWVhOWItNGUyMy1iNjMxLTFmNTRhMDI4Mjg4MCIsIm5hbWUiOiJMaW5lIHNlbGVjdG9yIiwidmlldyI6IjxMaXN0Vmlldz5cbiAge2l0ZW1zLm1hcCgoaXRlbSkgPT4gKFxuICAgIDxMaXN0Vmlld0l0ZW1cbiAgICAgIGtleT17aXRlbS5pZH1cbiAgICAgIGdhcD17NX1cbiAgICAgIG9uQ2xpY2tBY3Rpb249e3sgdHlwZTogXCJsaW5lLnNlbGVjdFwiLCBwYXlsb2FkOiB7IGlkOiBpdGVtLmlkIH0gfX1cbiAgICA-XG4gICAgICA8Qm94IGJhY2tncm91bmQ9e2l0ZW0uY29sb3J9IHJhZGl1cz1cImZ1bGxcIiBzaXplPXsyNX0gLz5cbiAgICAgIDxUZXh0IHZhbHVlPXtpdGVtLmxhYmVsfSBzaXplPVwic21cIiAvPlxuICAgIDwvTGlzdFZpZXdJdGVtPlxuICApKX1cbjwvTGlzdFZpZXc-IiwiZGVmYXVsdFN0YXRlIjp7Iml0ZW1zIjpbeyJpZCI6ImJsdWUiLCJsYWJlbCI6IkJsdWUgbGluZSIsImNvbG9yIjoiYmx1ZS01MDAifSx7ImlkIjoib3JhbmdlIiwibGFiZWwiOiJPcmFuZ2UgbGluZSIsImNvbG9yIjoib3JhbmdlLTUwMCJ9LHsiaWQiOiJwdXJwbGUiLCJsYWJlbCI6IlB1cnBsZSBsaW5lIiwiY29sb3IiOiJwdXJwbGUtNTAwIn1dfSwic3RhdGVzIjpbXSwic2NoZW1hIjoiaW1wb3J0IHsgeiB9IGZyb20gXCJ6b2RcIlxuXG5jb25zdCBMaW5lSXRlbSA9IHouc3RyaWN0T2JqZWN0KHtcbiAgaWQ6IHouc3RyaW5nKCksXG4gIGxhYmVsOiB6LnN0cmluZygpLFxuICBjb2xvcjogei5lbnVtKFtcImJsdWUtNTAwXCIsIFwib3JhbmdlLTUwMFwiLCBcInB1cnBsZS01MDBcIl0pLFxufSlcblxuY29uc3QgV2lkZ2V0U3RhdGUgPSB6LnN0cmljdE9iamVjdCh7XG4gIGl0ZW1zOiB6LmFycmF5KExpbmVJdGVtKSxcbn0pXG5cbmV4cG9ydCBkZWZhdWx0IFdpZGdldFN0YXRlIiwic2NoZW1hTW9kZSI6InpvZCIsImpzb25TY2hlbWEiOnsidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsidGl0bGUiOnsidHlwZSI6InN0cmluZyJ9fSwicmVxdWlyZWQiOlsidGl0bGUiXSwiYWRkaXRpb25hbFByb3BlcnRpZXMiOmZhbHNlfSwic2NoZW1hVmFsaWRpdHkiOiJ2YWxpZCIsInZpZXdWYWxpZGl0eSI6InZhbGlkIiwiZGVmYXVsdFN0YXRlVmFsaWRpdHkiOiJ2YWxpZCJ9"
+}

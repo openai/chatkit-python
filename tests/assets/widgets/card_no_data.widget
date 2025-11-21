@@ -1,0 +1,83 @@
+{
+  "version": "1.0",
+  "name": "Enable Notification",
+  "template": "{\"type\":\"Card\",\"children\":[{\"type\":\"Col\",\"align\":\"center\",\"gap\":4,\"padding\":4,\"children\":[{\"type\":\"Box\",\"background\":\"green-400\",\"radius\":\"full\",\"padding\":3,\"children\":[{\"type\":\"Icon\",\"name\":\"check\",\"size\":\"3xl\",\"color\":\"white\"}]},{\"type\":\"Col\",\"align\":\"center\",\"gap\":1,\"children\":[{\"type\":\"Title\",\"value\":\"Enable notification\"},{\"type\":\"Text\",\"value\":\"Notify me when this item ships\",\"color\":\"secondary\"}]}]},{\"type\":\"Row\",\"children\":[{\"type\":\"Button\",\"label\":\"Yes\",\"block\":true,\"onClickAction\":{\"type\":\"notification.settings\",\"payload\":{\"enable\":true}}},{\"type\":\"Button\",\"label\":\"No\",\"block\":true,\"variant\":\"outline\",\"onClickAction\":{\"type\":\"notification.settings\",\"payload\":{\"enable\":true}}}]}]}",
+  "jsonSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {},
+    "additionalProperties": false
+  },
+  "outputJsonPreview": {
+    "type": "Card",
+    "children": [
+      {
+        "type": "Col",
+        "align": "center",
+        "gap": 4,
+        "padding": 4,
+        "children": [
+          {
+            "type": "Box",
+            "background": "green-400",
+            "radius": "full",
+            "padding": 3,
+            "children": [
+              {
+                "type": "Icon",
+                "name": "check",
+                "size": "3xl",
+                "color": "white"
+              }
+            ]
+          },
+          {
+            "type": "Col",
+            "align": "center",
+            "gap": 1,
+            "children": [
+              {
+                "type": "Title",
+                "value": "Enable notification"
+              },
+              {
+                "type": "Text",
+                "value": "Notify me when this item ships",
+                "color": "secondary"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Row",
+        "children": [
+          {
+            "type": "Button",
+            "label": "Yes",
+            "block": true,
+            "onClickAction": {
+              "type": "notification.settings",
+              "payload": {
+                "enable": true
+              }
+            }
+          },
+          {
+            "type": "Button",
+            "label": "No",
+            "block": true,
+            "variant": "outline",
+            "onClickAction": {
+              "type": "notification.settings",
+              "payload": {
+                "enable": true
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "encodedWidget": "eyJpZCI6IndpZ180YWtnYWg0YSIsIm5hbWUiOiJFbmFibGUgTm90aWZpY2F0aW9uIiwidmlldyI6IjxDYXJkPlxuICA8Q29sIGFsaWduPVwiY2VudGVyXCIgZ2FwPXs0fSBwYWRkaW5nPXs0fT5cbiAgICA8Qm94IGJhY2tncm91bmQ9XCJncmVlbi00MDBcIiByYWRpdXM9XCJmdWxsXCIgcGFkZGluZz17M30-XG4gICAgICA8SWNvbiBuYW1lPVwiY2hlY2tcIiBzaXplPVwiM3hsXCIgY29sb3I9XCJ3aGl0ZVwiIC8-XG4gICAgPC9Cb3g-XG4gICAgPENvbCBhbGlnbj1cImNlbnRlclwiIGdhcD17MX0-XG4gICAgICA8VGl0bGUgdmFsdWU9XCJFbmFibGUgbm90aWZpY2F0aW9uXCIgLz5cbiAgICAgIDxUZXh0IHZhbHVlPVwiTm90aWZ5IG1lIHdoZW4gdGhpcyBpdGVtIHNoaXBzXCIgY29sb3I9XCJzZWNvbmRhcnlcIiAvPlxuICAgIDwvQ29sPlxuICA8L0NvbD5cblxuICA8Um93PlxuICAgIDxCdXR0b25cbiAgICAgIGxhYmVsPVwiWWVzXCJcbiAgICAgIGJsb2NrXG4gICAgICBvbkNsaWNrQWN0aW9uPXt7XG4gICAgICAgIHR5cGU6IFwibm90aWZpY2F0aW9uLnNldHRpbmdzXCIsXG4gICAgICAgIHBheWxvYWQ6IHsgZW5hYmxlOiB0cnVlIH0sXG4gICAgICB9fVxuICAgIC8-XG4gICAgPEJ1dHRvblxuICAgICAgbGFiZWw9XCJOb1wiXG4gICAgICBibG9ja1xuICAgICAgdmFyaWFudD1cIm91dGxpbmVcIlxuICAgICAgb25DbGlja0FjdGlvbj17e1xuICAgICAgICB0eXBlOiBcIm5vdGlmaWNhdGlvbi5zZXR0aW5nc1wiLFxuICAgICAgICBwYXlsb2FkOiB7IGVuYWJsZTogdHJ1ZSB9LFxuICAgICAgfX1cbiAgICAvPlxuICA8L1Jvdz5cbjwvQ2FyZD4iLCJkZWZhdWx0U3RhdGUiOnt9LCJzY2hlbWFNb2RlIjoiem9kIiwianNvblNjaGVtYSI6e30sInNjaGVtYSI6ImltcG9ydCB7IHogfSBmcm9tIFwiem9kXCJcblxuY29uc3QgV2lkZ2V0U3RhdGUgPSB6Lm9iamVjdCh7fSlcblxuZXhwb3J0IGRlZmF1bHQgV2lkZ2V0U3RhdGUiLCJzdGF0ZXMiOltdLCJzY2hlbWFWYWxpZGl0eSI6InZhbGlkIiwidmlld1ZhbGlkaXR5IjoidmFsaWQiLCJkZWZhdWx0U3RhdGVWYWxpZGl0eSI6InZhbGlkIn0"
+}

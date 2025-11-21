@@ -69,7 +69,7 @@ from .types import (
     is_streaming_req,
 )
 from .version import __version__
-from .widgets import Markdown, Text, WidgetComponent, WidgetComponentBase, WidgetRoot
+from .widgets import WidgetComponent, WidgetComponentBase, WidgetRoot
 
 DEFAULT_PAGE_SIZE = 20
 DEFAULT_ERROR_MESSAGE = "An error occurred when generating a response."
@@ -81,6 +81,11 @@ def diff_widget(
     """
     Compare two WidgetRoots and return a list of deltas.
     """
+
+    def is_streaming_text(component: WidgetComponentBase) -> bool:
+        return getattr(component, "type", None) in {"Markdown", "Text"} and isinstance(
+            getattr(component, "value", None), str
+        )
 
     def full_replace(before: WidgetComponentBase, after: WidgetComponentBase) -> bool:
         if (
@@ -108,10 +113,10 @@ def diff_widget(
 
         for field in before.model_fields_set.union(after.model_fields_set):
             if (
-                isinstance(before, (Markdown, Text))
-                and isinstance(after, (Markdown, Text))
+                is_streaming_text(before)
+                and is_streaming_text(after)
                 and field == "value"
-                and after.value.startswith(before.value)
+                and getattr(after, "value", "").startswith(getattr(before, "value", ""))
             ):
                 # Appends to the value prop of Markdown or Text do not trigger a full replace
                 continue
@@ -129,11 +134,11 @@ def diff_widget(
 
     def find_all_streaming_text_components(
         component: WidgetComponent | WidgetRoot,
-    ) -> dict[str, Markdown | Text]:
+    ) -> dict[str, WidgetComponentBase]:
         components = {}
 
         def recurse(component: WidgetComponent | WidgetRoot):
-            if isinstance(component, (Markdown, Text)) and component.id:
+            if is_streaming_text(component) and component.id:
                 components[component.id] = component
 
             if hasattr(component, "children"):
@@ -154,16 +159,19 @@ def diff_widget(
                 f"Node {id} was not present when the widget was initially rendered. All nodes with ID must persist across all widget updates."
             )
 
-        if before_node.value != after_node.value:
-            if not after_node.value.startswith(before_node.value):
+        before_value = str(getattr(before_node, "value", None))
+        after_value = str(getattr(after_node, "value", None))
+
+        if before_value != after_value:
+            if not after_value.startswith(before_value):
                 raise ValueError(
                     f"Node {id} was updated with a new value that is not a prefix of the initial value. All widget updates must be cumulative."
                 )
-            done = not after_node.streaming
+            done = not getattr(after_node, "streaming", False)
             deltas.append(
                 WidgetStreamingTextValueDelta(
                     component_id=id,
-                    delta=after_node.value[len(before_node.value) :],
+                    delta=after_value[len(before_value) :],
                     done=done,
                 )
             )

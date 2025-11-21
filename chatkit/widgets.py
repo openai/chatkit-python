@@ -1,21 +1,29 @@
 from __future__ import annotations
 
+import inspect
+import json
 from datetime import datetime
+from pathlib import Path
 from typing import (
     Annotated,
+    Any,
     Literal,
 )
 
+from jinja2 import Environment, StrictUndefined, Template
 from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
+    TypeAdapter,
     model_serializer,
 )
 from typing_extensions import NotRequired, TypedDict
 
 from .actions import ActionConfig
 from .icons import IconName
+
+env = Environment(undefined=StrictUndefined)
 
 
 class ThemeColor(TypedDict):
@@ -1006,32 +1014,23 @@ Series = Annotated[
 """Union of all supported chart series types."""
 
 
-class BasicRoot(WidgetComponentBase):
-    """Layout root capable of nesting components or other roots."""
-
-    type: Literal["Basic"] = Field(default="Basic", frozen=True)  # pyright: ignore
-    children: list[WidgetComponent | WidgetRoot]
-    """Children to render inside this root. Can include widget components or nested roots."""
-    theme: Literal["light", "dark"] | None = None
-    """Force light or dark theme for this subtree."""
-    direction: Literal["row", "col"] | None = None
-    """Flex direction for laying out direct children."""
-    gap: int | str | None = None
-    """Gap between direct children; spacing unit or CSS string."""
-    padding: float | str | Spacing | None = None
-    """Inner padding; spacing unit, CSS string, or padding object."""
-    align: Alignment | None = None
-    """Cross-axis alignment of children."""
-    justify: Justification | None = None
-    """Main-axis distribution of children."""
-
-
 WidgetRoot = Annotated[
     Card | ListView,
     Field(discriminator="type"),
 ]
 
-WidgetComponent = Annotated[
+
+class DynamicWidgetComponent(WidgetComponentBase):
+    """
+    A widget component with a statically defined base shape but dynamically
+    defined additional fields loaded from a widget template or JSON schema.
+    """
+
+    model_config = ConfigDict(extra="allow")
+    children: list["DynamicWidgetComponent"] | None = None
+
+
+StrictWidgetComponent = Annotated[
     Text
     | Title
     | Caption
@@ -1058,8 +1057,103 @@ WidgetComponent = Annotated[
     | Transition,
     Field(discriminator="type"),
 ]
+
+
+StrictWidgetRoot = Annotated[
+    Card | ListView,
+    Field(discriminator="type"),
+]
+
+
+class DynamicWidgetRoot(DynamicWidgetComponent):
+    """Dynamic root widget restricted to root types."""
+
+    type: Literal["Card", "ListView"]  # pyright: ignore
+
+
+class BasicRoot(WidgetComponentBase):
+    """Layout root capable of nesting components or other roots."""
+
+    type: Literal["Basic"] = Field(default="Basic", frozen=True)  # pyright: ignore
+    children: list[WidgetComponent | WidgetRoot]
+    """Children to render inside this root. Can include widget components or nested roots."""
+    theme: Literal["light", "dark"] | None = None
+    """Force light or dark theme for this subtree."""
+    direction: Literal["row", "col"] | None = None
+    """Flex direction for laying out direct children."""
+    gap: int | str | None = None
+    """Gap between direct children; spacing unit or CSS string."""
+    padding: float | str | Spacing | None = None
+    """Inner padding; spacing unit, CSS string, or padding object."""
+    align: Alignment | None = None
+    """Cross-axis alignment of children."""
+    justify: Justification | None = None
+    """Main-axis distribution of children."""
+
+
+WidgetComponent = StrictWidgetComponent | DynamicWidgetComponent
 """Union of all renderable widget components."""
+
+WidgetRoot = StrictWidgetRoot | DynamicWidgetRoot
+"""Union of all renderable top-level widgets."""
 
 
 WidgetIcon = IconName
 """Icon names accepted by widgets that render icons."""
+
+
+class WidgetTemplate:
+    """
+    Utility for loading and building widgets from a .widget file.
+
+    Example using .widget file on disc:
+    ```python
+    template = WidgetTemplate.from_file("path/to/my_widget.widget")
+    widget = template.build({"name": "Harry Potter"})
+    ```
+
+    Example using already parsed widget definition:
+    ```python
+    template = WidgetTemplate(definition={"version": "1.0", "name": "...", "template": Template(...), "jsonSchema": {...}})
+    widget = template.build({"name": "Harry Potter"})
+    ```
+    """
+
+    adapter: TypeAdapter[DynamicWidgetRoot] = TypeAdapter(DynamicWidgetRoot)
+
+    def __init__(self, definition: dict[str, Any]):
+        self.version = definition["version"]
+        if self.version != "1.0":
+            raise ValueError(f"Unsupported widget spec version: {self.version}")
+
+        self.name = definition["name"]
+        template = definition["template"]
+        if isinstance(template, Template):
+            self.template = template
+        else:
+            self.template = env.from_string(template)
+        self.data_schema = definition.get("jsonSchema", {})
+
+    @classmethod
+    def from_file(cls, file_path: str) -> "WidgetTemplate":
+        path = Path(file_path)
+        if not path.is_absolute():
+            caller_frame = inspect.stack()[1]
+            caller_path = Path(caller_frame.filename).resolve()
+            path = caller_path.parent / path
+
+        with path.open("r", encoding="utf-8") as file:
+            payload = json.load(file)
+
+        return cls(payload)
+
+    def build(
+        self, data: dict[str, Any] | BaseModel | None = None
+    ) -> DynamicWidgetRoot:
+        if data is None:
+            data = {}
+        if isinstance(data, BaseModel):
+            data = data.model_dump()
+        rendered = self.template.render(**data)
+        widget_dict = json.loads(rendered)
+        return self.adapter.validate_python(widget_dict)

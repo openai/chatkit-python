@@ -1,12 +1,30 @@
 import json
 from datetime import datetime
-from typing import Literal
+from typing import Any, Literal
 
 import pytest
 
 from chatkit.server import diff_widget
 from chatkit.types import WidgetItem
-from chatkit.widgets import Card, Text, WidgetRoot
+from chatkit.widgets import (
+    Card,
+    DynamicWidgetComponent,
+    DynamicWidgetRoot,
+    Text,
+    WidgetRoot,
+    WidgetTemplate,
+    env,
+)
+
+
+def dyn_comp(data: dict[str, Any]) -> DynamicWidgetComponent:
+    """Helper to build dynamic components while keeping type checkers happy."""
+    return DynamicWidgetComponent.model_validate(data)
+
+
+def to_template(payload: dict[str, Any]):
+    """Helper to build a Jinja template from a widget payload."""
+    return env.from_string(json.dumps(payload))
 
 
 @pytest.mark.parametrize(
@@ -26,6 +44,83 @@ from chatkit.widgets import Card, Text, WidgetRoot
         (
             Card(children=[Text(value="Hello")]),
             Card(children=[Text(value="world!")]),
+            ["widget.root.updated"],
+        ),
+        # DynamicWidgetRoot tests
+        (
+            DynamicWidgetRoot(type="Card", children=[]),
+            DynamicWidgetRoot(type="Card", children=[]),
+            [],
+        ),
+        (
+            DynamicWidgetRoot(
+                type="Card",
+                children=[
+                    DynamicWidgetComponent.model_validate({
+                        "type": "Text",
+                        "id": "text",
+                        "value": "Hello",
+                        "streaming": True,
+                    })
+                ],
+            ),
+            DynamicWidgetRoot(
+                type="Card",
+                children=[
+                    DynamicWidgetComponent.model_validate({
+                        "type": "Text",
+                        "id": "text",
+                        "value": "Hello, world!",
+                        "streaming": True,
+                    })
+                ],
+            ),
+            ["widget.streaming_text.value_delta"],
+        ),
+        (
+            DynamicWidgetRoot(
+                type="Card",
+                children=[
+                    DynamicWidgetComponent.model_validate({
+                        "type": "Text",
+                        "id": "text",
+                        "value": "Hello",
+                        "streaming": True,
+                    })
+                ],
+            ),
+            DynamicWidgetRoot(
+                type="Card",
+                children=[
+                    DynamicWidgetComponent.model_validate({
+                        "type": "Text",
+                        "id": "text",
+                        "value": "Hello, world!",
+                        "streaming": False,
+                    })
+                ],
+            ),
+            ["widget.root.updated"],
+        ),
+        (
+            DynamicWidgetRoot(
+                type="Card",
+                children=[
+                    DynamicWidgetComponent.model_validate({
+                        "type": "Text",
+                        "value": "Hello",
+                    })
+                ],
+            ),
+            DynamicWidgetRoot(
+                type="Card",
+                children=[
+                    DynamicWidgetComponent.model_validate({
+                        "type": "Text",
+                        "value": "world!",
+                    })
+                ],
+            ),
             ["widget.root.updated"],
         ),
     ],
@@ -102,3 +197,58 @@ def test_json_dump_excludes_none_fields_nested():
     assert "streaming" not in text_dump
     assert "color" not in text_dump
     assert "key" not in text_dump
+
+
+@pytest.mark.parametrize(
+    "widget_name, data",
+    [
+        ("list_view_no_data", None),
+        ("card_no_data", None),
+        (
+            "list_view_with_data",
+            {
+                "items": [
+                    {
+                        "id": "blue",
+                        "label": "Blue line",
+                        "color": "blue-500",
+                    },
+                    {
+                        "id": "orange",
+                        "label": "Orange line",
+                        "color": "orange-500",
+                    },
+                    {
+                        "id": "purple",
+                        "label": "Purple line",
+                        "color": "purple-500",
+                    },
+                ],
+            },
+        ),
+        (
+            "card_with_data",
+            {
+                "channel": "#proj-chatkit",
+                "time": "4:48 PM",
+                "user": {
+                    "image": "/pam.png",
+                    "name": "Pam Beesly",
+                },
+            },
+        ),
+    ],
+)
+def test_widget_template_from_file(
+    widget_name: str,
+    data: dict[str, Any] | None,
+):
+    template = WidgetTemplate.from_file(f"assets/widgets/{widget_name}.widget")
+
+    with open(f"tests/assets/widgets/{widget_name}.json", "r") as file:
+        expected_widget_dict = json.load(file)
+
+    widget = template.build(data)
+
+    assert isinstance(widget, DynamicWidgetRoot)
+    assert widget.model_dump(exclude_none=True) == expected_widget_dict

@@ -1,0 +1,65 @@
+{
+  "version": "1.0",
+  "name": "Untitled widget",
+  "template": "{\"type\":\"ListView\",\"children\":[{\"type\":\"ListViewItem\",\"key\":\"blue\",\"gap\":5,\"onClickAction\":{\"type\":\"line.select\",\"payload\":{\"id\":\"blue\"}},\"children\":[{\"type\":\"Box\",\"background\":\"blue-500\",\"radius\":\"full\",\"size\":25},{\"type\":\"Text\",\"value\":\"Blue line\",\"size\":\"sm\"}]},{\"type\":\"ListViewItem\",\"key\":\"orange\",\"gap\":5,\"onClickAction\":{\"type\":\"line.select\",\"payload\":{\"id\":\"orange\"}},\"children\":[{\"type\":\"Box\",\"background\":\"orange-500\",\"radius\":\"full\",\"size\":25},{\"type\":\"Text\",\"value\":\"Orange line\",\"size\":\"sm\"}]}]}",
+  "jsonSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {},
+    "additionalProperties": false
+  },
+  "outputJsonPreview": {
+    "type": "ListView",
+    "children": [
+      {
+        "type": "ListViewItem",
+        "key": "blue",
+        "gap": 5,
+        "onClickAction": {
+          "type": "line.select",
+          "payload": {
+            "id": "blue"
+          }
+        },
+        "children": [
+          {
+            "type": "Box",
+            "background": "blue-500",
+            "radius": "full",
+            "size": 25
+          },
+          {
+            "type": "Text",
+            "value": "Blue line",
+            "size": "sm"
+          }
+        ]
+      },
+      {
+        "type": "ListViewItem",
+        "key": "orange",
+        "gap": 5,
+        "onClickAction": {
+          "type": "line.select",
+          "payload": {
+            "id": "orange"
+          }
+        },
+        "children": [
+          {
+            "type": "Box",
+            "background": "orange-500",
+            "radius": "full",
+            "size": 25
+          },
+          {
+            "type": "Text",
+            "value": "Orange line",
+            "size": "sm"
+          }
+        ]
+      }
+    ]
+  },
+  "encodedWidget": "eyJpZCI6IndpZ18xN2U5dWtoaiIsIm5hbWUiOiJVbnRpdGxlZCB3aWRnZXQiLCJ2aWV3IjoiPExpc3RWaWV3PlxuICA8TGlzdFZpZXdJdGVtXG4gICAga2V5PVwiYmx1ZVwiXG4gICAgZ2FwPXs1fVxuICAgIG9uQ2xpY2tBY3Rpb249e3sgdHlwZTogXCJsaW5lLnNlbGVjdFwiLCBwYXlsb2FkOiB7IGlkOiBcImJsdWVcIiB9IH19XG4gID5cbiAgICA8Qm94IGJhY2tncm91bmQ9XCJibHVlLTUwMFwiIHJhZGl1cz1cImZ1bGxcIiBzaXplPXsyNX0gLz5cbiAgICA8VGV4dCB2YWx1ZT1cIkJsdWUgbGluZVwiIHNpemU9XCJzbVwiIC8-XG4gIDwvTGlzdFZpZXdJdGVtPlxuICA8TGlzdFZpZXdJdGVtXG4gICAga2V5PVwib3JhbmdlXCJcbiAgICBnYXA9ezV9XG4gICAgb25DbGlja0FjdGlvbj17eyB0eXBlOiBcImxpbmUuc2VsZWN0XCIsIHBheWxvYWQ6IHsgaWQ6IFwib3JhbmdlXCIgfSB9fVxuICA-XG4gICAgPEJveCBiYWNrZ3JvdW5kPVwib3JhbmdlLTUwMFwiIHJhZGl1cz1cImZ1bGxcIiBzaXplPXsyNX0gLz5cbiAgICA8VGV4dCB2YWx1ZT1cIk9yYW5nZSBsaW5lXCIgc2l6ZT1cInNtXCIgLz5cbiAgPC9MaXN0Vmlld0l0ZW0-XG48L0xpc3RWaWV3PiIsImRlZmF1bHRTdGF0ZSI6e30sInNjaGVtYU1vZGUiOiJ6b2QiLCJqc29uU2NoZW1hIjp7InR5cGUiOiJvYmplY3QiLCJwcm9wZXJ0aWVzIjp7InRpdGxlIjp7InR5cGUiOiJzdHJpbmcifX0sInJlcXVpcmVkIjpbInRpdGxlIl0sImFkZGl0aW9uYWxQcm9wZXJ0aWVzIjpmYWxzZX0sInNjaGVtYSI6ImltcG9ydCB7IHogfSBmcm9tIFwiem9kXCJcblxuY29uc3QgV2lkZ2V0U3RhdGUgPSB6LnN0cmljdE9iamVjdCh7fSlcblxuZXhwb3J0IGRlZmF1bHQgV2lkZ2V0U3RhdGUiLCJzdGF0ZXMiOltdLCJzY2hlbWFWYWxpZGl0eSI6InZhbGlkIiwidmlld1ZhbGlkaXR5IjoidmFsaWQiLCJkZWZhdWx0U3RhdGVWYWxpZGl0eSI6InZhbGlkIn0"
+}
