@@ -63,7 +63,7 @@ from .types import (
     ThreadItemAddedEvent,
     ThreadItemDoneEvent,
     ThreadItemRemovedEvent,
-    ThreadItemUpdated,
+    ThreadItemUpdatedEvent,
     ThreadMetadata,
     ThreadStreamEvent,
     URLSource,
@@ -168,7 +168,7 @@ class AgentContext(BaseModel, Generic[TContext]):
         # ensure reference is updated in case task is a copy
         self.workflow_item.workflow.tasks[task_index] = task
         await self.stream(
-            ThreadItemUpdated(
+            ThreadItemUpdatedEvent(
                 item_id=self.workflow_item.id,
                 update=WorkflowTaskUpdated(
                     task=task,
@@ -191,7 +191,7 @@ class AgentContext(BaseModel, Generic[TContext]):
             await self.stream(ThreadItemAddedEvent(item=self.workflow_item))
         else:
             await self.stream(
-                ThreadItemUpdated(
+                ThreadItemUpdatedEvent(
                     item_id=self.workflow_item.id,
                     update=WorkflowTaskAdded(
                         task=task,
@@ -448,7 +448,7 @@ async def stream_agent_response(
                 if event.part.type == "reasoning_text":
                     continue
                 content = _convert_content(event.part)
-                yield ThreadItemUpdated(
+                yield ThreadItemUpdatedEvent(
                     item_id=event.item_id,
                     update=AssistantMessageContentPartAdded(
                         content_index=event.content_index,
@@ -456,7 +456,7 @@ async def stream_agent_response(
                     ),
                 )
             elif event.type == "response.output_text.delta":
-                yield ThreadItemUpdated(
+                yield ThreadItemUpdatedEvent(
                     item_id=event.item_id,
                     update=AssistantMessageContentPartTextDelta(
                         content_index=event.content_index,
@@ -464,7 +464,7 @@ async def stream_agent_response(
                     ),
                 )
             elif event.type == "response.output_text.done":
-                yield ThreadItemUpdated(
+                yield ThreadItemUpdatedEvent(
                     item_id=event.item_id,
                     update=AssistantMessageContentPartDone(
                         content_index=event.content_index,
@@ -485,7 +485,7 @@ async def stream_agent_response(
                     item_annotation_count[event.item_id][event.content_index] = (
                         annotation_index + 1
                     )
-                    yield ThreadItemUpdated(
+                    yield ThreadItemUpdatedEvent(
                         item_id=event.item_id,
                         update=AssistantMessageContentPartAnnotationAdded(
                             content_index=event.content_index,
@@ -533,7 +533,7 @@ async def stream_agent_response(
                         task=ThoughtTask(content=event.delta),
                     )
                     ctx.workflow_item.workflow.tasks.append(streaming_thought.task)
-                    yield ThreadItemUpdated(
+                    yield ThreadItemUpdatedEvent(
                         item_id=ctx.workflow_item.id,
                         update=WorkflowTaskAdded(
                             task=streaming_thought.task,
@@ -547,7 +547,7 @@ async def stream_agent_response(
                     and event.summary_index == streaming_thought.index
                 ):
                     streaming_thought.task.content += event.delta
-                    yield ThreadItemUpdated(
+                    yield ThreadItemUpdatedEvent(
                         item_id=ctx.workflow_item.id,
                         update=WorkflowTaskUpdated(
                             task=streaming_thought.task,
@@ -578,7 +578,7 @@ async def stream_agent_response(
                             task=task,
                             task_index=ctx.workflow_item.workflow.tasks.index(task),
                         )
-                    yield ThreadItemUpdated(
+                    yield ThreadItemUpdatedEvent(
                         item_id=ctx.workflow_item.id,
                         update=update,
                     )

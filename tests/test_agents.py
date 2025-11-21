@@ -86,7 +86,7 @@ from chatkit.types import (
     Thread,
     ThreadItemAddedEvent,
     ThreadItemDoneEvent,
-    ThreadItemUpdated,
+    ThreadItemUpdatedEvent,
     ThreadStreamEvent,
     URLSource,
     UserMessageItem,
@@ -231,7 +231,7 @@ async def test_returns_widget_item_generator():
     assert isinstance(events[0].item, WidgetItem)
     assert events[0].item.widget == Card(children=[Text(id="text", value="")])
 
-    assert isinstance(events[1], ThreadItemUpdated)
+    assert isinstance(events[1], ThreadItemUpdatedEvent)
     assert events[1].update.type == "widget.streaming_text.value_delta"
     assert events[1].update.component_id == "text"
     assert events[1].update.delta == "Hello, world"
@@ -271,7 +271,7 @@ async def test_returns_widget_full_replace_generator():
     assert isinstance(events[0].item, WidgetItem)
     assert events[0].item.widget == Card(children=[Text(id="text", value="Hello!")])
 
-    assert isinstance(events[1], ThreadItemUpdated)
+    assert isinstance(events[1], ThreadItemUpdatedEvent)
     assert events[1].update.type == "widget.root.updated"
     assert events[1].update.widget == Card(
         children=[Text(key="other text", value="World!", streaming=False)]
@@ -788,7 +788,7 @@ async def test_stream_agent_response_maps_events():
                     sequence_number=0,
                 ),
             ),
-            ThreadItemUpdated(
+            ThreadItemUpdatedEvent(
                 item_id="123",
                 update=AssistantMessageContentPartTextDelta(
                     content_index=0,
@@ -812,7 +812,7 @@ async def test_stream_agent_response_maps_events():
                     sequence_number=1,
                 ),
             ),
-            ThreadItemUpdated(
+            ThreadItemUpdatedEvent(
                 item_id="123",
                 update=AssistantMessageContentPartAdded(
                     content_index=1,
@@ -833,7 +833,7 @@ async def test_stream_agent_response_maps_events():
                     sequence_number=2,
                 ),
             ),
-            ThreadItemUpdated(
+            ThreadItemUpdatedEvent(
                 item_id="123",
                 update=AssistantMessageContentPartDone(
                     content_index=0,
@@ -862,7 +862,7 @@ async def test_stream_agent_response_maps_events():
                     sequence_number=3,
                 ),
             ),
-            ThreadItemUpdated(
+            ThreadItemUpdatedEvent(
                 item_id="123",
                 update=AssistantMessageContentPartAnnotationAdded(
                     content_index=0,
@@ -949,7 +949,7 @@ async def test_stream_agent_response_emits_annotation_added_events():
 
     events = await all_events(stream_agent_response(context, result))
     assert events == [
-        ThreadItemUpdated(
+        ThreadItemUpdatedEvent(
             item_id=item_id,
             update=AssistantMessageContentPartAnnotationAdded(
                 content_index=0,
@@ -960,7 +960,7 @@ async def test_stream_agent_response_emits_annotation_added_events():
                 ),
             ),
         ),
-        ThreadItemUpdated(
+        ThreadItemUpdatedEvent(
             item_id=item_id,
             update=AssistantMessageContentPartAnnotationAdded(
                 content_index=0,
@@ -1297,8 +1297,8 @@ async def test_workflow_streams_first_thought():
     event = await anext(stream)
     assert context.workflow_item is not None
     assert len(context.workflow_item.workflow.tasks) == 1
-    assert isinstance(event, ThreadItemUpdated)
-    assert event == ThreadItemUpdated(
+    assert isinstance(event, ThreadItemUpdatedEvent)
+    assert event == ThreadItemUpdatedEvent(
         item_id=context.workflow_item.id,
         update=WorkflowTaskAdded(
             task=ThoughtTask(content="Think"),
@@ -1310,8 +1310,8 @@ async def test_workflow_streams_first_thought():
     event = await anext(stream)
     assert context.workflow_item is not None
     assert len(context.workflow_item.workflow.tasks) == 1
-    assert isinstance(event, ThreadItemUpdated)
-    assert event == ThreadItemUpdated(
+    assert isinstance(event, ThreadItemUpdatedEvent)
+    assert event == ThreadItemUpdatedEvent(
         item_id=context.workflow_item.id,
         update=WorkflowTaskUpdated(
             task=ThoughtTask(content="Thinking 1"),
@@ -1323,8 +1323,8 @@ async def test_workflow_streams_first_thought():
     event = await anext(stream)
     assert context.workflow_item is not None
     assert len(context.workflow_item.workflow.tasks) == 1
-    assert isinstance(event, ThreadItemUpdated)
-    assert event == ThreadItemUpdated(
+    assert isinstance(event, ThreadItemUpdatedEvent)
+    assert event == ThreadItemUpdatedEvent(
         item_id=context.workflow_item.id,
         update=WorkflowTaskUpdated(
             task=ThoughtTask(content="Thinking 1"),
@@ -1336,8 +1336,8 @@ async def test_workflow_streams_first_thought():
     event = await anext(stream)
     assert context.workflow_item is not None
     assert len(context.workflow_item.workflow.tasks) == 2
-    assert isinstance(event, ThreadItemUpdated)
-    assert event == ThreadItemUpdated(
+    assert isinstance(event, ThreadItemUpdatedEvent)
+    assert event == ThreadItemUpdatedEvent(
         item_id=context.workflow_item.id,
         update=WorkflowTaskAdded(
             task=ThoughtTask(content="Thinking 2"),
@@ -1420,8 +1420,8 @@ async def test_workflow_ends_on_message():
     event = await anext(stream)
     assert context.workflow_item is not None
     assert len(context.workflow_item.workflow.tasks) == 1
-    assert isinstance(event, ThreadItemUpdated)
-    assert event == ThreadItemUpdated(
+    assert isinstance(event, ThreadItemUpdatedEvent)
+    assert event == ThreadItemUpdatedEvent(
         item_id=context.workflow_item.id,
         update=WorkflowTaskAdded(
             task=ThoughtTask(content="Thinking 1"),
