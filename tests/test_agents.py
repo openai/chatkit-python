@@ -38,6 +38,7 @@ from openai.types.responses.response_content_part_added_event import (
     ResponseContentPartAddedEvent,
 )
 from openai.types.responses.response_file_search_tool_call import Result
+from openai.types.responses.response_input_item_param import Message
 from openai.types.responses.response_output_text import (
     AnnotationContainerFileCitation as ResponsesAnnotationContainerFileCitation,
 )
@@ -77,6 +78,7 @@ from chatkit.types import (
     CustomTask,
     DurationSummary,
     FileSource,
+    HiddenContextItem,
     InferenceOptions,
     Page,
     TaskItem,
@@ -540,6 +542,72 @@ async def test_input_item_converter_user_input_with_tags_throws_by_default():
 
     with pytest.raises(NotImplementedError):
         await simple_to_agent_input(items)
+
+
+async def test_input_item_converter_for_hidden_context_with_string_content():
+    items = [
+        HiddenContextItem(
+            id="123",
+            content="User pressed the red button",
+            thread_id=thread.id,
+            created_at=datetime.now(),
+        )
+    ]
+
+    # The default converter works for string content
+    items = await simple_to_agent_input(items)
+    assert len(items) == 1
+    assert items[0] == {
+        "content": [
+            {
+                "text": "Hidden context for the agent (not shown to the user):\n<HiddenContext>\nUser pressed the red button\n</HiddenContext>",
+                "type": "input_text",
+            },
+        ],
+        "role": "user",
+        "type": "message",
+    }
+
+
+async def test_input_item_converter_for_hidden_context_with_non_string_content():
+    items = [
+        HiddenContextItem(
+            id="123",
+            content={"harry": "potter", "hermione": "granger"},
+            thread_id=thread.id,
+            created_at=datetime.now(),
+        )
+    ]
+
+    # Default converter should throw
+    with pytest.raises(NotImplementedError):
+        await simple_to_agent_input(items)
+
+    class MyThreadItemConverter(ThreadItemConverter):
+        async def hidden_context_to_input(self, item: HiddenContextItem):
+            content = ",".join(item.content.keys())
+            return Message(
+                type="message",
+                content=[
+                    ResponseInputTextParam(
+                        type="input_text", text=f"<HIDDEN>{content}</HIDDEN>"
+                    )
+                ],
+                role="user",
+            )
+
+    items = await MyThreadItemConverter().to_agent_input(items)
+    assert len(items) == 1
+    assert items[0] == {
+        "content": [
+            {
+                "text": "<HIDDEN>harry,hermione</HIDDEN>",
+                "type": "input_text",
+            },
+        ],
+        "role": "user",
+        "type": "message",
+    }
 
 
 async def test_input_item_converter_with_client_tool_call():
