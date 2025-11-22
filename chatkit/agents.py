@@ -691,6 +691,9 @@ class ThreadItemConverter:
         """
         Convert a HiddenContextItem into input item(s) to send to the model.
         Required to override when HiddenContextItems with non-string content are used.
+
+        ChatKitServer may save HiddenContextItems with string content; make sure your override
+        can also handle HiddenContextItems with string content.
         """
         if not isinstance(item.content, str):
             raise NotImplementedError(
