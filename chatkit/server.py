@@ -53,7 +53,6 @@ from .types import (
     ThreadItemDoneEvent,
     ThreadItemRemovedEvent,
     ThreadItemReplacedEvent,
-    ThreadItemUpdate,
     ThreadItemUpdatedEvent,
     ThreadMetadata,
     ThreadsAddClientToolOutputReq,
