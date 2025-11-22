@@ -280,6 +280,65 @@ async def test_stream_cancellation_persists_pending_assistant_message_and_hidden
         assert assistant_message_item.content[0].text == "Hello, World!"
 
 
+async def test_stream_cancellation_does_not_persist_pending_empty_assistant_message():
+    async def responder(
+        thread: ThreadMetadata, input: UserMessageItem | None, context: Any
+    ) -> AsyncIterator[ThreadStreamEvent]:
+        yield ThreadItemAddedEvent(
+            item=AssistantMessageItem(
+                id="assistant-message-pending",
+                created_at=datetime.now(),
+                content=[],
+                thread_id=thread.id,
+            )
+        )
+        raise asyncio.CancelledError()
+
+    with make_server(responder) as server:
+        original_generate_item_id = server.store.generate_item_id
+
+        def generate_item_id(
+            item_type: StoreItemType, thread: ThreadMetadata, context: Any
+        ):
+            if item_type == "hidden_context":
+                return default_generate_id("hidden_context")
+            return original_generate_item_id(item_type, thread, context)
+
+        server.store.generate_item_id = generate_item_id  # type: ignore[method-assign]
+
+        stream = await server.process(
+            ThreadsCreateReq(
+                params=ThreadCreateParams(
+                    input=UserMessageInput(
+                        content=[UserMessageTextContent(text="Hello")],
+                        attachments=[],
+                        inference_options=InferenceOptions(),
+                    )
+                )
+            ).model_dump_json(),
+            DEFAULT_CONTEXT,
+        )
+        assert isinstance(stream, StreamingResult)
+
+        events: list[ThreadStreamEvent] = []
+        with pytest.raises(asyncio.CancelledError):  # noqa: PT012
+            async for raw in stream.json_events:
+                events.append(decode_event(raw))
+
+        thread = next(e.thread for e in events if e.type == "thread.created")
+        items = await server.store.load_thread_items(
+            thread.id, None, 1, "desc", DEFAULT_CONTEXT
+        )
+        hidden_context_item = items.data[-1]
+        assert hidden_context_item.type == "hidden_context_item"
+        assert hidden_context_item.content == "SYSTEM: The user cancelled the stream."
+
+        with pytest.raises(NotFoundError):
+            await server.store.load_item(
+                thread.id, "assistant-message-pending", DEFAULT_CONTEXT
+            )
+
+
 async def test_flows_context_to_responder():
     responder_context = None
     add_feedback_context = None

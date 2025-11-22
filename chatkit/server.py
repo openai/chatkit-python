@@ -729,7 +729,9 @@ class ChatKitServer(ABC, Generic[TContext]):
     ):
         # Persist any streamed items that the UI should keep when cancellation happens mid-stream.
         for item in pending_items.values():
-            if isinstance(item, (AssistantMessageItem, WidgetItem, WorkflowItem)):
+            if isinstance(
+                item, (AssistantMessageItem, WidgetItem, WorkflowItem)
+            ) and not self._is_streamed_item_empty(item):
                 await self.store.add_thread_item(thread.id, item, context=context)
 
         await self.store.add_thread_item(
@@ -742,6 +744,19 @@ class ChatKitServer(ABC, Generic[TContext]):
             ),
             context=context,
         )
+
+    def _is_streamed_item_empty(
+        self, item: AssistantMessageItem | WorkflowItem | WidgetItem
+    ) -> bool:
+        if isinstance(item, AssistantMessageItem):
+            return len(item.content) == 0 or all(
+                (not content.text.strip()) for content in item.content
+            )
+        if isinstance(item, WorkflowItem):
+            return len(item.workflow.tasks) == 0 and item.workflow.summary is None
+
+        # Assume all WidgetItems are not empty
+        return False
 
     def _apply_assistant_message_update(
         self,
