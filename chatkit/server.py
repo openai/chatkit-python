@@ -441,11 +441,11 @@ class ChatKitServer(ABC, Generic[TContext]):
                     after=items_list_params.after,
                     context=context,
                 )
-                # filter out HiddenContextItems
+                # filter out hidden context items
                 items.data = [
                     item
                     for item in items.data
-                    if not isinstance(item, HiddenContextItem)
+                    if not isinstance(item, (HiddenContextItem, SDKHiddenContextItem))
                 ]
                 return self._serialize(items)
             case ThreadsUpdateReq():
@@ -711,7 +711,9 @@ class ChatKitServer(ABC, Generic[TContext]):
                     # special case - don't send hidden context items back to the client
                     should_swallow_event = isinstance(
                         event, ThreadItemDoneEvent
-                    ) and isinstance(event.item, HiddenContextItem)
+                    ) and isinstance(
+                        event.item, (HiddenContextItem, SDKHiddenContextItem)
+                    )
 
                     if not should_swallow_event:
                         yield event
@@ -867,7 +869,7 @@ class ChatKitServer(ABC, Generic[TContext]):
 
     def _to_thread_response(self, thread: ThreadMetadata | Thread) -> Thread:
         def is_hidden(item: ThreadItem) -> bool:
-            return isinstance(item, HiddenContextItem)
+            return isinstance(item, (HiddenContextItem, SDKHiddenContextItem))
 
         items = thread.items if isinstance(thread, Thread) else Page()
         items.data = [item for item in items.data if not is_hidden(item)]
