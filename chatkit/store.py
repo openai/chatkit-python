@@ -15,7 +15,13 @@ from .types import (
 TContext = TypeVar("TContext", default=Any)
 
 StoreItemType = Literal[
-    "thread", "message", "tool_call", "task", "workflow", "attachment", "hidden_context"
+    "thread",
+    "message",
+    "tool_call",
+    "task",
+    "workflow",
+    "attachment",
+    "sdk_hidden_context",
 ]
 
 
@@ -26,7 +32,7 @@ _ID_PREFIXES: dict[StoreItemType, str] = {
     "workflow": "wf",
     "task": "tsk",
     "attachment": "atc",
-    "hidden_context": "hcx",
+    "sdk_hidden_context": "shcx",
 }
 
 

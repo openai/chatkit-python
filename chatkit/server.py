@@ -45,7 +45,10 @@ from .types import (
     ItemsListReq,
     NonStreamingReq,
     Page,
+    SDKHiddenContextItem,
     StreamingReq,
+    StreamOptions,
+    StreamOptionsEvent,
     Thread,
     ThreadCreatedEvent,
     ThreadItem,
@@ -73,6 +76,8 @@ from .types import (
     WidgetRootUpdated,
     WidgetStreamingTextValueDelta,
     WorkflowItem,
+    WorkflowTaskAdded,
+    WorkflowTaskUpdated,
     is_streaming_req,
 )
 from .version import __version__
@@ -315,6 +320,15 @@ class ChatKitServer(ABC, Generic[TContext]):
             "See https://github.com/openai/chatkit-python/blob/main/docs/widgets.md#widget-actions"
         )
 
+    def get_stream_options(
+        self, thread: ThreadMetadata, context: TContext
+    ) -> StreamOptions:
+        """
+        Return stream-level runtime options. Allows the user to cancel the stream by default.
+        Override this method to customize behavior.
+        """
+        return StreamOptions(allow_cancel=True)
+
     async def handle_stream_cancelled(
         self,
         thread: ThreadMetadata,
@@ -322,17 +336,39 @@ class ChatKitServer(ABC, Generic[TContext]):
         context: TContext,
     ):
         """Perform custom cleanup / stop inference when a stream is cancelled.
+        Updates you make here will not be reflected in the UI until a reload.
+
+        The default implementation persists any non-empty pending assistant messages
+        to the thread but does not auto-save pending widget items or workflow items.
 
         Args:
             thread: The thread that was being processed.
             pending_items: Items that were not done streaming at cancellation time.
-                By default, already-streamed assistant messages, widgets, and workflows are
-                saved to the store during error handling prior to this method being called.
-                If you want to remove them from the thread, you can do so here.
-                (Updates you make here will not be reflected in the UI until a reload.)
             context: Arbitrary per-request context provided by the caller.
         """
-        pass
+        pending_assistant_message_items: list[AssistantMessageItem] = [
+            item for item in pending_items if isinstance(item, AssistantMessageItem)
+        ]
+        for item in pending_assistant_message_items:
+            is_empty = len(item.content) == 0 or all(
+                (not content.text.strip()) for content in item.content
+            )
+            if not is_empty:
+                await self.store.add_thread_item(thread.id, item, context=context)
+
+        # Add a hidden context item to the thread to indicate that the stream was cancelled.
+        # Otherwise, depending on the timing of the cancellation, subsequent responses may
+        # attempt to continue the cancelled response.
+        await self.store.add_thread_item(
+            thread.id,
+            SDKHiddenContextItem(
+                thread_id=thread.id,
+                created_at=datetime.now(),
+                id=self.store.generate_item_id("sdk_hidden_context", thread, context),
+                content="The user cancelled the stream.",
+            ),
+            context=context,
+        )
 
     async def process(
         self, request: str | bytes | bytearray, context: TContext
@@ -633,6 +669,11 @@ class ChatKitServer(ABC, Generic[TContext]):
     ) -> AsyncIterator[ThreadStreamEvent]:
         await asyncio.sleep(0)  # allow the response to start streaming
 
+        # Send initial stream options
+        yield StreamOptionsEvent(
+            stream_options=self.get_stream_options(thread, context)
+        )
+
         last_thread = thread.model_copy(deep=True)
 
         # Keep track of items that were streamed but not yet saved
@@ -662,12 +703,10 @@ class ChatKitServer(ABC, Generic[TContext]):
                             )
                             pending_items.pop(event.item.id, None)
                         case ThreadItemUpdatedEvent():
-                            # Keep the pending assistant message item up to date
-                            # so that we can persist already-streamed partial content
-                            # if the stream is cancelled.
-                            self._update_pending_assistant_message_items(
-                                pending_items, event
-                            )
+                            # Keep pending assistant message and workflow items up to date
+                            # so that we have a reference to the latest version of these pending items
+                            # when the stream is cancelled.
+                            self._update_pending_items(pending_items, event)
 
                     # special case - don't send hidden context items back to the client
                     should_swallow_event = isinstance(
@@ -690,10 +729,6 @@ class ChatKitServer(ABC, Generic[TContext]):
                     await self.store.save_thread(thread, context=context)
                     yield ThreadUpdatedEvent(thread=self._to_thread_response(thread))
         except asyncio.CancelledError:
-            # When a stream is cancelled, whether it's a deliberate stop request or due to a network issue,
-            # save already-streamed items to the thread.
-            await self._persist_cancelled_stream_state(thread, pending_items, context)
-            # Allow custom cleanup.
             await self.handle_stream_cancelled(
                 thread, list(pending_items.values()), context
             )
@@ -720,43 +755,6 @@ class ChatKitServer(ABC, Generic[TContext]):
             # in case user updated the thread at the end of the stream
             await self.store.save_thread(thread, context=context)
             yield ThreadUpdatedEvent(thread=self._to_thread_response(thread))
-
-    async def _persist_cancelled_stream_state(
-        self,
-        thread: ThreadMetadata,
-        pending_items: dict[str, ThreadItem],
-        context: TContext,
-    ):
-        # Persist any streamed items that the UI should keep when cancellation happens mid-stream.
-        for item in pending_items.values():
-            if isinstance(
-                item, (AssistantMessageItem, WidgetItem, WorkflowItem)
-            ) and not self._is_streamed_item_empty(item):
-                await self.store.add_thread_item(thread.id, item, context=context)
-
-        await self.store.add_thread_item(
-            thread.id,
-            HiddenContextItem(
-                thread_id=thread.id,
-                created_at=datetime.now(),
-                id=self.store.generate_item_id("hidden_context", thread, context),
-                content="SYSTEM: The user cancelled the stream.",
-            ),
-            context=context,
-        )
-
-    def _is_streamed_item_empty(
-        self, item: AssistantMessageItem | WorkflowItem | WidgetItem
-    ) -> bool:
-        if isinstance(item, AssistantMessageItem):
-            return len(item.content) == 0 or all(
-                (not content.text.strip()) for content in item.content
-            )
-        if isinstance(item, WorkflowItem):
-            return len(item.workflow.tasks) == 0 and item.workflow.summary is None
-
-        # Assume all WidgetItems are not empty
-        return False
 
     def _apply_assistant_message_update(
         self,
@@ -788,27 +786,38 @@ class ChatKitServer(ABC, Generic[TContext]):
                 updated.content[update.content_index] = update.content
         return updated
 
-    def _update_pending_assistant_message_items(
+    def _update_pending_items(
         self,
         pending_items: dict[str, ThreadItem],
         event: ThreadItemUpdatedEvent,
     ):
-        if not isinstance(
-            event.update,
-            (
-                AssistantMessageContentPartAdded,
-                AssistantMessageContentPartTextDelta,
-                AssistantMessageContentPartAnnotationAdded,
-                AssistantMessageContentPartDone,
-            ),
-        ):
-            return
-
         updated_item = pending_items.get(event.item_id)
-        if updated_item and isinstance(updated_item, AssistantMessageItem):
-            pending_items[updated_item.id] = self._apply_assistant_message_update(
-                updated_item, event.update
-            )
+        update = event.update
+        match updated_item:
+            case AssistantMessageItem():
+                if isinstance(
+                    update,
+                    (
+                        AssistantMessageContentPartAdded,
+                        AssistantMessageContentPartTextDelta,
+                        AssistantMessageContentPartAnnotationAdded,
+                        AssistantMessageContentPartDone,
+                    ),
+                ):
+                    pending_items[updated_item.id] = (
+                        self._apply_assistant_message_update(updated_item, update)
+                    )
+            case WorkflowItem():
+                if isinstance(update, (WorkflowTaskUpdated, WorkflowTaskAdded)):
+                    match update:
+                        case WorkflowTaskUpdated():
+                            updated_item.workflow.tasks[update.task_index] = update.task
+                        case WorkflowTaskAdded():
+                            updated_item.workflow.tasks.append(update.task)
+
+                    pending_items[updated_item.id] = updated_item
+            case _:
+                pass
 
     async def _build_user_message_item(
         self, input: UserMessageInput, thread: ThreadMetadata, context: TContext

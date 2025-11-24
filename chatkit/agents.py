@@ -56,6 +56,7 @@ from .types import (
     EndOfTurnItem,
     FileSource,
     HiddenContextItem,
+    SDKHiddenContextItem,
     Task,
     TaskItem,
     ThoughtTask,
@@ -691,9 +692,6 @@ class ThreadItemConverter:
         """
         Convert a HiddenContextItem into input item(s) to send to the model.
         Required to override when HiddenContextItems with non-string content are used.
-
-        ChatKitServer may save HiddenContextItems with string content; make sure your override
-        can also handle HiddenContextItems with string content.
         """
         if not isinstance(item.content, str):
             raise NotImplementedError(
@@ -703,6 +701,29 @@ class ThreadItemConverter:
         text = (
             "Hidden context for the agent (not shown to the user):\n"
             f"<HiddenContext>\n{item.content}\n</HiddenContext>"
+        )
+        return Message(
+            type="message",
+            content=[
+                ResponseInputTextParam(
+                    type="input_text",
+                    text=text,
+                )
+            ],
+            role="user",
+        )
+
+    async def sdk_hidden_context_to_input(
+        self, item: SDKHiddenContextItem
+    ) -> TResponseInputItem | list[TResponseInputItem] | None:
+        """
+        Convert a SDKHiddenContextItem into input item to send to the model.
+        This is used by the ChatKit Python SDK for storing additional context
+        for internal operations; you shouldn't need to override this.
+        """
+        text = (
+            "Hidden ChatKit SDK context for the agent (not shown to the user):\n"
+            f"<SDKHiddenContext>\n{item.content}\n</SDKHiddenContext>"
         )
         return Message(
             type="message",
@@ -950,6 +971,9 @@ class ThreadItemConverter:
                 return out if isinstance(out, list) else [out]
             case HiddenContextItem():
                 out = await self.hidden_context_to_input(item) or []
+                return out if isinstance(out, list) else [out]
+            case SDKHiddenContextItem():
+                out = await self.sdk_hidden_context_to_input(item) or []
                 return out if isinstance(out, list) else [out]
             case _:
                 assert_never(item)
