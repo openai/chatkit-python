@@ -1,0 +1,56 @@
+{
+  "type": "Card",
+  "size": "md",
+  "children": [
+    {
+      "type": "Row",
+      "children": [
+        {
+          "type": "Text",
+          "value": "#proj-chatkit"
+        },
+        {
+          "type": "Spacer"
+        },
+        {
+          "type": "Text",
+          "value": "4:48 PM",
+          "color": "tertiary"
+        }
+      ]
+    },
+    {
+      "type": "Divider",
+      "flush": true
+    },
+    {
+      "type": "Row",
+      "align": "start",
+      "gap": 4,
+      "children": [
+        {
+          "type": "Image",
+          "src": "/pam.png",
+          "size": 44
+        },
+        {
+          "type": "Col",
+          "children": [
+            {
+              "type": "Text",
+              "value": "Pam Beesly",
+              "weight": "semibold"
+            },
+            {
+              "type": "Markdown",
+              "value": "End of week update for ChatKit:\n\n1. Designed **new header system** with more flexibility for custom menu actions.\n2. Made progress on **DevDay training material**.\n3. Coordinated with partners to **prioritize remaining feature requirements**.\n\n**Next week** I plan to focus on building out our Figma library and updating to new icons."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Spacer"
+    }
+  ]
+}

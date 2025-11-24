@@ -1,0 +1,96 @@
+{
+  "version": "1.0",
+  "name": "Channel message",
+  "template": "{\"type\":\"Card\",\"size\":\"md\",\"children\":[{\"type\":\"Row\",\"children\":[{\"type\":\"Text\",\"value\":{{ (channel) | tojson }}},{\"type\":\"Spacer\"},{\"type\":\"Text\",\"value\":{{ (time) | tojson }},\"color\":\"tertiary\"}]},{\"type\":\"Divider\",\"flush\":true},{\"type\":\"Row\",\"align\":\"start\",\"gap\":4,\"children\":[{\"type\":\"Image\",\"src\":{{ (user.image) | tojson }},\"size\":44},{\"type\":\"Col\",\"children\":[{\"type\":\"Text\",\"value\":{{ (user.name) | tojson }},\"weight\":\"semibold\"},{\"type\":\"Markdown\",\"value\":{{ ((\"End of week update for ChatKit:\\n\\n1. Designed **new header system** with more flexibility for custom menu actions.\\n2. Made progress on **DevDay training material**.\\n3. Coordinated with partners to **prioritize remaining feature requirements**.\\n\\n**Next week** I plan to focus on building out our Figma library and updating to new icons.\")) | tojson }}}]}]},{\"type\":\"Spacer\"}]}",
+  "jsonSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "channel": {
+        "type": "string"
+      },
+      "time": {
+        "type": "string"
+      },
+      "user": {
+        "type": "object",
+        "properties": {
+          "image": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "image",
+          "name"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "required": [
+      "channel",
+      "time",
+      "user"
+    ],
+    "additionalProperties": false
+  },
+  "outputJsonPreview": {
+    "type": "Card",
+    "size": "md",
+    "children": [
+      {
+        "type": "Row",
+        "children": [
+          {
+            "type": "Text",
+            "value": "#proj-chatkit"
+          },
+          {
+            "type": "Spacer"
+          },
+          {
+            "type": "Text",
+            "value": "4:48 PM",
+            "color": "tertiary"
+          }
+        ]
+      },
+      {
+        "type": "Divider",
+        "flush": true
+      },
+      {
+        "type": "Row",
+        "align": "start",
+        "gap": 4,
+        "children": [
+          {
+            "type": "Image",
+            "src": "/zj.png",
+            "size": 44
+          },
+          {
+            "type": "Col",
+            "children": [
+              {
+                "type": "Text",
+                "value": "Zach Johnston",
+                "weight": "semibold"
+              },
+              {
+                "type": "Markdown",
+                "value": "End of week update for ChatKit:\n\n1. Designed **new header system** with more flexibility for custom menu actions.\n2. Made progress on **DevDay training material**.\n3. Coordinated with partners to **prioritize remaining feature requirements**.\n\n**Next week** I plan to focus on building out our Figma library and updating to new icons."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Spacer"
+      }
+    ]
+  },
+  "encodedWidget": "eyJpZCI6IndpZ183N3AzNzIxeiIsIm5hbWUiOiJDaGFubmVsIG1lc3NhZ2UiLCJ2aWV3IjoiPENhcmQgc2l6ZT1cIm1kXCI-XG4gIDxSb3c-XG4gICAgPFRleHQgdmFsdWU9e2NoYW5uZWx9IC8-XG4gICAgPFNwYWNlciAvPlxuICAgIDxUZXh0IHZhbHVlPXt0aW1lfSBjb2xvcj1cInRlcnRpYXJ5XCIgLz5cbiAgPC9Sb3c-XG4gIDxEaXZpZGVyIGZsdXNoIC8-XG4gIDxSb3cgYWxpZ249XCJzdGFydFwiIGdhcD17NH0-XG4gICAgPEltYWdlIHNyYz17dXNlci5pbWFnZX0gc2l6ZT17NDR9IC8-XG4gICAgPENvbD5cbiAgICAgIDxUZXh0IHZhbHVlPXt1c2VyLm5hbWV9IHdlaWdodD1cInNlbWlib2xkXCIgLz5cbiAgICAgIDxNYXJrZG93blxuICAgICAgICB2YWx1ZT17YEVuZCBvZiB3ZWVrIHVwZGF0ZSBmb3IgQ2hhdEtpdDpcblxuMS4gRGVzaWduZWQgKipuZXcgaGVhZGVyIHN5c3RlbSoqIHdpdGggbW9yZSBmbGV4aWJpbGl0eSBmb3IgY3VzdG9tIG1lbnUgYWN0aW9ucy5cbjIuIE1hZGUgcHJvZ3Jlc3Mgb24gKipEZXZEYXkgdHJhaW5pbmcgbWF0ZXJpYWwqKi5cbjMuIENvb3JkaW5hdGVkIHdpdGggcGFydG5lcnMgdG8gKipwcmlvcml0aXplIHJlbWFpbmluZyBmZWF0dXJlIHJlcXVpcmVtZW50cyoqLlxuXG4qKk5leHQgd2VlayoqIEkgcGxhbiB0byBmb2N1cyBvbiBidWlsZGluZyBvdXQgb3VyIEZpZ21hIGxpYnJhcnkgYW5kIHVwZGF0aW5nIHRvIG5ldyBpY29ucy5gfVxuICAgICAgLz5cbiAgICA8L0NvbD5cbiAgPC9Sb3c-XG4gIDxTcGFjZXIgLz5cbjwvQ2FyZD4iLCJkZWZhdWx0U3RhdGUiOnsiY2hhbm5lbCI6IiNwcm9qLWNoYXRraXQiLCJ0aW1lIjoiNDo0OCBQTSIsInVzZXIiOnsiaW1hZ2UiOiIvemoucG5nIiwibmFtZSI6IlphY2ggSm9obnN0b24ifX0sInNjaGVtYU1vZGUiOiJ6b2QiLCJqc29uU2NoZW1hIjp7fSwic2NoZW1hIjoiaW1wb3J0IHsgeiB9IGZyb20gXCJ6b2RcIlxuXG5jb25zdCBVc2VyID0gei5vYmplY3Qoe1xuICBpbWFnZTogei5zdHJpbmcoKSxcbiAgbmFtZTogei5zdHJpbmcoKSxcbn0pXG5cbmNvbnN0IFdpZGdldFN0YXRlID0gei5vYmplY3Qoe1xuICBjaGFubmVsOiB6LnN0cmluZygpLFxuICB0aW1lOiB6LnN0cmluZygpLFxuICB1c2VyOiBVc2VyLFxufSlcblxuZXhwb3J0IGRlZmF1bHQgV2lkZ2V0U3RhdGUiLCJzdGF0ZXMiOltdLCJzY2hlbWFWYWxpZGl0eSI6InZhbGlkIiwidmlld1ZhbGlkaXR5IjoidmFsaWQiLCJkZWZhdWx0U3RhdGVWYWxpZGl0eSI6InZhbGlkIn0"
+}
