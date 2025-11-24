@@ -365,7 +365,7 @@ class ChatKitServer(ABC, Generic[TContext]):
                 thread_id=thread.id,
                 created_at=datetime.now(),
                 id=self.store.generate_item_id("sdk_hidden_context", thread, context),
-                content="The user cancelled the stream.",
+                content="The user cancelled the stream. Stop responding to the prior request.",
             ),
             context=context,
         )

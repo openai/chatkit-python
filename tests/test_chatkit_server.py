@@ -271,7 +271,10 @@ async def test_stream_cancellation_persists_pending_assistant_message_and_hidden
         )
         hidden_context_item = items.data[-1]
         assert hidden_context_item.type == "sdk_hidden_context"
-        assert hidden_context_item.content == "The user cancelled the stream."
+        assert (
+            hidden_context_item.content
+            == "The user cancelled the stream. Stop responding to the prior request."
+        )
 
         assistant_message_item = await server.store.load_item(
             thread.id, "assistant-message-pending", DEFAULT_CONTEXT
@@ -331,7 +334,10 @@ async def test_stream_cancellation_does_not_persist_pending_empty_assistant_mess
         )
         hidden_context_item = items.data[-1]
         assert hidden_context_item.type == "sdk_hidden_context"
-        assert hidden_context_item.content == "The user cancelled the stream."
+        assert (
+            hidden_context_item.content
+            == "The user cancelled the stream. Stop responding to the prior request."
+        )
 
         with pytest.raises(NotFoundError):
             await server.store.load_item(
