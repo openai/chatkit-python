@@ -240,8 +240,8 @@ async def test_stream_cancellation_persists_pending_assistant_message_and_hidden
         def generate_item_id(
             item_type: StoreItemType, thread: ThreadMetadata, context: Any
         ):
-            if item_type == "hidden_context":
-                return default_generate_id("hidden_context")
+            if item_type == "sdk_hidden_context":
+                return default_generate_id("sdk_hidden_context")
             return original_generate_item_id(item_type, thread, context)
 
         server.store.generate_item_id = generate_item_id  # type: ignore[method-assign]
@@ -270,8 +270,8 @@ async def test_stream_cancellation_persists_pending_assistant_message_and_hidden
             thread.id, None, 1, "desc", DEFAULT_CONTEXT
         )
         hidden_context_item = items.data[-1]
-        assert hidden_context_item.type == "hidden_context_item"
-        assert hidden_context_item.content == "SYSTEM: The user cancelled the stream."
+        assert hidden_context_item.type == "sdk_hidden_context"
+        assert hidden_context_item.content == "The user cancelled the stream."
 
         assistant_message_item = await server.store.load_item(
             thread.id, "assistant-message-pending", DEFAULT_CONTEXT
@@ -300,8 +300,8 @@ async def test_stream_cancellation_does_not_persist_pending_empty_assistant_mess
         def generate_item_id(
             item_type: StoreItemType, thread: ThreadMetadata, context: Any
         ):
-            if item_type == "hidden_context":
-                return default_generate_id("hidden_context")
+            if item_type == "sdk_hidden_context":
+                return default_generate_id("sdk_hidden_context")
             return original_generate_item_id(item_type, thread, context)
 
         server.store.generate_item_id = generate_item_id  # type: ignore[method-assign]
@@ -330,8 +330,8 @@ async def test_stream_cancellation_does_not_persist_pending_empty_assistant_mess
             thread.id, None, 1, "desc", DEFAULT_CONTEXT
         )
         hidden_context_item = items.data[-1]
-        assert hidden_context_item.type == "hidden_context_item"
-        assert hidden_context_item.content == "SYSTEM: The user cancelled the stream."
+        assert hidden_context_item.type == "sdk_hidden_context"
+        assert hidden_context_item.content == "The user cancelled the stream."
 
         with pytest.raises(NotFoundError):
             await server.store.load_item(
@@ -643,19 +643,21 @@ async def test_respond_with_tool_call():
             )
         )
 
-        assert len(events) == 3
+        assert len(events) == 4
         assert events[0].type == "thread.created"
         thread = events[0].thread
 
         assert events[1].type == "thread.item.done"
         assert events[1].item.type == "user_message"
 
-        assert events[2].type == "thread.item.done"
-        assert events[2].item.type == "client_tool_call"
-        assert events[2].item.id == "msg_1"
-        assert events[2].item.name == "tool_call_1"
-        assert events[2].item.arguments == {"arg1": "val1", "arg2": False}
-        assert events[2].item.call_id == "tool_call_1"
+        assert events[2].type == "stream_options"
+
+        assert events[3].type == "thread.item.done"
+        assert events[3].item.type == "client_tool_call"
+        assert events[3].item.id == "msg_1"
+        assert events[3].item.name == "tool_call_1"
+        assert events[3].item.arguments == {"arg1": "val1", "arg2": False}
+        assert events[3].item.call_id == "tool_call_1"
 
         events = await server.process_streaming(
             ThreadsAddClientToolOutputReq(
@@ -666,9 +668,10 @@ async def test_respond_with_tool_call():
             )
         )
 
-        assert len(events) == 1
-        assert events[0].type == "thread.item.done"
-        assert events[0].item.type == "assistant_message"
+        assert len(events) == 2
+        assert events[0].type == "stream_options"
+        assert events[1].type == "thread.item.done"
+        assert events[1].item.type == "assistant_message"
 
 
 async def test_removes_tool_call_if_no_output_provided():
@@ -764,11 +767,12 @@ async def test_respond_with_tool_status():
             )
         )
 
-        assert len(events) == 4
+        assert len(events) == 5
         assert events[0].type == "thread.created"
         assert events[1].type == "thread.item.done"
-        assert events[2].type == "progress_update"
-        assert events[3].type == "thread.item.done"
+        assert events[2].type == "stream_options"
+        assert events[3].type == "progress_update"
+        assert events[4].type == "thread.item.done"
 
 
 async def test_list_threads_response():
@@ -939,11 +943,12 @@ async def test_calls_action():
             widget_item,
         )
 
-        assert len(events) == 1
-        assert events[0].type == "thread.item.updated"
-        assert isinstance(events[0], ThreadItemUpdatedEvent)
-        assert events[0].update.type == "widget.root.updated"
-        assert events[0].update.widget == Card(children=[Text(value="Email sent!")])
+        assert len(events) == 2
+        assert events[0].type == "stream_options"
+        assert events[1].type == "thread.item.updated"
+        assert isinstance(events[1], ThreadItemUpdatedEvent)
+        assert events[1].update.type == "widget.root.updated"
+        assert events[1].update.widget == Card(children=[Text(value="Email sent!")])
 
 
 async def test_add_feedback():
@@ -1603,11 +1608,12 @@ async def test_retry_after_item():
         )
 
         # Verify the retry generated new response
-        assert len(retry_events) == 1
-        assert retry_events[0].type == "thread.item.done"
-        assert retry_events[0].item.type == "assistant_message"
-        assert retry_events[0].item.content[0].type == "output_text"
-        assert retry_events[0].item.content[0].text == "Retried response"
+        assert len(retry_events) == 2
+        assert retry_events[0].type == "stream_options"
+        assert retry_events[1].type == "thread.item.done"
+        assert retry_events[1].item.type == "assistant_message"
+        assert retry_events[1].item.content[0].type == "output_text"
+        assert retry_events[1].item.content[0].text == "Retried response"
 
         # Verify the responder was called twice with the same user message
         assert len(responder_calls) == 2
@@ -1750,8 +1756,9 @@ async def test_retry_after_item_with_multiple_messages():
             )
         )
 
-        assert len(retry_events) == 1
-        assert retry_events[0].type == "thread.item.done"
+        assert len(retry_events) == 2
+        assert retry_events[0].type == "stream_options"
+        assert retry_events[1].type == "thread.item.done"
 
         # Verify retry used the second user message
         assert len(responder_calls) == 3  # Original 2 + 1 retry
