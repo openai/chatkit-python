@@ -7,6 +7,7 @@ import pytest
 from chatkit.server import diff_widget
 from chatkit.types import WidgetItem
 from chatkit.widgets import (
+    BasicRoot,
     Card,
     DynamicWidgetComponent,
     DynamicWidgetRoot,
@@ -240,4 +241,21 @@ def test_widget_template_from_file(
     widget = template.build(data)
 
     assert isinstance(widget, DynamicWidgetRoot)
+    assert widget.model_dump(exclude_none=True) == expected_widget_dict
+
+
+def test_widget_template_with_basic_root():
+    template = WidgetTemplate.from_file("assets/widgets/basic_root.widget")
+
+    with open("tests/assets/widgets/basic_root.json", "r") as file:
+        expected_widget_dict = json.load(file)
+
+    widget = template.build_basic(
+        {
+            "name": "Harry Potter",
+            "bio": "The boy who lived",
+        },
+    )
+
+    assert isinstance(widget, BasicRoot)
     assert widget.model_dump(exclude_none=True) == expected_widget_dict

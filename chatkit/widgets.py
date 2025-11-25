@@ -4,18 +4,13 @@ import inspect
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import (
-    Annotated,
-    Any,
-    Literal,
-)
+from typing import Annotated, Any, Literal
 
 from jinja2 import Environment, StrictUndefined, Template
 from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
-    TypeAdapter,
     model_serializer,
 )
 from typing_extensions import NotRequired, TypedDict, deprecated
@@ -1147,8 +1142,6 @@ class WidgetTemplate:
     ```
     """
 
-    adapter: TypeAdapter[DynamicWidgetRoot] = TypeAdapter(DynamicWidgetRoot)
-
     def __init__(self, definition: dict[str, Any]):
         self.version = definition["version"]
         if self.version != "1.0":
@@ -1163,7 +1156,7 @@ class WidgetTemplate:
         self.data_schema = definition.get("jsonSchema", {})
 
     @classmethod
-    def from_file(cls, file_path: str) -> "WidgetTemplate":
+    def from_file(cls, file_path: str) -> WidgetTemplate:
         path = Path(file_path)
         if not path.is_absolute():
             caller_frame = inspect.stack()[1]
@@ -1178,10 +1171,19 @@ class WidgetTemplate:
     def build(
         self, data: dict[str, Any] | BaseModel | None = None
     ) -> DynamicWidgetRoot:
-        if data is None:
-            data = {}
-        if isinstance(data, BaseModel):
-            data = data.model_dump()
-        rendered = self.template.render(**data)
+        rendered = self.template.render(**self._normalize_data(data))
         widget_dict = json.loads(rendered)
-        return self.adapter.validate_python(widget_dict)
+        return DynamicWidgetRoot.model_validate(widget_dict)
+
+    def build_basic(self, data: dict[str, Any] | BaseModel | None = None) -> BasicRoot:
+        """Separate method for building basic root widgets until BasicRoot is supported for streamed widgets."""
+        rendered = self.template.render(**self._normalize_data(data))
+        widget_dict = json.loads(rendered)
+        return BasicRoot.model_validate(widget_dict)
+
+    def _normalize_data(
+        self, data: dict[str, Any] | BaseModel | None
+    ) -> dict[str, Any]:
+        if data is None:
+            return {}
+        return data.model_dump() if isinstance(data, BaseModel) else data
