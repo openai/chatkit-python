@@ -18,6 +18,12 @@ We will increment patch versions for non-breaking changes:
 
 ## Breaking change changelog
 
+### 1.4.0
+
+- Widget and action classes are still usable but marked as deprecated in favor of using `WidgetTemplate` to build widgets from `.widget` files.
+- Added `jinja2` as a required dependency for widget template rendering.
+- A stop button is now shown by default during streaming, allowing users to cancel the stream mid-response. Integrations can override `ChatKitServer.get_stream_options` to change this behavior.
+
 ### 1.3.0
 
 - Fixed the type for the `defaultChecked` property of `Checkbox` widgets, updating it from `string` to `bool`.
