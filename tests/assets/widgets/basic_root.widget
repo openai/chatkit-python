@@ -1,0 +1,46 @@
+{
+  "version": "1.0",
+  "name": "Author preview",
+  "template": "{\"type\":\"Basic\",\"children\":[{\"type\":\"Col\",\"gap\":1,\"children\":[{\"type\":\"Title\",\"value\":{{ (name) | tojson }},\"size\":\"sm\"},{\"type\":\"Text\",\"value\":{{ (bio) | tojson }},\"size\":\"sm\"}]}]}",
+  "jsonSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "minLength": 1
+      },
+      "bio": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "required": [
+      "name",
+      "bio"
+    ],
+    "additionalProperties": false
+  },
+  "outputJsonPreview": {
+    "type": "Basic",
+    "children": [
+      {
+        "type": "Col",
+        "gap": 1,
+        "children": [
+          {
+            "type": "Title",
+            "value": "Harry Potter",
+            "size": "sm"
+          },
+          {
+            "type": "Text",
+            "value": "The boy who lived",
+            "size": "sm"
+          }
+        ]
+      }
+    ]
+  },
+  "encodedWidget": "eyJpZCI6IndpZ194djV6dGlxayIsIm5hbWUiOiJBdXRob3IgcHJldmlldyIsInZpZXciOiI8QmFzaWM-XG4gIDxDb2wgZ2FwPXsxfT5cbiAgICA8VGl0bGUgdmFsdWU9e25hbWV9IHNpemU9XCJzbVwiIC8-XG4gICAgPFRleHQgdmFsdWU9e2Jpb30gc2l6ZT1cInNtXCIgLz5cbiAgPC9Db2w-XG48L0Jhc2ljPiIsImRlZmF1bHRTdGF0ZSI6eyJuYW1lIjoiSGFycnkgUG90dGVyIiwiYmlvIjoiVGhlIGJveSB3aG8gbGl2ZWQifSwic2NoZW1hTW9kZSI6InpvZCIsImpzb25TY2hlbWEiOnsidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsidGl0bGUiOnsidHlwZSI6InN0cmluZyJ9fSwicmVxdWlyZWQiOlsidGl0bGUiXSwiYWRkaXRpb25hbFByb3BlcnRpZXMiOmZhbHNlfSwic2NoZW1hIjoiaW1wb3J0IHsgeiB9IGZyb20gXCJ6b2RcIlxuXG5jb25zdCBQcm9maWxlID0gei5vYmplY3Qoe1xuICBuYW1lOiB6LnN0cmluZygpLnRyaW0oKS5taW4oMSksXG4gIGJpbzogei5zdHJpbmcoKS50cmltKCkubWluKDEpLFxufSk7XG5cbmV4cG9ydCBkZWZhdWx0IFByb2ZpbGU7Iiwic3RhdGVzIjpbXSwic2NoZW1hVmFsaWRpdHkiOiJ2YWxpZCIsInZpZXdWYWxpZGl0eSI6InZhbGlkIiwiZGVmYXVsdFN0YXRlVmFsaWRpdHkiOiJ2YWxpZCJ9"
+}

@@ -1,0 +1,21 @@
+{
+  "type": "Basic",
+  "children": [
+    {
+      "type": "Col",
+      "gap": 1,
+      "children": [
+        {
+          "type": "Title",
+          "value": "Harry Potter",
+          "size": "sm"
+        },
+        {
+          "type": "Text",
+          "value": "The boy who lived",
+          "size": "sm"
+        }
+      ]
+    }
+  ]
+}
