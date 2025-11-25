@@ -339,6 +339,14 @@ class ProgressUpdateEvent(BaseModel):
     text: str
 
 
+class ClientEffectEvent(BaseModel):
+    """Event emitted to trigger a client side-effect."""
+
+    type: Literal["client_effect"] = "client_effect"
+    name: str
+    data: dict[str, Any] = Field(default_factory=dict)
+
+
 class ErrorEvent(BaseModel):
     """Event indicating an error occurred while processing a thread."""
 
@@ -370,6 +378,7 @@ ThreadStreamEvent = Annotated[
     | ThreadItemReplacedEvent
     | StreamOptionsEvent
     | ProgressUpdateEvent
+    | ClientEffectEvent
     | ErrorEvent
     | NoticeEvent,
     Field(discriminator="type"),
