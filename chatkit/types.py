@@ -317,6 +317,20 @@ class ThreadItemReplacedEvent(BaseModel):
     item: ThreadItem
 
 
+class StreamOptions(BaseModel):
+    """Settings that control runtime stream behavior."""
+
+    allow_cancel: bool
+    """Allow the client to request cancellation mid-stream."""
+
+
+class StreamOptionsEvent(BaseModel):
+    """Event emitted to set stream options at runtime."""
+
+    type: Literal["stream_options"] = "stream_options"
+    stream_options: StreamOptions
+
+
 class ProgressUpdateEvent(BaseModel):
     """Event providing incremental progress from the assistant."""
 
@@ -354,6 +368,7 @@ ThreadStreamEvent = Annotated[
     | ThreadItemUpdated
     | ThreadItemRemovedEvent
     | ThreadItemReplacedEvent
+    | StreamOptionsEvent
     | ProgressUpdateEvent
     | ErrorEvent
     | NoticeEvent,
@@ -576,10 +591,23 @@ class EndOfTurnItem(ThreadItemBase):
 
 
 class HiddenContextItem(ThreadItemBase):
-    """HiddenContext is never sent to the client. It's not officially part of ChatKit. It is only used internally to store additional context in a specific place in the thread."""
+    """
+    HiddenContext is never sent to the client. It's not officially part of ChatKit.js.
+    It is only used internally to store additional context in a specific place in the thread.
+    """
 
     type: Literal["hidden_context_item"] = "hidden_context_item"
     content: Any
+
+
+class SDKHiddenContextItem(ThreadItemBase):
+    """
+    Hidden context that is used by the ChatKit Python SDK for storing additional context
+    for internal operations.
+    """
+
+    type: Literal["sdk_hidden_context"] = "sdk_hidden_context"
+    content: str
 
 
 ThreadItem = Annotated[
@@ -590,6 +618,7 @@ ThreadItem = Annotated[
     | WorkflowItem
     | TaskItem
     | HiddenContextItem
+    | SDKHiddenContextItem
     | EndOfTurnItem,
     Field(discriminator="type"),
 ]

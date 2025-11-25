@@ -56,6 +56,7 @@ from .types import (
     EndOfTurnItem,
     FileSource,
     HiddenContextItem,
+    SDKHiddenContextItem,
     Task,
     TaskItem,
     ThoughtTask,
@@ -712,6 +713,30 @@ class ThreadItemConverter:
             role="user",
         )
 
+    async def sdk_hidden_context_to_input(
+        self, item: SDKHiddenContextItem
+    ) -> TResponseInputItem | list[TResponseInputItem] | None:
+        """
+        Convert a SDKHiddenContextItem into input item to send to the model.
+        This is used by the ChatKit Python SDK for storing additional context
+        for internal operations.
+        Override if you want to wrap the content in a different format.
+        """
+        text = (
+            "Hidden context for the agent (not shown to the user):\n"
+            f"<HiddenContext>\n{item.content}\n</HiddenContext>"
+        )
+        return Message(
+            type="message",
+            content=[
+                ResponseInputTextParam(
+                    type="input_text",
+                    text=text,
+                )
+            ],
+            role="user",
+        )
+
     async def task_to_input(
         self, item: TaskItem
     ) -> TResponseInputItem | list[TResponseInputItem] | None:
@@ -947,6 +972,9 @@ class ThreadItemConverter:
                 return out if isinstance(out, list) else [out]
             case HiddenContextItem():
                 out = await self.hidden_context_to_input(item) or []
+                return out if isinstance(out, list) else [out]
+            case SDKHiddenContextItem():
+                out = await self.sdk_hidden_context_to_input(item) or []
                 return out if isinstance(out, list) else [out]
             case _:
                 assert_never(item)
