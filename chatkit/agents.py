@@ -719,11 +719,12 @@ class ThreadItemConverter:
         """
         Convert a SDKHiddenContextItem into input item to send to the model.
         This is used by the ChatKit Python SDK for storing additional context
-        for internal operations; you shouldn't need to override this.
+        for internal operations.
+        Override if you want to wrap the content in a different format.
         """
         text = (
-            "Hidden ChatKit SDK context for the agent (not shown to the user):\n"
-            f"<SDKHiddenContext>\n{item.content}\n</SDKHiddenContext>"
+            "Hidden context for the agent (not shown to the user):\n"
+            f"<HiddenContext>\n{item.content}\n</HiddenContext>"
         )
         return Message(
             type="message",
