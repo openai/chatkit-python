@@ -92,3 +92,7 @@ async def chatkit_endpoint(request: Request):
 Every ChatKit request payload includes a `metadata` field you can use to carry per-request context from the client.
 
 Pull it from the request in your endpoint before calling server.process to use it for auth/tracing/business logic there, or to include it in the context you pass through so respond and tools can read it.
+
+## Next
+
+[Persist ChatKit threads and messages](persist-chatkit-data.md)

@@ -155,3 +155,15 @@ Use `ClientEffectEvent` to trigger fire-and-forget behavior on the client such a
 ## Stream options
 
 `StreamOptionsEvent` configures runtime stream behavior (for example, allowing user cancellation). `ChatKitServer` emits one at the start of every stream using `get_stream_options`; override that method to change defaults such as `allow_cancel`.
+
+## Next
+
+Add features:
+
+* [Save thread titles](add-features/save-thread-titles.md)
+* [Accept attachments](add-features/accept-attachments.md)
+* [Make client tool calls](add-features/make-client-tool-calls.md)
+* [Send client effects](add-features/send-client-effects.md)
+* [Stream widgets](add-features/stream-widgets.md)
+* [Handle widget actionss](add-features/handle-widget-actions.md)
+* [Create custom forms](add-features/create-custom-forms.md)

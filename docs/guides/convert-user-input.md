@@ -83,3 +83,7 @@ if input and input.inference_options:
     tool_choice = input.inference_options.tool_choice
     # forward these into your inference call
 ```
+
+## Next
+
+[Run inference](run-inference.md)

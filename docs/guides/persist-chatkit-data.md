@@ -111,3 +111,7 @@ result = Runner.run_streamed(
 
 thread.metadata["previous_response_id"] = result.response_id
 ```
+
+## Next
+
+[Convert user input to model input](convert-user-input.md)

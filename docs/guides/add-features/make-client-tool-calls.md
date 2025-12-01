@@ -1,4 +1,4 @@
-# Use client tool calls
+# Make client tool calls
 
 Client tool calls let the agent invoke browser/app callbacks mid-inference. Register the tool on both client and server; when triggered, ChatKit pauses the model, sends the tool request to the client, and resumes with the returned result.
 

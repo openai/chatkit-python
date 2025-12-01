@@ -65,3 +65,7 @@ You can supply additional reference context to the model at inference time using
 - Use server tools when the reference content lives on the backend and can be retrieved during inference.
 - Use client tool calls when the browser or app must supply transient state (for example, active UI selections).
 - Manually inject additional model input items when the reference content is already available at inference time and your application is latency-sensitive.
+
+## Next
+
+[Stream responses back to your user](stream-thread-events.md)

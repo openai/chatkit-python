@@ -48,7 +48,7 @@ nav:
       - Add features:
           - Save thread titles: guides/add-features/save-thread-titles.md
           - Accept attachments: guides/add-features/accept-attachments.md
-          - Use client tool calls: guides/add-features/use-client-tool-calls.md
+          - Make client tool calls: guides/add-features/make-client-tool-calls.md
           - Send client effects: guides/add-features/send-client-effects.md
           - Stream widgets: guides/add-features/stream-widgets.md
           - Handle widget actions: guides/add-features/handle-widget-actions.md
