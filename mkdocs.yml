@@ -40,9 +40,24 @@ plugins:
 nav:
   - Home: index.md
   - Guides:
-      - Server Integration: server.md
-      - Actions: actions.md
-      - Widgets: widgets.md
+      - Serve ChatKit from your backend: guides/serve-chatkit.md
+      - Persist ChatKit threads and messages: guides/persist-chatkit-data.md
+      - Convert user input to model input: guides/convert-user-input.md
+      - Run inference: guides/run-inference.md
+      - Stream responses back to your user: guides/stream-thread-events.md
+      - Add features:
+          - Save thread titles: guides/add-features/save-thread-titles.md
+          - Accept attachments: guides/add-features/accept-attachments.md
+          - Make client tool calls: guides/add-features/make-client-tool-calls.md
+          - Send client effects: guides/add-features/send-client-effects.md
+          - Stream widgets: guides/add-features/stream-widgets.md
+          - Handle widget actions: guides/add-features/handle-widget-actions.md
+          - Create custom forms: guides/add-features/create-custom-forms.md
+          # - Allow @-mentions in user messages
+          # - Add citations and sources in assistant messages
+          # - Show progress for long-running tools
+          # - Lock threads
+          # - Handle feedback
   - API Reference:
       - Overview: api/chatkit/index.md
       - Modules:
