@@ -114,4 +114,4 @@ thread.metadata["previous_response_id"] = result.response_id
 
 ## Next
 
-[Convert user input to model input](convert-user-input.md)
+[Compose model input](compose-model-input.md)

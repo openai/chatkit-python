@@ -4,9 +4,7 @@ theme:
   features:
     - content.code.copy
     - content.code.select
-    - navigation.sections
     - navigation.path
-    - navigation.expand
     - content.code.annotate
   palette:
     primary: black
@@ -39,10 +37,17 @@ plugins:
 
 nav:
   - Home: index.md
+  - Concepts:
+      - Threads: concepts/threads.md
+      - Thread items: concepts/thread-items.md
+      - Thread stream events: concepts/thread-stream-events.md
+      - Widgets: concepts/widgets.md
+      - Actions: concepts/actions.md
+      - Entities: concepts/entities.md
   - Guides:
       - Serve ChatKit from your backend: guides/serve-chatkit.md
       - Persist ChatKit threads and messages: guides/persist-chatkit-data.md
-      - Convert user input to model input: guides/convert-user-input.md
+      - Compose model input: guides/compose-model-input.md
       - Run inference: guides/run-inference.md
       - Stream responses back to your user: guides/stream-thread-events.md
       - Add features:
