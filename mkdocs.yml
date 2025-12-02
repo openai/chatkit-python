@@ -50,14 +50,14 @@ nav:
           - Accept attachments: guides/add-features/accept-attachments.md
           - Make client tool calls: guides/add-features/make-client-tool-calls.md
           - Send client effects: guides/add-features/send-client-effects.md
+          - Show progress for long-running tools: guides/add-features/show-progress-for-long-running-tools.md
           - Stream widgets: guides/add-features/stream-widgets.md
           - Handle widget actions: guides/add-features/handle-widget-actions.md
           - Create custom forms: guides/add-features/create-custom-forms.md
-          # - Allow @-mentions in user messages
-          # - Add citations and sources in assistant messages
-          # - Show progress for long-running tools
-          # - Lock threads
-          # - Handle feedback
+          - Handle feedback: guides/add-features/handle-feedback.md
+          - Allow @-mentions in user messages: guides/add-features/allow-mentions.md
+          - Add annotations in assistant messages: guides/add-features/add-annotations.md
+          - Disable new messages for a thread: guides/add-features/disable-new-messages.md
   - API Reference:
       - Overview: api/chatkit/index.md
       - Modules:
