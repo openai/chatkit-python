@@ -145,4 +145,5 @@ Add features:
 * [Create custom forms](add-features/create-custom-forms.md)
 * [Handle feedback](add-features/handle-feedback.md)
 * [Allow @-mentions in user messages](add-features/allow-mentions.md)
+* [Add annotations in assistant messages](add-features/add-annotations.md)
 * [Disable new messages for a thread](add-features/disable-new-messages.md)
