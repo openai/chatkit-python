@@ -176,6 +176,34 @@ async def all_events(
     return [event async for event in events]
 
 
+async def test_start_workflow_streams_added_task():
+    context = AgentContext(
+        previous_response_id=None, thread=thread, store=mock_store, request_context=None
+    )
+    result = make_result()
+
+    task = CustomTask(title="custom")
+    await context.start_workflow(Workflow(type="custom", tasks=[task]))
+    result.done()
+
+    events = await all_events(
+        stream_agent_response(
+            context=context,
+            result=result,
+        )
+    )
+
+    workflow_events = [
+        event
+        for event in events
+        if isinstance(event, ThreadItemAddedEvent) and event.item.type == "workflow"
+    ]
+
+    assert context.workflow_item is not None
+    assert len(workflow_events) == 1
+    assert workflow_events[0].item.id == context.workflow_item.id
+
+
 async def test_returns_widget_item():
     context = AgentContext(
         previous_response_id=None, thread=thread, store=mock_store, request_context=None
