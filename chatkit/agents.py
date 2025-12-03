@@ -110,6 +110,7 @@ class AgentContext(BaseModel, Generic[TContext]):
     def generate_id(
         self, type: StoreItemType, thread: ThreadMetadata | None = None
     ) -> str:
+        """Generate a new store-backed id for the given item type."""
         if type == "thread":
             return self.store.generate_thread_id(self.request_context)
         return self.store.generate_item_id(
@@ -121,6 +122,7 @@ class AgentContext(BaseModel, Generic[TContext]):
         widget: WidgetRoot | AsyncGenerator[WidgetRoot, None],
         copy_text: str | None = None,
     ) -> None:
+        """Stream a widget into the thread by enqueueing widget events."""
         async for event in stream_widget(
             self.thread,
             widget,
@@ -134,6 +136,7 @@ class AgentContext(BaseModel, Generic[TContext]):
     async def end_workflow(
         self, summary: WorkflowSummary | None = None, expanded: bool = False
     ) -> None:
+        """Finalize the active workflow item, optionally attaching a summary."""
         if not self.workflow_item:
             # No workflow to end
             return
@@ -150,6 +153,7 @@ class AgentContext(BaseModel, Generic[TContext]):
         self.workflow_item = None
 
     async def start_workflow(self, workflow: Workflow) -> None:
+        """Begin streaming a new workflow item."""
         self.workflow_item = WorkflowItem(
             id=self.generate_id("workflow"),
             created_at=datetime.now(),
@@ -161,9 +165,10 @@ class AgentContext(BaseModel, Generic[TContext]):
             # Defer sending added event until we have tasks
             return
 
-        await self.stream(ThreadItemAddedEvent(item=self.workflow_item))
+            await self.stream(ThreadItemAddedEvent(item=self.workflow_item))
 
     async def update_workflow_task(self, task: Task, task_index: int) -> None:
+        """Update an existing workflow task and stream the delta."""
         if self.workflow_item is None:
             raise ValueError("Workflow is not set")
         # ensure reference is updated in case task is a copy
@@ -179,6 +184,7 @@ class AgentContext(BaseModel, Generic[TContext]):
         )
 
     async def add_workflow_task(self, task: Task) -> None:
+        """Append a workflow task and stream the appropriate event."""
         self.workflow_item = self.workflow_item or WorkflowItem(
             id=self.generate_id("workflow"),
             created_at=datetime.now(),
@@ -202,6 +208,7 @@ class AgentContext(BaseModel, Generic[TContext]):
             )
 
     async def stream(self, event: ThreadStreamEvent) -> None:
+        """Enqueue a ThreadStreamEvent for downstream processing."""
         await self._events.put(event)
 
     def _complete(self):
@@ -352,6 +359,7 @@ class StreamingThoughtTracker(BaseModel):
 async def stream_agent_response(
     context: AgentContext, result: RunResultStreaming
 ) -> AsyncIterator[ThreadStreamEvent]:
+    """Convert a streamed Agents SDK run into ChatKit ThreadStreamEvents."""
     current_item_id = None
     current_tool_call = None
     ctx = context
@@ -1003,4 +1011,5 @@ _DEFAULT_CONVERTER = ThreadItemConverter()
 
 
 def simple_to_agent_input(thread_items: Sequence[ThreadItem] | ThreadItem):
+    """Helper that converts thread items using the default ThreadItemConverter."""
     return _DEFAULT_CONVERTER.to_agent_input(thread_items)
