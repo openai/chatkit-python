@@ -165,7 +165,7 @@ class AgentContext(BaseModel, Generic[TContext]):
             # Defer sending added event until we have tasks
             return
 
-            await self.stream(ThreadItemAddedEvent(item=self.workflow_item))
+        await self.stream(ThreadItemAddedEvent(item=self.workflow_item))
 
     async def update_workflow_task(self, task: Task, task_index: int) -> None:
         """Update an existing workflow task and stream the delta."""
