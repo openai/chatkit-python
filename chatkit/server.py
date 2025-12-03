@@ -697,7 +697,7 @@ class ChatKitServer(ABC, Generic[TContext]):
             with agents_sdk_user_agent_override():
                 async for event in stream():
                     if isinstance(event, ThreadItemAddedEvent):
-                        pending_items[event.item.id] = event.item
+                        pending_items[event.item.id] = event.item.model_copy(deep=True)
 
                     match event:
                         case ThreadItemDoneEvent():
