@@ -1,8 +1,10 @@
 # Stream responses back to your user
 
-ChatKit.js listens for `ThreadStreamEvent`s over SSE. Stream events from `ChatKitServer.respond` so users see model output, tool activity, progress updates, and errors in real time.
+ChatKit.js listens for [`ThreadStreamEvent`](../../api/chatkit/types/#chatkit.types.ThreadStreamEvent)s over SSE. Stream events from [`ChatKitServer.respond`](../../api/chatkit/server/#chatkit.server.ChatKitServer.respond) so users see model output, tool activity, progress updates, and errors in real time.
 
-Thread events include both persistent thread items (messages, tools, workflows) that are saved to the conversation history, and non-persistent runtime signals (progress updates, notices, errors, and client effects) that show ephemeral UI or drive immediate client behavior without being stored.
+Thread stream events include both persistent thread items (messages, tools, workflows) that are saved to the conversation history, and non-persistent runtime signals (progress updates, notices, errors, and client effects) that show ephemeral UI or drive immediate client behavior without being stored.
+
+See [Thread stream events](../concepts/thread-stream-events.md) for an overview of supported event types.
 
 ### From `respond`
 
@@ -81,55 +83,8 @@ class MyChatKitServer(ChatKitServer[MyRequestContext]):
         )
 ```
 
-When you stream thread events manually, remember that tools cannot `yield` events. If you skip `stream_agent_response`, you must merge any tool-emitted events yourself—for example, by reading from `AgentContext._events` (populated by `ctx.context.stream(...)` or workflow helpers) and interleaving them with your own `respond` events.
+When you stream events manually, remember that tools cannot `yield` events. If you skip `stream_agent_response`, you must merge any tool-emitted events yourself—for example, by reading from `AgentContext._events` (populated by `ctx.context.stream(...)` or workflow helpers) and interleaving them with your own `respond` events.
 
-## Event types at a glance
-
-Use these when emitting events directly (or alongside `stream_agent_response`). Thread lifecycle events become part of conversation history; the others are ephemeral runtime signals that shape client behavior but are not persisted.
-
-### Thread lifecycle events
-
-Thread item events drive the conversation state. ChatKitServer processes these events to persist conversation state before streaming them back to the client.
-
-- `ThreadItemAddedEvent`: introduce a new item (message, tool call, workflow, widget, etc).
-- `ThreadItemUpdatedEvent`: mutate a pending item (e.g., stream text deltas, workflow task updates).
-- `ThreadItemDoneEvent`: mark an item complete and persist it.
-- `ThreadItemRemovedEvent`: delete an item by id.
-- `ThreadItemReplacedEvent`: swap an item in place.
-
-Note: `ThreadItemAddedEvent` does not persist the item. `ChatKitServer` saves on `ThreadItemDoneEvent`/`ThreadItemReplacedEvent`, tracks pending items in between, and handles store writes for all `ThreadItem*Event`s.
-
-### Errors
-
-Stream an `ErrorEvent` for user-facing errors.
-
-```python
-async def respond(...) -> AsyncIterator[ThreadStreamEvent]:
-    if not user_has_remaining_quota(context):
-        yield ErrorEvent(
-            message="You have reached your usage limit.",
-            allow_retry=False,
-        )
-        return
-
-    # Rest of your respond method
-```
-
-### Progress updates
-
-Stream `ProgressUpdateEvent` to show the user transient status while work is in flight.
-
-See [Show progress for long-running tools](add-features/show-progress-for-long-running-tools.md) for more info.
-
-### Client effects
-
-Use `ClientEffectEvent` to trigger fire-and-forget behavior on the client such as opening a dialog or pushing updates.
-
-See [Send client effects](add-features/send-client-effects.md) for more info.
-
-### Stream options
-
-`StreamOptionsEvent` configures runtime stream behavior (for example, allowing user cancellation). `ChatKitServer` emits one at the start of every stream using `get_stream_options`; override that method to change defaults such as `allow_cancel`.
 
 ## Next
 

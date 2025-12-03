@@ -197,6 +197,7 @@ async def stream_widget(
     copy_text: str | None = None,
     generate_id: Callable[[StoreItemType], str] = default_generate_id,
 ) -> AsyncIterator[ThreadStreamEvent]:
+    """Stream a widget root (or async sequence of roots) as ThreadStreamEvents."""
     item_id = generate_id("message")
 
     if not isinstance(widget, AsyncGenerator):
@@ -277,6 +278,7 @@ class ChatKitServer(ABC, Generic[TContext]):
         store: Store[TContext],
         attachment_store: AttachmentStore[TContext] | None = None,
     ):
+        """Create a ChatKitServer with the backing Store and optional AttachmentStore."""
         self.store = store
         self.attachment_store = attachment_store
 
@@ -314,6 +316,7 @@ class ChatKitServer(ABC, Generic[TContext]):
         feedback: FeedbackKind,
         context: TContext,
     ) -> None:
+        """Persist user feedback for one or more thread items."""
         pass
 
     def action(
@@ -323,6 +326,7 @@ class ChatKitServer(ABC, Generic[TContext]):
         sender: WidgetItem | None,
         context: TContext,
     ) -> AsyncIterator[ThreadStreamEvent]:
+        """Handle a widget or client-dispatched action and yield response events."""
         raise NotImplementedError(
             "The action() method must be overridden to react to actions. "
             "See https://github.com/openai/chatkit-python/blob/main/docs/widgets.md#widget-actions"
@@ -381,6 +385,7 @@ class ChatKitServer(ABC, Generic[TContext]):
     async def process(
         self, request: str | bytes | bytearray, context: TContext
     ) -> StreamingResult | NonStreamingResult:
+        """Parse an incoming ChatKit request and route it to streaming or non-streaming handlers."""
         parsed_request = TypeAdapter[ChatKitReq](ChatKitReq).validate_json(request)
         logger.info(f"Received request op: {parsed_request.type}")
 

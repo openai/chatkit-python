@@ -1,4 +1,4 @@
-# Convert user input to model input
+# Compose model inputs
 
 ChatKit delivers structured thread items (messages, tools, attachments). Before running inference, convert those items into the model's expected input format.
 

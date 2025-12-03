@@ -48,11 +48,13 @@ class NotFoundError(Exception):
 class AttachmentStore(ABC, Generic[TContext]):
     @abstractmethod
     async def delete_attachment(self, attachment_id: str, context: TContext) -> None:
+        """Delete an attachment by id."""
         pass
 
     async def create_attachment(
         self, input: AttachmentCreateParams, context: TContext
     ) -> Attachment:
+        """Create an attachment record from upload metadata."""
         raise NotImplementedError(
             f"{type(self).__name__} must override create_attachment() to support two-phase file upload"
         )
@@ -78,10 +80,12 @@ class Store(ABC, Generic[TContext]):
 
     @abstractmethod
     async def load_thread(self, thread_id: str, context: TContext) -> ThreadMetadata:
+        """Load a thread's metadata by id."""
         pass
 
     @abstractmethod
     async def save_thread(self, thread: ThreadMetadata, context: TContext) -> None:
+        """Persist thread metadata (title, status, etc.)."""
         pass
 
     @abstractmethod
@@ -93,20 +97,24 @@ class Store(ABC, Generic[TContext]):
         order: str,
         context: TContext,
     ) -> Page[ThreadItem]:
+        """Load a page of thread items with pagination controls."""
         pass
 
     @abstractmethod
     async def save_attachment(self, attachment: Attachment, context: TContext) -> None:
+        """Persist attachment metadata."""
         pass
 
     @abstractmethod
     async def load_attachment(
         self, attachment_id: str, context: TContext
     ) -> Attachment:
+        """Load attachment metadata by id."""
         pass
 
     @abstractmethod
     async def delete_attachment(self, attachment_id: str, context: TContext) -> None:
+        """Delete attachment metadata by id."""
         pass
 
     @abstractmethod
@@ -117,32 +125,38 @@ class Store(ABC, Generic[TContext]):
         order: str,
         context: TContext,
     ) -> Page[ThreadMetadata]:
+        """Load a page of threads with pagination controls."""
         pass
 
     @abstractmethod
     async def add_thread_item(
         self, thread_id: str, item: ThreadItem, context: TContext
     ) -> None:
+        """Persist a newly created thread item."""
         pass
 
     @abstractmethod
     async def save_item(
         self, thread_id: str, item: ThreadItem, context: TContext
     ) -> None:
+        """Upsert a thread item by id."""
         pass
 
     @abstractmethod
     async def load_item(
         self, thread_id: str, item_id: str, context: TContext
     ) -> ThreadItem:
+        """Load a thread item by id."""
         pass
 
     @abstractmethod
     async def delete_thread(self, thread_id: str, context: TContext) -> None:
+        """Delete a thread and its items."""
         pass
 
     @abstractmethod
     async def delete_thread_item(
         self, thread_id: str, item_id: str, context: TContext
     ) -> None:
+        """Delete a thread item by id."""
         pass
