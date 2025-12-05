@@ -268,13 +268,9 @@ async def load_document(ctx: RunContextWrapper[AgentContext], document_id: str):
 ## Next: add features
 
 - [Let users browse past threads](browse-past-threads.md)
-- [Accept attachments](accept-attachments.md)
-- [Make client tool calls](make-client-tool-calls.md)
-- [Send client effects](send-client-effects.md)
-- [Show progress for long-running tools](show-progress-for-long-running-tools.md)
-- [Stream widgets](stream-widgets.md)
-- [Handle widget actions](handle-widget-actions.md)
-- [Create custom forms](create-custom-forms.md)
+- [Accept rich user input](accept-rich-user-input.md)
+- [Update the client during a response](update-client-during-response.md)
+- [Build interactive responses with widgets](build-interactive-responses-with-widgets.md)
 - [Handle feedback](handle-feedback.md)
 - [Allow @-mentions in user messages](allow-mentions.md)
 - [Add annotations in assistant messages](add-annotations.md)

@@ -37,27 +37,29 @@ plugins:
         - docs/gen_ref_pages.py
 
 nav:
-  - Home: index.md
+  - Overview: index.md
   - Quick start: quickstart.md
   - Concepts:
       - Threads and items: concepts/threads.md
       - Thread stream events: concepts/thread-stream-events.md
+      - Tools: concepts/tools.md
       - Widgets: concepts/widgets.md
       - Actions: concepts/actions.md
       - Entities: concepts/entities.md
   - Guides:
       - Respond to a user message: guides/respond-to-user-message.md
       - Let users browse past threads: guides/browse-past-threads.md
-      - Accept attachments: guides/accept-attachments.md
-      - Make client tool calls: guides/make-client-tool-calls.md
-      - Send client effects: guides/send-client-effects.md
-      - Show progress for long-running tools: guides/show-progress-for-long-running-tools.md
-      - Stream widgets: guides/stream-widgets.md
-      - Handle widget actions: guides/handle-widget-actions.md
-      - Create custom forms: guides/create-custom-forms.md
-      - Handle feedback: guides/handle-feedback.md
-      - Allow @-mentions in user messages: guides/allow-mentions.md
+      - Update the client during a response: guides/update-client-during-response.md
+      - Accept rich user input: guides/accept-rich-user-input.md
+      - Let users pick tools and models: guides/let-users-pick-tools-and-models.md
+      - Pass extra app context to your model: guides/pass-extra-app-context-to-your-model.md
+      - Update the client during a response: guides/update-client-during-response.md
+      - Build interactive responses with widgets: guides/build-interactive-responses-with-widgets.md
       - Add annotations in assistant messages: guides/add-annotations.md
+      - Keep your app in sync with ChatKit: guides/keep-your-app-in-sync-with-chatkit.md
+      - Let your app draft and send messages: guides/let-your-app-draft-and-send-messages.md
+      - Handle feedback: guides/handle-feedback.md
+      - Prepare your app for production: guides/prepare-your-app-for-production.md
   - API Reference:
       - Overview: api/chatkit/index.md
       - Modules:
