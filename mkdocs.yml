@@ -37,6 +37,7 @@ plugins:
 
 nav:
   - Home: index.md
+  - Quick start: quickstart.md
   - Concepts:
       - Threads: concepts/threads.md
       - Thread items: concepts/thread-items.md
