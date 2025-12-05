@@ -43,7 +43,7 @@ Thread items serve two primary purposes in ChatKit:
 
 Your server's [`respond`](../../api/chatkit/server/#chatkit.server.ChatKitServer.respond) logic reads thread items to construct input for the model input. This ensures the model sees the full conversational context both during an active response and when a user resumes a past thread. 
 
-See [Compose model input](../guides/compose-model-input.md).
+See [Respond to a user message](../guides/respond-to-user-message.md) for a full walkthrough.
 
 ### UI rendering
 
@@ -60,7 +60,7 @@ On the client, ChatKit.js renders items incrementally as they stream in for the 
 - Attachment metadata
 
 
-User text is not Markdown-rendered, but it may contain [@-mentions](../guides/allow-mentions.md) if your integration enables them.
+User text is not Markdown-rendered, but it may contain [@-mentions](../guides/accept-rich-user-input.md#-mentions-tag-entities-in-user-messages) if your integration enables them.
 
 
 ### Assistant messages
@@ -115,9 +115,9 @@ You can override the converter when you need custom behavior. For example:
 Custom conversion is typically paired with prompting so the model receives a coherent representation of the conversation.
 
 ## Related guides
-- [Persist ChatKit threads and messages](../guides/persist-chatkit-data.md)
-- [Compose model inputs](../guides/compose-model-input.md)
+- [Respond to a user message](../guides/respond-to-user-message.md)
+- [Pass extra app context to your model](../guides/pass-extra-app-context-to-your-model.md)
 - [Add annotations in assistant messages](../guides/add-annotations.md)
-- [Allow @-mentions in user messages](../guides/allow-mentions.md)
+- [Accept rich user input](../guides/accept-rich-user-input.md#-mentions-tag-entities-in-user-messages)
 - [Handle feedback](../guides/handle-feedback.md)
 - [Let users browse past threads](../guides/browse-past-threads.md)

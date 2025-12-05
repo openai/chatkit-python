@@ -49,7 +49,6 @@ nav:
   - Guides:
       - Respond to a user message: guides/respond-to-user-message.md
       - Let users browse past threads: guides/browse-past-threads.md
-      - Update the client during a response: guides/update-client-during-response.md
       - Accept rich user input: guides/accept-rich-user-input.md
       - Let users pick tools and models: guides/let-users-pick-tools-and-models.md
       - Pass extra app context to your model: guides/pass-extra-app-context-to-your-model.md

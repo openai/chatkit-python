@@ -35,7 +35,7 @@ Exported `.widget` files are JSON blobs that include the widget template, the ex
 
 ## WidgetItem
 
-[`WidgetItem`](../../api/chatkit/types/#chatkit.types.WidgetItem) represents a widget rendered as a [thread item](thread-items.md) in the chat UI. In addition to a reference to the widget instance, it contains a `copy_text` field that represents the text value copied to the clipboard when the user clicks the copy button below the response.
+[`WidgetItem`](../../api/chatkit/types/#chatkit.types.WidgetItem) represents a widget rendered as a [thread item](threads.md#what-are-thread-items) in the chat UI. In addition to a reference to the widget instance, it contains a `copy_text` field that represents the text value copied to the clipboard when the user clicks the copy button below the response.
 
 ## Entity previews
 

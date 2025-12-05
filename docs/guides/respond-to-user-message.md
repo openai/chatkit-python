@@ -272,5 +272,5 @@ async def load_document(ctx: RunContextWrapper[AgentContext], document_id: str):
 - [Update the client during a response](update-client-during-response.md)
 - [Build interactive responses with widgets](build-interactive-responses-with-widgets.md)
 - [Handle feedback](handle-feedback.md)
-- [Allow @-mentions in user messages](allow-mentions.md)
+- [Allow @-mentions in user messages](accept-rich-user-input.md#-mentions-tag-entities-in-user-messages)
 - [Add annotations in assistant messages](add-annotations.md)

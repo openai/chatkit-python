@@ -27,4 +27,4 @@ Users can tag your entities in the composer using @-mentions.
 
 - The [Entity](https://openai.github.io/chatkit-js/api/openai/chatkit-react/type-aliases/entity/) TypeScript type definition
 - The [UserMessageTagContent](../../api/chatkit/types/#chatkit.types.UserMessageTagContent) Pydantic model definition
-- [Allow @-mentions in user messages](../guides/allow-mentions.md).
+- [Accept rich user input](../guides/accept-rich-user-input.md#-mentions-tag-entities-in-user-messages).

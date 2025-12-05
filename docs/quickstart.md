@@ -65,7 +65,7 @@ Install the ChatKit Python package and expose a single `/chatkit` endpoint that 
 pip install openai-chatkit fastapi uvicorn
 ```
 
-Create `main.py` with a minimal server that is hard-coded to always reply “Hello, world!” - you'll replace this with an actual call to a model in [Respond]
+Create `main.py` with a minimal server that is hard-coded to always reply “Hello, world!”—you'll replace this with an actual call to a model in [Respond to a user message](guides/respond-to-user-message.md).
 
 ```python
 # Other imports omitted for brevity; see the starter repo for a runnable file with all imports.
