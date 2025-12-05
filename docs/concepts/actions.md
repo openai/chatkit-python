@@ -19,4 +19,4 @@ When you set `handler: "client"`, the action flows into the client SDK’s `widg
 Your client integration can also initiate actions directly with `chatkit.sendCustomAction(action, itemId?)`, optionally namespaced to a specific widget item. The server receives these in `ChatKitServer.action` just like a widget-triggered action and can stream widgets, messages, or client effects in response. This pattern is useful when a flow starts outside a widget—or after a client-handled action—but you still want the server to persist results or involve the model.
 
 ## Related guides
-- [Handle widget actions](../guides/add-features/handle-widget-actions.md)
+- [Handle widget actions](../guides/handle-widget-actions.md)

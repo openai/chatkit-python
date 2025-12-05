@@ -17,7 +17,7 @@ Entities can be used as cited sources in assistant responses.
 **References:**
 
 - The [EntitySource](../../api/chatkit/types/#chatkit.types.EntitySource) Pydantic model definition
-- [Add annotations in assistant messages](../guides/add-features/add-annotations.md#annotating-with-custom-entities).
+- [Add annotations in assistant messages](../guides/add-annotations.md#annotating-with-custom-entities).
 
 ## Entity tags as @-mentions in user messages
 
@@ -27,4 +27,4 @@ Users can tag your entities in the composer using @-mentions.
 
 - The [Entity](https://openai.github.io/chatkit-js/api/openai/chatkit-react/type-aliases/entity/) TypeScript type definition
 - The [UserMessageTagContent](../../api/chatkit/types/#chatkit.types.UserMessageTagContent) Pydantic model definition
-- [Allow @-mentions in user messages](../guides/add-features/allow-mentions.md).
+- [Allow @-mentions in user messages](../guides/allow-mentions.md).

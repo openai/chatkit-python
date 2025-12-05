@@ -31,7 +31,7 @@ Every widget must be wrapped in a root-level container element. For single, self
 
 ## .widget files
 
-Exported `.widget` files are JSON blobs that include the widget template, the expected data schema, and supporting metadata. You can load them server-side and render widgets dynamically with `WidgetTemplate`; see [Build widgets with `WidgetTemplate`](../guides/add-features/stream-widgets.md#build-widgets-with-widgettemplate) for examples.
+Exported `.widget` files are JSON blobs that include the widget template, the expected data schema, and supporting metadata. You can load them server-side and render widgets dynamically with `WidgetTemplate`; see [Build widgets with `WidgetTemplate`](../guides/stream-widgets.md#build-widgets-with-widgettemplate) for examples.
 
 ## WidgetItem
 
@@ -51,6 +51,6 @@ The [`entities.onRequestPreview`](https://openai.github.io/chatkit-js/api/openai
 
 ## Related guides
 
-- [Stream widgets](../guides/add-features/stream-widgets.md)
-- [Create custom forms](../guides/add-features/create-custom-forms.md)
-- [Handle widget actions](../guides/add-features/handle-widget-actions.md)
+- [Stream widgets](../guides/stream-widgets.md)
+- [Create custom forms](../guides/create-custom-forms.md)
+- [Handle widget actions](../guides/handle-widget-actions.md)
