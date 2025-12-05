@@ -29,13 +29,13 @@ Stream [`ErrorEvent`](../../api/chatkit/types/#chatkit.types.ErrorEvent)s for us
 
 Stream [`ProgressUpdateEvent`](../../api/chatkit/types/#chatkit.types.ProgressUpdateEvent)s to show the user transient status while work is in flight.
 
-See [Show progress for long-running tools](../guides/add-features/show-progress-for-long-running-tools.md) for more info.
+See [Show progress while tools run](../guides/update-client-during-response.md#show-progress-while-tools-run) for more info.
 
 ## Client effects
 
 Use [`ClientEffectEvent`](../../api/chatkit/types/#chatkit.types.ClientEffectEvent) to trigger fire-and-forget behavior on the client such as opening a dialog or pushing updates.
 
-See [Send client effects](../guides/add-features/send-client-effects.md) for more info.
+See [Trigger client-side effects without blocking](../guides/update-client-during-response.md#trigger-client-side-effects-without-blocking) for more info.
 
 ## Stream options
 
@@ -43,4 +43,4 @@ See [Send client effects](../guides/add-features/send-client-effects.md) for mor
 
 
 ## Related guides
-- [Stream responses back to your user](../guides/stream-thread-events.md)
+- [Respond to a user message](../guides/respond-to-user-message.md)

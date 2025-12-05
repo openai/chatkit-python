@@ -31,11 +31,11 @@ Every widget must be wrapped in a root-level container element. For single, self
 
 ## .widget files
 
-Exported `.widget` files are JSON blobs that include the widget template, the expected data schema, and supporting metadata. You can load them server-side and render widgets dynamically with `WidgetTemplate`; see [Build widgets with `WidgetTemplate`](../guides/add-features/stream-widgets.md#build-widgets-with-widgettemplate) for examples.
+Exported `.widget` files are JSON blobs that include the widget template, the expected data schema, and supporting metadata. You can load them server-side and render widgets dynamically with `WidgetTemplate`; see [Build widgets with `WidgetTemplate`](../guides/build-interactive-responses-with-widgets.md#build-widgets-with-widgettemplate) for examples.
 
 ## WidgetItem
 
-[`WidgetItem`](../../api/chatkit/types/#chatkit.types.WidgetItem) represents a widget rendered as a [thread item](thread-items.md) in the chat UI. In addition to a reference to the widget instance, it contains a `copy_text` field that represents the text value copied to the clipboard when the user clicks the copy button below the response.
+[`WidgetItem`](../../api/chatkit/types/#chatkit.types.WidgetItem) represents a widget rendered as a [thread item](threads.md#what-are-thread-items) in the chat UI. In addition to a reference to the widget instance, it contains a `copy_text` field that represents the text value copied to the clipboard when the user clicks the copy button below the response.
 
 ## Entity previews
 
@@ -51,6 +51,4 @@ The [`entities.onRequestPreview`](https://openai.github.io/chatkit-js/api/openai
 
 ## Related guides
 
-- [Stream widgets](../guides/add-features/stream-widgets.md)
-- [Create custom forms](../guides/add-features/create-custom-forms.md)
-- [Handle widget actions](../guides/add-features/handle-widget-actions.md)
+- [Build interactive responses with widgets](../guides/build-interactive-responses-with-widgets.md)
