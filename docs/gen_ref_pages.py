@@ -26,7 +26,7 @@ else:
 for path in SRC_ROOT.rglob("*.py"):
     if path.name.startswith("_"):
         continue
-    if path.name in {"version.py", "logger.py"}:
+    if path.name in {"version.py", "logger.py", "actions.py"}:
         continue
 
     module_path = path.with_suffix("").relative_to(SRC_ROOT)
@@ -40,4 +40,19 @@ for path in SRC_ROOT.rglob("*.py"):
     mkdocs_gen_files.set_edit_path(doc_path, path)
     with mkdocs_gen_files.open(doc_path, "w") as f:
         f.write(f"# {path.stem}\n\n")
-        f.write(f"::: {identifier}\n")
+
+        # For the widgets module, keep the module-level directive but only include
+        # a curated set of public members so we preserve nice headings.
+        if identifier == "chatkit.widgets":
+            f.write(f"::: {identifier}\n")
+            f.write("    options:\n")
+            f.write("      members:\n")
+            for symbol in (
+                "WidgetTemplate",
+                "DynamicWidgetRoot",
+                "BasicRoot",
+                "DynamicWidgetComponent",
+            ):
+                f.write(f"        - {symbol}\n")
+        else:
+            f.write(f"::: {identifier}\n")

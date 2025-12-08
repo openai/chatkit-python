@@ -1171,6 +1171,7 @@ class WidgetTemplate:
     def build(
         self, data: dict[str, Any] | BaseModel | None = None
     ) -> DynamicWidgetRoot:
+        """Build a widget from the template and data."""
         rendered = self.template.render(**self._normalize_data(data))
         widget_dict = json.loads(rendered)
         return DynamicWidgetRoot.model_validate(widget_dict)
