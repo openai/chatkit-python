@@ -72,3 +72,4 @@ IconName = (
     ]
     | VendorIconName
 )
+"""Allowed icon names."""
