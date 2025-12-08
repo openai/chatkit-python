@@ -6,6 +6,7 @@ To get a basic ChatKit app runningâ€”a React chat UI talking to a Python serverâ
 ```sh
 git clone https://github.com/openai/openai-chatkit-starter-app.git
 cd openai-chatkit-starter-app/chatkit
+npm install
 npm run dev
 ```
 
