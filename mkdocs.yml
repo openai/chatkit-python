@@ -62,13 +62,13 @@ nav:
   - API Reference:
       - Overview: api/chatkit/index.md
       - Modules:
-          - actions: api/chatkit/actions.md
           - agents: api/chatkit/agents.md
           - errors: api/chatkit/errors.md
           - server: api/chatkit/server.md
           - store: api/chatkit/store.md
           - types: api/chatkit/types.md
           - widgets: api/chatkit/widgets.md
+          - icons: api/chatkit/icons.md
   - Release process / changelog: release.md
   - ChatKit JS Docs: https://openai.github.io/chatkit-js/
 markdown_extensions:

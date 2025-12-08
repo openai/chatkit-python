@@ -10,11 +10,11 @@ Here’s how a widget is represented from design time through runtime streaming.
 | --- | --- |
 | Working definition | [Widget UI language](#widget-ui-language) plus a schema (Zod/JSON) and example data you author in <https://widgets.chatkit.studio>. |
 | Published definition | The exported [`.widget` file](#widget-files) bundling the layout, schema, and sample data. |
-| Server runtime (definition only) | [`WidgetTemplate`](../../api/chatkit/widgets/#chatkit.widgets.WidgetTemplate) instance loaded from the `.widget` file. |
-| Server runtime (hydrated) | [`DynamicWidgetRoot`](../../api/chatkit/widgets/#chatkit.widgets.DynamicWidgetRoot) or [`BasicRoot`](../../api/chatkit/widgets/#chatkit.widgets.BasicRoot) Pydantic model instance built from the template and real data. |
-| Streamed to the client | The hydrated root serialized to JSON and included inside a [`WidgetItem`](../../api/chatkit/types/#chatkit.types.WidgetItem) streamed by `ChatKitServer`. |
+| Server runtime (definition only) | [`WidgetTemplate`](../api/chatkit/widgets.md#chatkit.widgets.WidgetTemplate) instance loaded from the `.widget` file. |
+| Server runtime (hydrated) | [`DynamicWidgetRoot`](../api/chatkit/widgets.md#chatkit.widgets.DynamicWidgetRoot) or [`BasicRoot`](../api/chatkit/widgets.md#chatkit.widgets.BasicRoot) Pydantic model instance built from the template and real data. |
+| Streamed to the client | The hydrated root serialized to JSON and included inside a [`WidgetItem`](../api/chatkit/types.md#chatkit.types.WidgetItem) streamed by `ChatKitServer`. |
 | Rendered by the client | ChatKit.js deserializes the JSON into typed widget objects (for example, [`Card`](https://openai.github.io/chatkit-js/api/openai/chatkit-react/namespaces/widgets/type-aliases/card/) or [`ListView`](https://openai.github.io/chatkit-js/api/openai/chatkit/namespaces/widgets/type-aliases/listview/)) and renders them; entity previews use [`BasicRoot`](https://openai.github.io/chatkit-js/api/openai/chatkit-react/namespaces/widgets/type-aliases/basicroot/) returned from [`entities.onRequestPreview`](#entity-previews). |
-| Sent as model input | A Responses API `Message` produced from a [`WidgetItem`](../../api/chatkit/types/#chatkit.types.WidgetItem) via [`ThreadItemConverter.widget_to_input`](../../api/chatkit/agents/#chatkit.agents.ThreadItemConverter.widget_to_input). |
+| Sent as model input | A Responses API `Message` produced from a [`WidgetItem`](../api/chatkit/types.md#chatkit.types.WidgetItem) via [`ThreadItemConverter.widget_to_input`](../api/chatkit/agents.md#chatkit.agents.ThreadItemConverter.widget_to_input). |
 
 
 ## Widget UI language
@@ -35,7 +35,7 @@ Exported `.widget` files are JSON blobs that include the widget template, the ex
 
 ## WidgetItem
 
-[`WidgetItem`](../../api/chatkit/types/#chatkit.types.WidgetItem) represents a widget rendered as a [thread item](threads.md#what-are-thread-items) in the chat UI. In addition to a reference to the widget instance, it contains a `copy_text` field that represents the text value copied to the clipboard when the user clicks the copy button below the response.
+[`WidgetItem`](../api/chatkit/types.md#chatkit.types.WidgetItem) represents a widget rendered as a [thread item](threads.md#what-are-thread-items) in the chat UI. In addition to a reference to the widget instance, it contains a `copy_text` field that represents the text value copied to the clipboard when the user clicks the copy button below the response.
 
 ## Entity previews
 

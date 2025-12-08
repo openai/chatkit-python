@@ -13,9 +13,9 @@ The sections below explain the core components and steps behind the starter app.
 
 ## Render chat UI
 
-!!! note ""
+!!! note "Quick start uses React"
     This section shows the React integration using `@openai/chatkit-react`.  
-    If you’re not using React, you can render ChatKit directly with vanilla JavaScript using `@openai/chatkit`.
+    If you’re not using React, you can render ChatKit directly with vanilla JavaScript using `@openai/chatkit`. See the [ChatKit.js quick start](https://openai.github.io/chatkit-js/quickstart/) for details.
 
 Install the React bindings:
 
@@ -62,7 +62,7 @@ The chat UI will render, but sending messages will fail until you start the serv
 Install the ChatKit Python package and expose a single `/chatkit` endpoint that forwards requests to a `ChatKitServer` instance.
 
 ```sh
-pip install openai-chatkit fastapi uvicorn
+pip install openai-chatkit
 ```
 
 Create `main.py` with a minimal server that is hard-coded to always reply “Hello, world!”—you'll replace this with an actual call to a model in [Respond to a user message](guides/respond-to-user-message.md).
