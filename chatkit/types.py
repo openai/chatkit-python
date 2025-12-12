@@ -860,6 +860,8 @@ class EntitySource(SourceBase):
     """Optional label shown with the icon in the default entity hover header
     when no preview callback is provided.
     """
+    interactive: bool = False
+    """Per-entity toggle to wire client callbacks and render this entity as interactive."""
     data: dict[str, Any] = Field(default_factory=dict)
     """Additional data for the entity source that is passed to client entity callbacks."""
 
