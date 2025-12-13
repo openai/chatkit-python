@@ -1,9 +1,9 @@
 from abc import ABC
-from enum import StrEnum
+from enum import Enum
 
 
 # Not a closed enum, new error codes can and will be added as needed
-class ErrorCode(StrEnum):
+class ErrorCode(str, Enum):
     STREAM_ERROR = "stream.error"
 
 

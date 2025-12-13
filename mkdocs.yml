@@ -4,9 +4,8 @@ theme:
   features:
     - content.code.copy
     - content.code.select
-    - navigation.sections
     - navigation.path
-    - navigation.expand
+    - navigation.sections
     - content.code.annotate
   palette:
     primary: black
@@ -38,21 +37,39 @@ plugins:
         - docs/gen_ref_pages.py
 
 nav:
-  - Home: index.md
+  - Overview: index.md
+  - Quick start: quickstart.md
+  - Concepts:
+      - Threads and items: concepts/threads.md
+      - Thread stream events: concepts/thread-stream-events.md
+      - Tools: concepts/tools.md
+      - Widgets: concepts/widgets.md
+      - Actions: concepts/actions.md
+      - Entities: concepts/entities.md
   - Guides:
-      - Server Integration: server.md
-      - Actions: actions.md
-      - Widgets: widgets.md
+      - Respond to a user message: guides/respond-to-user-message.md
+      - Let users browse past threads: guides/browse-past-threads.md
+      - Accept rich user input: guides/accept-rich-user-input.md
+      - Let users pick tools and models: guides/let-users-pick-tools-and-models.md
+      - Pass extra app context to your model: guides/pass-extra-app-context-to-your-model.md
+      - Update the client during a response: guides/update-client-during-response.md
+      - Build interactive responses with widgets: guides/build-interactive-responses-with-widgets.md
+      - Add annotations in assistant messages: guides/add-annotations.md
+      - Keep your app in sync with ChatKit: guides/keep-your-app-in-sync-with-chatkit.md
+      - Let your app draft and send messages: guides/let-your-app-draft-and-send-messages.md
+      - Handle feedback: guides/handle-feedback.md
+      - Prepare your app for production: guides/prepare-your-app-for-production.md
   - API Reference:
       - Overview: api/chatkit/index.md
       - Modules:
-          - actions: api/chatkit/actions.md
           - agents: api/chatkit/agents.md
           - errors: api/chatkit/errors.md
           - server: api/chatkit/server.md
           - store: api/chatkit/store.md
           - types: api/chatkit/types.md
           - widgets: api/chatkit/widgets.md
+          - icons: api/chatkit/icons.md
+  - Release process / changelog: release.md
   - ChatKit JS Docs: https://openai.github.io/chatkit-js/
 markdown_extensions:
   - pymdownx.superfences:

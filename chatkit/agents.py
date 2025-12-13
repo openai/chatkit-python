@@ -1,5 +1,6 @@
 import asyncio
 import json
+from collections import defaultdict
 from collections.abc import AsyncIterator
 from datetime import datetime
 from inspect import cleandoc
@@ -7,11 +8,9 @@ from typing import (
     Annotated,
     Any,
     AsyncGenerator,
-    Awaitable,
     Generic,
     Sequence,
     TypeVar,
-    assert_never,
     cast,
 )
 
@@ -39,6 +38,7 @@ from openai.types.responses.response_output_text import (
     Annotation as ResponsesAnnotation,
 )
 from pydantic import BaseModel, ConfigDict, SkipValidation, TypeAdapter
+from typing_extensions import assert_never
 
 from .server import stream_widget
 from .store import Store, StoreItemType
@@ -46,6 +46,7 @@ from .types import (
     Annotation,
     AssistantMessageContent,
     AssistantMessageContentPartAdded,
+    AssistantMessageContentPartAnnotationAdded,
     AssistantMessageContentPartDone,
     AssistantMessageContentPartTextDelta,
     AssistantMessageItem,
@@ -55,6 +56,7 @@ from .types import (
     EndOfTurnItem,
     FileSource,
     HiddenContextItem,
+    SDKHiddenContextItem,
     Task,
     TaskItem,
     ThoughtTask,
@@ -62,7 +64,7 @@ from .types import (
     ThreadItemAddedEvent,
     ThreadItemDoneEvent,
     ThreadItemRemovedEvent,
-    ThreadItemUpdated,
+    ThreadItemUpdatedEvent,
     ThreadMetadata,
     ThreadStreamEvent,
     URLSource,
@@ -108,6 +110,7 @@ class AgentContext(BaseModel, Generic[TContext]):
     def generate_id(
         self, type: StoreItemType, thread: ThreadMetadata | None = None
     ) -> str:
+        """Generate a new store-backed id for the given item type."""
         if type == "thread":
             return self.store.generate_thread_id(self.request_context)
         return self.store.generate_item_id(
@@ -119,6 +122,7 @@ class AgentContext(BaseModel, Generic[TContext]):
         widget: WidgetRoot | AsyncGenerator[WidgetRoot, None],
         copy_text: str | None = None,
     ) -> None:
+        """Stream a widget into the thread by enqueueing widget events."""
         async for event in stream_widget(
             self.thread,
             widget,
@@ -132,6 +136,7 @@ class AgentContext(BaseModel, Generic[TContext]):
     async def end_workflow(
         self, summary: WorkflowSummary | None = None, expanded: bool = False
     ) -> None:
+        """Finalize the active workflow item, optionally attaching a summary."""
         if not self.workflow_item:
             # No workflow to end
             return
@@ -148,6 +153,7 @@ class AgentContext(BaseModel, Generic[TContext]):
         self.workflow_item = None
 
     async def start_workflow(self, workflow: Workflow) -> None:
+        """Begin streaming a new workflow item."""
         self.workflow_item = WorkflowItem(
             id=self.generate_id("workflow"),
             created_at=datetime.now(),
@@ -159,15 +165,16 @@ class AgentContext(BaseModel, Generic[TContext]):
             # Defer sending added event until we have tasks
             return
 
-        await self.stream(ThreadItemAddedEvent(item=self.workflow_item))
+            await self.stream(ThreadItemAddedEvent(item=self.workflow_item))
 
     async def update_workflow_task(self, task: Task, task_index: int) -> None:
+        """Update an existing workflow task and stream the delta."""
         if self.workflow_item is None:
             raise ValueError("Workflow is not set")
         # ensure reference is updated in case task is a copy
         self.workflow_item.workflow.tasks[task_index] = task
         await self.stream(
-            ThreadItemUpdated(
+            ThreadItemUpdatedEvent(
                 item_id=self.workflow_item.id,
                 update=WorkflowTaskUpdated(
                     task=task,
@@ -177,6 +184,7 @@ class AgentContext(BaseModel, Generic[TContext]):
         )
 
     async def add_workflow_task(self, task: Task) -> None:
+        """Append a workflow task and stream the appropriate event."""
         self.workflow_item = self.workflow_item or WorkflowItem(
             id=self.generate_id("workflow"),
             created_at=datetime.now(),
@@ -190,7 +198,7 @@ class AgentContext(BaseModel, Generic[TContext]):
             await self.stream(ThreadItemAddedEvent(item=self.workflow_item))
         else:
             await self.stream(
-                ThreadItemUpdated(
+                ThreadItemUpdatedEvent(
                     item_id=self.workflow_item.id,
                     update=WorkflowTaskAdded(
                         task=task,
@@ -200,6 +208,7 @@ class AgentContext(BaseModel, Generic[TContext]):
             )
 
     async def stream(self, event: ThreadStreamEvent) -> None:
+        """Enqueue a ThreadStreamEvent for downstream processing."""
         await self._events.put(event)
 
     def _complete(self):
@@ -208,9 +217,10 @@ class AgentContext(BaseModel, Generic[TContext]):
 
 def _convert_content(content: Content) -> AssistantMessageContent:
     if content.type == "output_text":
-        annotations = []
-        for annotation in content.annotations:
-            annotations.extend(_convert_annotation(annotation))
+        annotations = [
+            _convert_annotation(annotation) for annotation in content.annotations
+        ]
+        annotations = [a for a in annotations if a is not None]
         return AssistantMessageContent(
             text=content.text,
             annotations=annotations,
@@ -222,37 +232,43 @@ def _convert_content(content: Content) -> AssistantMessageContent:
         )
 
 
-def _convert_annotation(
-    annotation: ResponsesAnnotation,
-) -> list[Annotation]:
+def _convert_annotation(raw_annotation: object) -> Annotation | None:
     # There is a bug in the OpenAPI client that sometimes parses the annotation delta event into the wrong class
-    # resulting into annotation being a dict instead of a ResponsesAnnotation
-    if isinstance(annotation, dict):
-        annotation = TypeAdapter(ResponsesAnnotation).validate_python(annotation)
+    # resulting into annotation being a dict or untyped object instead instead of a ResponsesAnnotation
+    annotation = TypeAdapter[ResponsesAnnotation](ResponsesAnnotation).validate_python(
+        raw_annotation
+    )
 
-    result: list[Annotation] = []
     if annotation.type == "file_citation":
         filename = annotation.filename
         if not filename:
-            return []
-        result.append(
-            Annotation(
-                source=FileSource(filename=filename, title=filename),
-                index=annotation.index,
-            )
-        )
-    elif annotation.type == "url_citation":
-        result.append(
-            Annotation(
-                source=URLSource(
-                    url=annotation.url,
-                    title=annotation.title,
-                ),
-                index=annotation.end_index,
-            )
+            return None
+
+        return Annotation(
+            source=FileSource(filename=filename, title=filename),
+            index=annotation.index,
         )
 
-    return result
+    if annotation.type == "url_citation":
+        return Annotation(
+            source=URLSource(
+                url=annotation.url,
+                title=annotation.title,
+            ),
+            index=annotation.end_index,
+        )
+
+    if annotation.type == "container_file_citation":
+        filename = annotation.filename
+        if not filename:
+            return None
+
+        return Annotation(
+            source=FileSource(filename=filename, title=filename),
+            index=annotation.end_index,
+        )
+
+    return None
 
 
 T1 = TypeVar("T1")
@@ -343,6 +359,7 @@ class StreamingThoughtTracker(BaseModel):
 async def stream_agent_response(
     context: AgentContext, result: RunResultStreaming
 ) -> AsyncIterator[ThreadStreamEvent]:
+    """Convert a streamed Agents SDK run into ChatKit ThreadStreamEvents."""
     current_item_id = None
     current_tool_call = None
     ctx = context
@@ -350,6 +367,10 @@ async def stream_agent_response(
     queue_iterator = _AsyncQueueIterator(context._events)
     produced_items = set()
     streaming_thought: None | StreamingThoughtTracker = None
+    # item_id -> content_index -> annotation count
+    item_annotation_count: defaultdict[str, defaultdict[int, int]] = defaultdict(
+        lambda: defaultdict(int)
+    )
 
     # check if the last item in the thread was a workflow or a client tool call
     # if it was a client tool call, check if the second last item was a workflow
@@ -436,7 +457,7 @@ async def stream_agent_response(
                 if event.part.type == "reasoning_text":
                     continue
                 content = _convert_content(event.part)
-                yield ThreadItemUpdated(
+                yield ThreadItemUpdatedEvent(
                     item_id=event.item_id,
                     update=AssistantMessageContentPartAdded(
                         content_index=event.content_index,
@@ -444,7 +465,7 @@ async def stream_agent_response(
                     ),
                 )
             elif event.type == "response.output_text.delta":
-                yield ThreadItemUpdated(
+                yield ThreadItemUpdatedEvent(
                     item_id=event.item_id,
                     update=AssistantMessageContentPartTextDelta(
                         content_index=event.content_index,
@@ -452,7 +473,7 @@ async def stream_agent_response(
                     ),
                 )
             elif event.type == "response.output_text.done":
-                yield ThreadItemUpdated(
+                yield ThreadItemUpdatedEvent(
                     item_id=event.item_id,
                     update=AssistantMessageContentPartDone(
                         content_index=event.content_index,
@@ -463,7 +484,24 @@ async def stream_agent_response(
                     ),
                 )
             elif event.type == "response.output_text.annotation.added":
-                # Ignore annotation-added events; annotations are reflected in the final item content.
+                annotation = _convert_annotation(event.annotation)
+                if annotation:
+                    # Manually track annotation indices per content part in case we drop an annotation that
+                    # we can't convert to our internal representation (e.g. missing filename).
+                    annotation_index = item_annotation_count[event.item_id][
+                        event.content_index
+                    ]
+                    item_annotation_count[event.item_id][event.content_index] = (
+                        annotation_index + 1
+                    )
+                    yield ThreadItemUpdatedEvent(
+                        item_id=event.item_id,
+                        update=AssistantMessageContentPartAnnotationAdded(
+                            content_index=event.content_index,
+                            annotation_index=annotation_index,
+                            annotation=annotation,
+                        ),
+                    )
                 continue
             elif event.type == "response.output_item.added":
                 item = event.item
@@ -504,7 +542,7 @@ async def stream_agent_response(
                         task=ThoughtTask(content=event.delta),
                     )
                     ctx.workflow_item.workflow.tasks.append(streaming_thought.task)
-                    yield ThreadItemUpdated(
+                    yield ThreadItemUpdatedEvent(
                         item_id=ctx.workflow_item.id,
                         update=WorkflowTaskAdded(
                             task=streaming_thought.task,
@@ -518,7 +556,7 @@ async def stream_agent_response(
                     and event.summary_index == streaming_thought.index
                 ):
                     streaming_thought.task.content += event.delta
-                    yield ThreadItemUpdated(
+                    yield ThreadItemUpdatedEvent(
                         item_id=ctx.workflow_item.id,
                         update=WorkflowTaskUpdated(
                             task=streaming_thought.task,
@@ -549,7 +587,7 @@ async def stream_agent_response(
                             task=task,
                             task_index=ctx.workflow_item.workflow.tasks.index(task),
                         )
-                    yield ThreadItemUpdated(
+                    yield ThreadItemUpdatedEvent(
                         item_id=ctx.workflow_item.id,
                         update=update,
                     )
@@ -634,9 +672,9 @@ class ThreadItemConverter:
     Other item types are converted automatically.
     """
 
-    def attachment_to_message_content(
+    async def attachment_to_message_content(
         self, attachment: Attachment
-    ) -> Awaitable[ResponseInputContentParam]:
+    ) -> ResponseInputContentParam:
         """
         Convert an attachment in a user message into a message content part to send to the model.
         Required when attachments are enabled.
@@ -645,7 +683,7 @@ class ThreadItemConverter:
             "An Attachment was included in a UserMessageItem but Converter.attachment_to_message_content was not implemented"
         )
 
-    def tag_to_message_content(
+    async def tag_to_message_content(
         self, tag: UserMessageTagContent
     ) -> ResponseInputContentParam:
         """
@@ -656,18 +694,58 @@ class ThreadItemConverter:
             "A Tag was included in a UserMessageItem but Converter.tag_to_message_content is not implemented"
         )
 
-    def hidden_context_to_input(
+    async def hidden_context_to_input(
         self, item: HiddenContextItem
     ) -> TResponseInputItem | list[TResponseInputItem] | None:
         """
         Convert a HiddenContextItem into input item(s) to send to the model.
-        Required when HiddenContextItem are used.
+        Required to override when HiddenContextItems with non-string content are used.
         """
-        raise NotImplementedError(
-            "HiddenContextItem were present in a user message but Converter.hidden_context_to_input was not implemented"
+        if not isinstance(item.content, str):
+            raise NotImplementedError(
+                "HiddenContextItems with non-string content were present in a user message but a Converter.hidden_context_to_input was not implemented"
+            )
+
+        text = (
+            "Hidden context for the agent (not shown to the user):\n"
+            f"<HiddenContext>\n{item.content}\n</HiddenContext>"
+        )
+        return Message(
+            type="message",
+            content=[
+                ResponseInputTextParam(
+                    type="input_text",
+                    text=text,
+                )
+            ],
+            role="user",
         )
 
-    def task_to_input(
+    async def sdk_hidden_context_to_input(
+        self, item: SDKHiddenContextItem
+    ) -> TResponseInputItem | list[TResponseInputItem] | None:
+        """
+        Convert a SDKHiddenContextItem into input item to send to the model.
+        This is used by the ChatKit Python SDK for storing additional context
+        for internal operations.
+        Override if you want to wrap the content in a different format.
+        """
+        text = (
+            "Hidden context for the agent (not shown to the user):\n"
+            f"<HiddenContext>\n{item.content}\n</HiddenContext>"
+        )
+        return Message(
+            type="message",
+            content=[
+                ResponseInputTextParam(
+                    type="input_text",
+                    text=text,
+                )
+            ],
+            role="user",
+        )
+
+    async def task_to_input(
         self, item: TaskItem
     ) -> TResponseInputItem | list[TResponseInputItem] | None:
         """
@@ -692,7 +770,7 @@ class ThreadItemConverter:
             role="user",
         )
 
-    def workflow_to_input(
+    async def workflow_to_input(
         self, item: WorkflowItem
     ) -> TResponseInputItem | list[TResponseInputItem] | None:
         """
@@ -722,7 +800,7 @@ class ThreadItemConverter:
             )
         return messages
 
-    def widget_to_input(
+    async def widget_to_input(
         self, item: WidgetItem
     ) -> TResponseInputItem | list[TResponseInputItem] | None:
         """
@@ -801,7 +879,7 @@ class ThreadItemConverter:
 
             tag_content: ResponseInputMessageContentListParam = [
                 # should return summarized text items
-                self.tag_to_message_content(tag)
+                await self.tag_to_message_content(tag)
                 for tag in uniq_tags
             ]
 
@@ -892,16 +970,19 @@ class ThreadItemConverter:
                 out = await self.end_of_turn_to_input(item) or []
                 return out if isinstance(out, list) else [out]
             case WidgetItem():
-                out = self.widget_to_input(item) or []
+                out = await self.widget_to_input(item) or []
                 return out if isinstance(out, list) else [out]
             case WorkflowItem():
-                out = self.workflow_to_input(item) or []
+                out = await self.workflow_to_input(item) or []
                 return out if isinstance(out, list) else [out]
             case TaskItem():
-                out = self.task_to_input(item) or []
+                out = await self.task_to_input(item) or []
                 return out if isinstance(out, list) else [out]
             case HiddenContextItem():
-                out = self.hidden_context_to_input(item) or []
+                out = await self.hidden_context_to_input(item) or []
+                return out if isinstance(out, list) else [out]
+            case SDKHiddenContextItem():
+                out = await self.sdk_hidden_context_to_input(item) or []
                 return out if isinstance(out, list) else [out]
             case _:
                 assert_never(item)
@@ -930,4 +1011,5 @@ _DEFAULT_CONVERTER = ThreadItemConverter()
 
 
 def simple_to_agent_input(thread_items: Sequence[ThreadItem] | ThreadItem):
+    """Helper that converts thread items using the default ThreadItemConverter."""
     return _DEFAULT_CONVERTER.to_agent_input(thread_items)

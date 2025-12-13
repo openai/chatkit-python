@@ -1,0 +1,77 @@
+{
+  "type": "ListView",
+  "children": [
+    {
+      "type": "ListViewItem",
+      "key": "blue",
+      "gap": 5,
+      "onClickAction": {
+        "type": "line.select",
+        "payload": {
+          "id": "blue"
+        }
+      },
+      "children": [
+        {
+          "type": "Box",
+          "background": "blue-500",
+          "radius": "full",
+          "size": 25
+        },
+        {
+          "type": "Text",
+          "value": "Blue line",
+          "size": "sm"
+        }
+      ]
+    },
+    {
+      "type": "ListViewItem",
+      "key": "orange",
+      "gap": 5,
+      "onClickAction": {
+        "type": "line.select",
+        "payload": {
+          "id": "orange"
+        }
+      },
+      "children": [
+        {
+          "type": "Box",
+          "background": "orange-500",
+          "radius": "full",
+          "size": 25
+        },
+        {
+          "type": "Text",
+          "value": "Orange line",
+          "size": "sm"
+        }
+      ]
+    },
+    {
+      "type": "ListViewItem",
+      "key": "purple",
+      "gap": 5,
+      "onClickAction": {
+        "type": "line.select",
+        "payload": {
+          "id": "purple"
+        }
+      },
+      "children": [
+        {
+          "type": "Box",
+          "background": "purple-500",
+          "radius": "full",
+          "size": 25
+        },
+        {
+          "type": "Text",
+          "value": "Purple line",
+          "size": "sm"
+        }
+      ]
+    }
+  ]
+}

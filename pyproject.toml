@@ -1,10 +1,10 @@
 [project]
 name = "openai-chatkit"
-version = "1.0.2"
+version = "1.4.0"
 description = "A ChatKit backend SDK."
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = ["pydantic", "uvicorn", "openai", "openai-agents>=0.3.2"]
+dependencies = ["pydantic", "uvicorn", "openai", "openai-agents>=0.3.2", "jinja2>=3.1,<4"]
 
 [dependency-groups]
 dev = [
@@ -87,7 +87,7 @@ include = ["."]
 exclude = ["**/.venv", "**/.pytest_cache"]
 venvPath = "."
 venv = ".venv"
-pythonVersion = "3.11"
+pythonVersion = "3.10"
 typeCheckingMode = "standard"
 
 [tool.setuptools]

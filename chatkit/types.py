@@ -9,6 +9,7 @@ from typing_extensions import Annotated, TypeIs, TypeVar
 from chatkit.errors import ErrorCode
 
 from .actions import Action
+from .icons import IconName
 from .widgets import WidgetComponent, WidgetRoot
 
 T = TypeVar("T")
@@ -283,12 +284,16 @@ class ThreadItemAddedEvent(BaseModel):
     item: ThreadItem
 
 
-class ThreadItemUpdated(BaseModel):
+class ThreadItemUpdatedEvent(BaseModel):
     """Event describing an update to an existing thread item."""
 
     type: Literal["thread.item.updated"] = "thread.item.updated"
     item_id: str
     update: ThreadItemUpdate
+
+
+# Type alias for backwards compatibility
+ThreadItemUpdated = ThreadItemUpdatedEvent
 
 
 class ThreadItemDoneEvent(BaseModel):
@@ -312,12 +317,34 @@ class ThreadItemReplacedEvent(BaseModel):
     item: ThreadItem
 
 
+class StreamOptions(BaseModel):
+    """Settings that control runtime stream behavior."""
+
+    allow_cancel: bool
+    """Allow the client to request cancellation mid-stream."""
+
+
+class StreamOptionsEvent(BaseModel):
+    """Event emitted to set stream options at runtime."""
+
+    type: Literal["stream_options"] = "stream_options"
+    stream_options: StreamOptions
+
+
 class ProgressUpdateEvent(BaseModel):
     """Event providing incremental progress from the assistant."""
 
     type: Literal["progress_update"] = "progress_update"
     icon: IconName | None = None
     text: str
+
+
+class ClientEffectEvent(BaseModel):
+    """Event emitted to trigger a client side-effect."""
+
+    type: Literal["client_effect"] = "client_effect"
+    name: str
+    data: dict[str, Any] = Field(default_factory=dict)
 
 
 class ErrorEvent(BaseModel):
@@ -349,7 +376,9 @@ ThreadStreamEvent = Annotated[
     | ThreadItemUpdated
     | ThreadItemRemovedEvent
     | ThreadItemReplacedEvent
+    | StreamOptionsEvent
     | ProgressUpdateEvent
+    | ClientEffectEvent
     | ErrorEvent
     | NoticeEvent,
     Field(discriminator="type"),
@@ -571,10 +600,23 @@ class EndOfTurnItem(ThreadItemBase):
 
 
 class HiddenContextItem(ThreadItemBase):
-    """HiddenContext is never sent to the client. It's not officially part of ChatKit. It is only used internally to store additional context in a specific place in the thread."""
+    """
+    HiddenContext is never sent to the client. It's not officially part of ChatKit.js.
+    It is only used internally to store additional context in a specific place in the thread.
+    """
 
     type: Literal["hidden_context_item"] = "hidden_context_item"
     content: Any
+
+
+class SDKHiddenContextItem(ThreadItemBase):
+    """
+    Hidden context that is used by the ChatKit Python SDK for storing additional context
+    for internal operations.
+    """
+
+    type: Literal["sdk_hidden_context"] = "sdk_hidden_context"
+    content: str
 
 
 ThreadItem = Annotated[
@@ -585,6 +627,7 @@ ThreadItem = Annotated[
     | WorkflowItem
     | TaskItem
     | HiddenContextItem
+    | SDKHiddenContextItem
     | EndOfTurnItem,
     Field(discriminator="type"),
 ]
@@ -636,6 +679,7 @@ class UserMessageTagContent(BaseModel):
     id: str
     text: str
     data: dict[str, Any]
+    group: str | None = None
     interactive: bool = False
 
 
@@ -707,7 +751,7 @@ class CustomSummary(BaseModel):
     """Custom summary for a workflow."""
 
     title: str
-    icon: str | None = None
+    icon: IconName | None = None
 
 
 class DurationSummary(BaseModel):
@@ -735,7 +779,7 @@ class CustomTask(BaseTask):
 
     type: Literal["custom"] = "custom"
     title: str | None = None
-    icon: str | None = None
+    icon: IconName | None = None
     content: str | None = None
 
 
@@ -811,9 +855,14 @@ class EntitySource(SourceBase):
 
     type: Literal["entity"] = "entity"
     id: str
-    icon: str | None = None
-    preview: Literal["lazy"] | None = None
+    icon: IconName | None = None
     data: dict[str, Any] = Field(default_factory=dict)
+
+    preview: Literal["lazy"] | None = Field(
+        default=None,
+        deprecated=True,
+        description="This field is ignored. Please use the entities.onRequestPreview ChatKit.js option instead.",
+    )
 
 
 Source = Annotated[
@@ -828,41 +877,3 @@ Source = Annotated[
 
 FeedbackKind = Literal["positive", "negative"]
 """Literal type for feedback sentiment."""
-
-
-IconName = Literal[
-    "analytics",
-    "atom",
-    "bolt",
-    "book-open",
-    "book-closed",
-    "calendar",
-    "chart",
-    "circle-question",
-    "compass",
-    "cube",
-    "globe",
-    "keys",
-    "lab",
-    "images",
-    "lifesaver",
-    "lightbulb",
-    "map-pin",
-    "name",
-    "notebook",
-    "notebook-pencil",
-    "page-blank",
-    "profile",
-    "profile-card",
-    "search",
-    "sparkle",
-    "sparkle-double",
-    "square-code",
-    "square-image",
-    "square-text",
-    "suitcase",
-    "write",
-    "write-alt",
-    "write-alt2",
-]
-"""Literal names of supported progress icons."""

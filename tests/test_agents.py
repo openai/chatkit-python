@@ -38,6 +38,10 @@ from openai.types.responses.response_content_part_added_event import (
     ResponseContentPartAddedEvent,
 )
 from openai.types.responses.response_file_search_tool_call import Result
+from openai.types.responses.response_input_item_param import Message
+from openai.types.responses.response_output_text import (
+    AnnotationContainerFileCitation as ResponsesAnnotationContainerFileCitation,
+)
 from openai.types.responses.response_output_text import (
     AnnotationFileCitation as ResponsesAnnotationFileCitation,
 )
@@ -64,6 +68,7 @@ from chatkit.types import (
     Annotation,
     AssistantMessageContent,
     AssistantMessageContentPartAdded,
+    AssistantMessageContentPartAnnotationAdded,
     AssistantMessageContentPartDone,
     AssistantMessageContentPartTextDelta,
     AssistantMessageItem,
@@ -73,6 +78,7 @@ from chatkit.types import (
     CustomTask,
     DurationSummary,
     FileSource,
+    HiddenContextItem,
     InferenceOptions,
     Page,
     TaskItem,
@@ -80,7 +86,7 @@ from chatkit.types import (
     Thread,
     ThreadItemAddedEvent,
     ThreadItemDoneEvent,
-    ThreadItemUpdated,
+    ThreadItemUpdatedEvent,
     ThreadStreamEvent,
     URLSource,
     UserMessageItem,
@@ -225,7 +231,7 @@ async def test_returns_widget_item_generator():
     assert isinstance(events[0].item, WidgetItem)
     assert events[0].item.widget == Card(children=[Text(id="text", value="")])
 
-    assert isinstance(events[1], ThreadItemUpdated)
+    assert isinstance(events[1], ThreadItemUpdatedEvent)
     assert events[1].update.type == "widget.streaming_text.value_delta"
     assert events[1].update.component_id == "text"
     assert events[1].update.delta == "Hello, world"
@@ -265,7 +271,7 @@ async def test_returns_widget_full_replace_generator():
     assert isinstance(events[0].item, WidgetItem)
     assert events[0].item.widget == Card(children=[Text(id="text", value="Hello!")])
 
-    assert isinstance(events[1], ThreadItemUpdated)
+    assert isinstance(events[1], ThreadItemUpdatedEvent)
     assert events[1].update.type == "widget.root.updated"
     assert events[1].update.widget == Card(
         children=[Text(key="other text", value="World!", streaming=False)]
@@ -469,7 +475,7 @@ async def test_input_item_converter_to_input_items_mixed():
 
 async def test_input_item_converter_user_input_with_tags():
     class MyThreadItemConverter(ThreadItemConverter):
-        def tag_to_message_content(self, tag):
+        async def tag_to_message_content(self, tag):
             return ResponseInputTextParam(
                 type="input_text", text=tag.text + " " + tag.data["key"]
             )
@@ -536,6 +542,72 @@ async def test_input_item_converter_user_input_with_tags_throws_by_default():
 
     with pytest.raises(NotImplementedError):
         await simple_to_agent_input(items)
+
+
+async def test_input_item_converter_for_hidden_context_with_string_content():
+    items = [
+        HiddenContextItem(
+            id="123",
+            content="User pressed the red button",
+            thread_id=thread.id,
+            created_at=datetime.now(),
+        )
+    ]
+
+    # The default converter works for string content
+    items = await simple_to_agent_input(items)
+    assert len(items) == 1
+    assert items[0] == {
+        "content": [
+            {
+                "text": "Hidden context for the agent (not shown to the user):\n<HiddenContext>\nUser pressed the red button\n</HiddenContext>",
+                "type": "input_text",
+            },
+        ],
+        "role": "user",
+        "type": "message",
+    }
+
+
+async def test_input_item_converter_for_hidden_context_with_non_string_content():
+    items = [
+        HiddenContextItem(
+            id="123",
+            content={"harry": "potter", "hermione": "granger"},
+            thread_id=thread.id,
+            created_at=datetime.now(),
+        )
+    ]
+
+    # Default converter should throw
+    with pytest.raises(NotImplementedError):
+        await simple_to_agent_input(items)
+
+    class MyThreadItemConverter(ThreadItemConverter):
+        async def hidden_context_to_input(self, item: HiddenContextItem):
+            content = ",".join(item.content.keys())
+            return Message(
+                type="message",
+                content=[
+                    ResponseInputTextParam(
+                        type="input_text", text=f"<HIDDEN>{content}</HIDDEN>"
+                    )
+                ],
+                role="user",
+            )
+
+    items = await MyThreadItemConverter().to_agent_input(items)
+    assert len(items) == 1
+    assert items[0] == {
+        "content": [
+            {
+                "text": "<HIDDEN>harry,hermione</HIDDEN>",
+                "type": "input_text",
+            },
+        ],
+        "role": "user",
+        "type": "message",
+    }
 
 
 async def test_input_item_converter_with_client_tool_call():
@@ -716,7 +788,7 @@ async def test_stream_agent_response_maps_events():
                     sequence_number=0,
                 ),
             ),
-            ThreadItemUpdated(
+            ThreadItemUpdatedEvent(
                 item_id="123",
                 update=AssistantMessageContentPartTextDelta(
                     content_index=0,
@@ -740,7 +812,7 @@ async def test_stream_agent_response_maps_events():
                     sequence_number=1,
                 ),
             ),
-            ThreadItemUpdated(
+            ThreadItemUpdatedEvent(
                 item_id="123",
                 update=AssistantMessageContentPartAdded(
                     content_index=1,
@@ -761,7 +833,7 @@ async def test_stream_agent_response_maps_events():
                     sequence_number=2,
                 ),
             ),
-            ThreadItemUpdated(
+            ThreadItemUpdatedEvent(
                 item_id="123",
                 update=AssistantMessageContentPartDone(
                     content_index=0,
@@ -790,7 +862,17 @@ async def test_stream_agent_response_maps_events():
                     sequence_number=3,
                 ),
             ),
-            None,
+            ThreadItemUpdatedEvent(
+                item_id="123",
+                update=AssistantMessageContentPartAnnotationAdded(
+                    content_index=0,
+                    annotation_index=0,
+                    annotation=Annotation(
+                        source=FileSource(filename="file.txt", title="file.txt"),
+                        index=5,
+                    ),
+                ),
+            ),
         ),
     ],
 )
@@ -808,6 +890,91 @@ async def test_event_mapping(raw_event, expected_event):
         assert events == [expected_event]
     else:
         assert events == []
+
+
+async def test_stream_agent_response_emits_annotation_added_events():
+    context = AgentContext(
+        previous_response_id=None, thread=thread, store=mock_store, request_context=None
+    )
+    result = make_result()
+    item_id = "item_123"
+
+    def add_annotation_event(annotation, sequence_number):
+        result.add_event(
+            RawResponsesStreamEvent(
+                type="raw_response_event",
+                data=Mock(
+                    type="response.output_text.annotation.added",
+                    annotation=annotation,
+                    content_index=0,
+                    item_id=item_id,
+                    annotation_index=sequence_number,
+                    output_index=0,
+                    sequence_number=sequence_number,
+                ),
+            )
+        )
+
+    add_annotation_event(
+        ResponsesAnnotationFileCitation(
+            type="file_citation",
+            file_id="file_invalid",
+            filename="",
+            index=0,
+        ),
+        sequence_number=0,
+    )
+    add_annotation_event(
+        ResponsesAnnotationContainerFileCitation(
+            type="container_file_citation",
+            container_id="container_1",
+            file_id="file_123",
+            filename="container.txt",
+            start_index=0,
+            end_index=3,
+        ),
+        sequence_number=1,
+    )
+    add_annotation_event(
+        ResponsesAnnotationURLCitation(
+            type="url_citation",
+            url="https://example.com",
+            title="Example",
+            start_index=1,
+            end_index=5,
+        ),
+        sequence_number=2,
+    )
+    result.done()
+
+    events = await all_events(stream_agent_response(context, result))
+    assert events == [
+        ThreadItemUpdatedEvent(
+            item_id=item_id,
+            update=AssistantMessageContentPartAnnotationAdded(
+                content_index=0,
+                annotation_index=0,
+                annotation=Annotation(
+                    source=FileSource(filename="container.txt", title="container.txt"),
+                    index=3,
+                ),
+            ),
+        ),
+        ThreadItemUpdatedEvent(
+            item_id=item_id,
+            update=AssistantMessageContentPartAnnotationAdded(
+                content_index=0,
+                annotation_index=1,
+                annotation=Annotation(
+                    source=URLSource(
+                        url="https://example.com",
+                        title="Example",
+                    ),
+                    index=5,
+                ),
+            ),
+        ),
+    ]
 
 
 @pytest.mark.parametrize("throw_guardrail", ["input", "output"])
@@ -942,6 +1109,14 @@ async def test_stream_agent_response_assistant_message_content_types():
                                     index=0,
                                     filename="test.txt",
                                 ),
+                                ResponsesAnnotationContainerFileCitation(
+                                    type="container_file_citation",
+                                    container_id="container_1",
+                                    file_id="f_456",
+                                    filename="container.txt",
+                                    start_index=0,
+                                    end_index=3,
+                                ),
                                 ResponsesAnnotationURLCitation(
                                     type="url_citation",
                                     url="https://www.google.com",
@@ -993,6 +1168,13 @@ async def test_stream_agent_response_assistant_message_content_types():
                         title="test.txt",
                     ),
                     index=0,
+                ),
+                Annotation(
+                    source=FileSource(
+                        filename="container.txt",
+                        title="container.txt",
+                    ),
+                    index=3,
                 ),
                 Annotation(
                     source=URLSource(
@@ -1115,8 +1297,8 @@ async def test_workflow_streams_first_thought():
     event = await anext(stream)
     assert context.workflow_item is not None
     assert len(context.workflow_item.workflow.tasks) == 1
-    assert isinstance(event, ThreadItemUpdated)
-    assert event == ThreadItemUpdated(
+    assert isinstance(event, ThreadItemUpdatedEvent)
+    assert event == ThreadItemUpdatedEvent(
         item_id=context.workflow_item.id,
         update=WorkflowTaskAdded(
             task=ThoughtTask(content="Think"),
@@ -1128,8 +1310,8 @@ async def test_workflow_streams_first_thought():
     event = await anext(stream)
     assert context.workflow_item is not None
     assert len(context.workflow_item.workflow.tasks) == 1
-    assert isinstance(event, ThreadItemUpdated)
-    assert event == ThreadItemUpdated(
+    assert isinstance(event, ThreadItemUpdatedEvent)
+    assert event == ThreadItemUpdatedEvent(
         item_id=context.workflow_item.id,
         update=WorkflowTaskUpdated(
             task=ThoughtTask(content="Thinking 1"),
@@ -1141,8 +1323,8 @@ async def test_workflow_streams_first_thought():
     event = await anext(stream)
     assert context.workflow_item is not None
     assert len(context.workflow_item.workflow.tasks) == 1
-    assert isinstance(event, ThreadItemUpdated)
-    assert event == ThreadItemUpdated(
+    assert isinstance(event, ThreadItemUpdatedEvent)
+    assert event == ThreadItemUpdatedEvent(
         item_id=context.workflow_item.id,
         update=WorkflowTaskUpdated(
             task=ThoughtTask(content="Thinking 1"),
@@ -1154,8 +1336,8 @@ async def test_workflow_streams_first_thought():
     event = await anext(stream)
     assert context.workflow_item is not None
     assert len(context.workflow_item.workflow.tasks) == 2
-    assert isinstance(event, ThreadItemUpdated)
-    assert event == ThreadItemUpdated(
+    assert isinstance(event, ThreadItemUpdatedEvent)
+    assert event == ThreadItemUpdatedEvent(
         item_id=context.workflow_item.id,
         update=WorkflowTaskAdded(
             task=ThoughtTask(content="Thinking 2"),
@@ -1238,8 +1420,8 @@ async def test_workflow_ends_on_message():
     event = await anext(stream)
     assert context.workflow_item is not None
     assert len(context.workflow_item.workflow.tasks) == 1
-    assert isinstance(event, ThreadItemUpdated)
-    assert event == ThreadItemUpdated(
+    assert isinstance(event, ThreadItemUpdatedEvent)
+    assert event == ThreadItemUpdatedEvent(
         item_id=context.workflow_item.id,
         update=WorkflowTaskAdded(
             task=ThoughtTask(content="Thinking 1"),
