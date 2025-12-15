@@ -23,6 +23,7 @@ IconName = (
         "chevron-left",
         "chevron-right",
         "circle-question",
+        "clock",
         "compass",
         "confetti",
         "cube",
