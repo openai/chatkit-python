@@ -860,6 +860,8 @@ class EntitySource(SourceBase):
     """Optional label shown with the icon in the default entity hover header
     when no preview callback is provided.
     """
+    inline_label: str | None = None
+    """Optional label for the inline annotation view. When not provided, the icon is used instead."""
     interactive: bool = False
     """Per-entity toggle to wire client callbacks and render this entity as interactive."""
     data: dict[str, Any] = Field(default_factory=dict)
