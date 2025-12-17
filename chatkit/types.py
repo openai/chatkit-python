@@ -471,6 +471,14 @@ class WorkflowTaskUpdated(BaseModel):
     task: Task
 
 
+class GeneratedImageUpdated(BaseModel):
+    """Event emitted when a generated image is updated."""
+
+    type: Literal["generated_image.updated"] = "generated_image.updated"
+    image: GeneratedImage
+    progress: float | None = None
+
+
 ThreadItemUpdate = (
     AssistantMessageContentPartAdded
     | AssistantMessageContentPartTextDelta
@@ -481,6 +489,7 @@ ThreadItemUpdate = (
     | WidgetRootUpdated
     | WorkflowTaskAdded
     | WorkflowTaskUpdated
+    | GeneratedImageUpdated
 )
 """Union of possible updates applied to thread items."""
 
@@ -579,6 +588,20 @@ class WidgetItem(ThreadItemBase):
     copy_text: str | None = None
 
 
+class GeneratedImage(BaseModel):
+    """Generated image."""
+
+    id: str
+    url: str
+
+
+class GeneratedImageItem(ThreadItemBase):
+    """Thread item containing a generated image."""
+
+    type: Literal["generated_image"] = "generated_image"
+    image: GeneratedImage | None = None
+
+
 class TaskItem(ThreadItemBase):
     """Thread item containing a task."""
 
@@ -624,6 +647,7 @@ ThreadItem = Annotated[
     | AssistantMessageItem
     | ClientToolCallItem
     | WidgetItem
+    | GeneratedImageItem
     | WorkflowItem
     | TaskItem
     | HiddenContextItem
