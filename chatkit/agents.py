@@ -628,6 +628,29 @@ async def stream_agent_response(
                     )
                     produced_items.add(ctx.generated_image_item.id)
                     yield ThreadItemAddedEvent(item=ctx.generated_image_item)
+            elif event.type == "response.image_generation_call.partial_image":
+                if not ctx.generated_image_item:
+                    continue
+
+                url = await converter.base64_image_to_url(
+                    image_id=event.item_id,
+                    base64_image=event.partial_image_b64,
+                    partial_image_index=event.partial_image_index,
+                )
+                progress = converter.partial_image_index_to_progress(
+                    event.partial_image_index
+                )
+
+                ctx.generated_image_item.image = GeneratedImage(
+                    id=event.item_id, url=url
+                )
+
+                yield ThreadItemUpdatedEvent(
+                    item_id=ctx.generated_image_item.id,
+                    update=GeneratedImageUpdated(
+                        image=ctx.generated_image_item.image, progress=progress
+                    ),
+                )
             elif event.type == "response.reasoning_summary_text.delta":
                 if not ctx.workflow_item:
                     continue
@@ -719,29 +742,6 @@ async def stream_agent_response(
                     yield ThreadItemDoneEvent(item=ctx.generated_image_item)
 
                     ctx.generated_image_item = None
-            elif event.type == "response.image_generation_call.partial_image":
-                if not ctx.generated_image_item:
-                    continue
-
-                url = await converter.base64_image_to_url(
-                    image_id=event.item_id,
-                    base64_image=event.partial_image_b64,
-                    partial_image_index=event.partial_image_index,
-                )
-                progress = converter.partial_image_index_to_progress(
-                    event.partial_image_index
-                )
-
-                ctx.generated_image_item.image = GeneratedImage(
-                    id=event.item_id, url=url
-                )
-
-                yield ThreadItemUpdatedEvent(
-                    item_id=ctx.generated_image_item.id,
-                    update=GeneratedImageUpdated(
-                        image=ctx.generated_image_item.image, progress=progress
-                    ),
-                )
 
     except (InputGuardrailTripwireTriggered, OutputGuardrailTripwireTriggered):
         for item_id in produced_items:
