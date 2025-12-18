@@ -59,6 +59,7 @@ from openai.types.responses.response_text_done_event import ResponseTextDoneEven
 
 from chatkit.agents import (
     AgentContext,
+    ResponseStreamConverter,
     ThreadItemConverter,
     accumulate_text,
     simple_to_agent_input,
@@ -78,6 +79,9 @@ from chatkit.types import (
     CustomTask,
     DurationSummary,
     FileSource,
+    GeneratedImage,
+    GeneratedImageItem,
+    GeneratedImageUpdated,
     HiddenContextItem,
     InferenceOptions,
     Page,
@@ -1189,6 +1193,187 @@ async def test_stream_agent_response_assistant_message_content_types():
         AssistantMessageContent(text="Can't do that", annotations=[]),
     ]
     assert message.id == "1"
+
+
+async def test_stream_agent_response_image_generation_events():
+    context = AgentContext(
+        previous_response_id=None, thread=thread, store=mock_store, request_context=None
+    )
+    result = make_result()
+
+    result.add_event(
+        RawResponsesStreamEvent(
+            type="raw_response_event",
+            data=Mock(
+                type="response.output_item.added",
+                item=Mock(type="image_generation_call", id="img_call_1"),
+                output_index=0,
+                sequence_number=0,
+            ),
+        )
+    )
+    result.add_event(
+        RawResponsesStreamEvent(
+            type="raw_response_event",
+            data=Mock(
+                type="response.output_item.done",
+                item=Mock(
+                    type="image_generation_call", id="img_call_1", result="dGVzdA=="
+                ),
+                output_index=0,
+                sequence_number=1,
+            ),
+        )
+    )
+    result.done()
+
+    stream = stream_agent_response(context, result)
+    event1 = await stream.__anext__()
+    assert isinstance(event1, ThreadItemAddedEvent)
+    assert isinstance(event1.item, GeneratedImageItem)
+    assert event1.item.type == "generated_image"
+    assert event1.item.id == "message_id"
+    assert event1.item.image is None
+
+    event2 = await stream.__anext__()
+    assert isinstance(event2, ThreadItemDoneEvent)
+    assert isinstance(event2.item, GeneratedImageItem)
+    assert event2.item.id == event1.item.id
+    assert event2.item.image == GeneratedImage(
+        id="img_call_1", url="data:image/png;base64,dGVzdA=="
+    )
+
+    with pytest.raises(StopAsyncIteration):
+        await stream.__anext__()
+
+
+async def test_stream_agent_response_image_generation_events_with_custom_converter():
+    context = AgentContext(
+        previous_response_id=None, thread=thread, store=mock_store, request_context=None
+    )
+    result = make_result()
+
+    result.add_event(
+        RawResponsesStreamEvent(
+            type="raw_response_event",
+            data=Mock(
+                type="response.output_item.added",
+                item=Mock(type="image_generation_call", id="img_call_1"),
+                output_index=0,
+                sequence_number=0,
+            ),
+        )
+    )
+    result.add_event(
+        RawResponsesStreamEvent(
+            type="raw_response_event",
+            data=Mock(
+                type="response.output_item.done",
+                item=Mock(
+                    type="image_generation_call", id="img_call_1", result="dGVzdA=="
+                ),
+                output_index=0,
+                sequence_number=1,
+            ),
+        )
+    )
+    result.done()
+
+    class CustomResponseStreamConverter(ResponseStreamConverter):
+        def __init__(self):
+            super().__init__()
+            self.calls: list[str] = []
+
+        async def base64_image_to_url(self, base64_image: str) -> str:
+            self.calls.append(base64_image)
+            return f"https://example.com/{base64_image}"
+
+    converter = CustomResponseStreamConverter()
+    stream = stream_agent_response(context, result, converter=converter)
+    event1 = await stream.__anext__()
+    assert isinstance(event1, ThreadItemAddedEvent)
+    assert isinstance(event1.item, GeneratedImageItem)
+    assert event1.item.image is None
+
+    event2 = await stream.__anext__()
+    assert isinstance(event2, ThreadItemDoneEvent)
+    assert isinstance(event2.item, GeneratedImageItem)
+    assert converter.calls == ["dGVzdA=="]
+    assert event2.item.image == GeneratedImage(
+        id="img_call_1", url="https://example.com/dGVzdA=="
+    )
+    with pytest.raises(StopAsyncIteration):
+        await stream.__anext__()
+
+
+async def test_stream_agent_response_image_generation_partial_progress():
+    context = AgentContext(
+        previous_response_id=None, thread=thread, store=mock_store, request_context=None
+    )
+    result = make_result()
+
+    result.add_event(
+        RawResponsesStreamEvent(
+            type="raw_response_event",
+            data=Mock(
+                type="response.output_item.added",
+                item=Mock(type="image_generation_call", id="img_call_1"),
+                output_index=0,
+                sequence_number=0,
+            ),
+        )
+    )
+    result.add_event(
+        RawResponsesStreamEvent(
+            type="raw_response_event",
+            data=Mock(
+                type="response.image_generation_call.partial_image",
+                partial_image_b64="dGVzdA==",
+                partial_image_index=1,
+                item_id="img_call_1",
+                output_index=0,
+                sequence_number=1,
+            ),
+        )
+    )
+    result.add_event(
+        RawResponsesStreamEvent(
+            type="raw_response_event",
+            data=Mock(
+                type="response.output_item.done",
+                item=Mock(
+                    type="image_generation_call", id="img_call_1", result="dGVzdA=="
+                ),
+                output_index=0,
+                sequence_number=2,
+            ),
+        )
+    )
+    result.done()
+
+    converter = ResponseStreamConverter(partial_images=3)
+    events = await all_events(
+        stream_agent_response(context, result, converter=converter)
+    )
+
+    assert len(events) == 3
+    added_event, partial_event, done_event = events
+
+    assert isinstance(added_event, ThreadItemAddedEvent)
+    assert isinstance(added_event.item, GeneratedImageItem)
+
+    assert isinstance(partial_event, ThreadItemUpdatedEvent)
+    assert isinstance(partial_event.update, GeneratedImageUpdated)
+    assert partial_event.update.progress == pytest.approx(1 / 3)
+    assert partial_event.update.image == GeneratedImage(
+        id="img_call_1", url="data:image/png;base64,dGVzdA=="
+    )
+
+    assert isinstance(done_event, ThreadItemDoneEvent)
+    assert isinstance(done_event.item, GeneratedImageItem)
+    assert done_event.item.image == GeneratedImage(
+        id="img_call_1", url="data:image/png;base64,dGVzdA=="
+    )
 
 
 async def test_workflow_streams_first_thought():
