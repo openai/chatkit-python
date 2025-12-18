@@ -1282,11 +1282,16 @@ async def test_stream_agent_response_image_generation_events_with_custom_convert
     class CustomResponseStreamConverter(ResponseStreamConverter):
         def __init__(self):
             super().__init__()
-            self.calls: list[str] = []
+            self.calls: list[tuple[str, str, int | None]] = []
 
-        async def base64_image_to_url(self, base64_image: str) -> str:
-            self.calls.append(base64_image)
-            return f"https://example.com/{base64_image}"
+        async def base64_image_to_url(
+            self,
+            image_id: str,
+            base64_image: str,
+            partial_image_index: int | None = None,
+        ) -> str:
+            self.calls.append((image_id, base64_image, partial_image_index))
+            return f"https://example.com/{image_id}"
 
     converter = CustomResponseStreamConverter()
     stream = stream_agent_response(context, result, converter=converter)
@@ -1298,9 +1303,9 @@ async def test_stream_agent_response_image_generation_events_with_custom_convert
     event2 = await stream.__anext__()
     assert isinstance(event2, ThreadItemDoneEvent)
     assert isinstance(event2.item, GeneratedImageItem)
-    assert converter.calls == ["dGVzdA=="]
+    assert converter.calls == [("img_call_1", "dGVzdA==", None)]
     assert event2.item.image == GeneratedImage(
-        id="img_call_1", url="https://example.com/dGVzdA=="
+        id="img_call_1", url="https://example.com/img_call_1"
     )
     with pytest.raises(StopAsyncIteration):
         await stream.__anext__()

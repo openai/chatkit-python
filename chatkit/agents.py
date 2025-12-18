@@ -386,12 +386,25 @@ class ResponseStreamConverter:
         """
         self.partial_images = partial_images
 
-    async def base64_image_to_url(self, base64_image: str) -> str:
+    async def base64_image_to_url(
+        self,
+        image_id: str,
+        base64_image: str,
+        partial_image_index: int | None = None,
+    ) -> str:
         """
         Convert a base64-encoded image into a URL.
 
         This method is used to produce the URL stored on thread items for image
         generation results.
+
+        Args:
+            image_id: The ID of the image generation call. This stays stable across partial image updates.
+            base64_image: The base64-encoded image.
+            partial_image_index: The index of the partial image update, starting from 0.
+
+        Returns:
+            A URL string.
         """
         return f"data:image/png;base64,{base64_image}"
 
@@ -695,7 +708,7 @@ async def stream_agent_response(
                     if not ctx.generated_image_item:
                         continue
 
-                    url = await converter.base64_image_to_url(item.result)
+                    url = await converter.base64_image_to_url(item.id, item.result)
                     image = GeneratedImage(id=item.id, url=url)
 
                     ctx.generated_image_item.image = image
@@ -706,7 +719,11 @@ async def stream_agent_response(
                 if not ctx.generated_image_item:
                     continue
 
-                url = await converter.base64_image_to_url(event.partial_image_b64)
+                url = await converter.base64_image_to_url(
+                    event.item_id,
+                    event.partial_image_b64,
+                    event.partial_image_index,
+                )
                 progress = converter.partial_image_index_to_progress(
                     event.partial_image_index
                 )
