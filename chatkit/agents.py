@@ -444,10 +444,8 @@ async def stream_agent_response(
     Args:
         context: The AgentContext to use for the stream.
         result: The RunResultStreaming to convert.
-        image_generation_stream_converter: Controls how streamed image generation output
-            is converted into URLs and progress updates. The default converter stores the
-            generated base64 image and assigns a progress value of 0 to all partial image
-            updates.
+        converter: Defines overridable methods for adapting streamed data (such as image
+            generation results and partial updates) into the forms expected by ChatKit.
 
     Returns:
         An async iterator that yields thread stream events representing the run result.
