@@ -55,6 +55,7 @@ nav:
       - Update the client during a response: guides/update-client-during-response.md
       - Build interactive responses with widgets: guides/build-interactive-responses-with-widgets.md
       - Add annotations in assistant messages: guides/add-annotations.md
+      - Stream generated images: guides/stream-generated-images.md
       - Keep your app in sync with ChatKit: guides/keep-your-app-in-sync-with-chatkit.md
       - Let your app draft and send messages: guides/let-your-app-draft-and-send-messages.md
       - Handle feedback: guides/handle-feedback.md
