@@ -742,13 +742,6 @@ class AttachmentBase(BaseModel):
     id: str
     name: str
     mime_type: str
-    upload_url: AnyUrl | None = Field(
-        default=None,
-        deprecated=True,
-        description="""This field is still supported but will
-            be removed in the next major version update. Please
-            use the `upload_descriptor` field instead.""",
-    )
     upload_descriptor: AttachmentUploadDescriptor | None = None
     """
     Two-phase upload instructions.

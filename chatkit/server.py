@@ -435,6 +435,7 @@ class ChatKitServer(ABC, Generic[TContext]):
                 attachment = await attachment_store.create_attachment(
                     request.params, context
                 )
+                await self.store.save_attachment(attachment, context=context)
                 return self._serialize(attachment)
             case AttachmentsDeleteReq():
                 attachment_store = self._get_attachment_store()
