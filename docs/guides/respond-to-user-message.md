@@ -274,6 +274,7 @@ async def load_document(ctx: RunContextWrapper[AgentContext], document_id: str):
 - [Update the client during a response](update-client-during-response.md)
 - [Build interactive responses with widgets](build-interactive-responses-with-widgets.md)
 - [Add annotations in assistant messages](add-annotations.md)
+- [Stream generated images](stream-generated-images.md)
 - [Keep your app in sync with ChatKit](keep-your-app-in-sync-with-chatkit.md)
 - [Let your app draft and send messages](let-your-app-draft-and-send-messages.md)
 - [Handle feedback](handle-feedback.md)
