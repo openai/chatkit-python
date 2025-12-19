@@ -726,16 +726,34 @@ class ToolChoice(BaseModel):
     id: str
 
 
+class AttachmentUploadDescriptor(BaseModel):
+    """Two-phase upload instructions."""
+
+    url: AnyUrl
+    method: Literal["put", "post"]
+    """The HTTP method to use when uploading the file for two-phase upload."""
+    headers: dict[str, str] = Field(default_factory=dict)
+    """Optional headers to include in the upload request."""
+
+
 class AttachmentBase(BaseModel):
     """Base metadata shared by all attachments."""
 
     id: str
     name: str
     mime_type: str
-    upload_url: AnyUrl | None = None
+    upload_url: AnyUrl | None = Field(
+        default=None,
+        deprecated=True,
+        description="""This field is still supported but will
+            be removed in the next major version update. Please
+            use the `upload_descriptor` field instead.""",
+    )
+    upload_descriptor: AttachmentUploadDescriptor | None = None
     """
-    The URL to upload the file, used for two-phase upload.
-    Should be set to None after upload is complete or when using direct upload where uploading happens when creating the attachment object.
+    Two-phase upload instructions.
+    Should be set to None after upload is complete or when using direct upload
+    where uploading happens when creating the attachment object.
     """
 
 
