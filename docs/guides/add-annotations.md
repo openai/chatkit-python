@@ -58,7 +58,14 @@ yield ThreadItemDoneEvent(
 
 ## Annotating with custom entities
 
-Inline annotations are not yet supported for entity sources, but you can still attach `EntitySource` items as annotations so they appear in the Sources list below the message.
+You can attach `EntitySource` items as annotations to show entity references inline in assistant text and in the **Sources** list below the message.
+
+Entity annotations support a few UI-focused fields:
+
+- `icon`: Controls the icon shown for the entity in the default inline/hover UI.
+- `label`: Customizes what's shown in the default entity hover header (when you are not rendering a custom preview).
+- `inline_label`: Shows a label inline instead of an icon.
+- `interactive=True`: Wires the annotation to client-side callbacks (`ChatKitOptions.entities.onClick` and `ChatKitOptions.entities.onRequestPreview`).
 
 ```python
 from datetime import datetime
@@ -70,6 +77,8 @@ from chatkit.types import (
     ThreadItemDoneEvent,
 )
 
+text = "Here are the ACME account details for reference."
+
 annotations = [
     Annotation(
         source=EntitySource(
@@ -77,8 +86,13 @@ annotations = [
             title="ACME Corp",
             description="Enterprise plan · 500 seats",
             icon="suitcase",
+            label="Customer",
+            interactive=True,
+            # Free-form data object passed to your client-side entity callbacks
             data={"href": "https://crm.example.com/customers/123"},
-        )
+        ),
+        # `index` controls where the inline marker is placed in the text.
+        index=text.index("ACME") + len("ACME"),
     )
 ]
 
@@ -89,7 +103,7 @@ yield ThreadItemDoneEvent(
         created_at=datetime.now(),
         content=[
             AssistantMessageContent(
-                text="Here are the ACME account details for reference.",
+                text=text,
                 annotations=annotations,
             )
         ],
@@ -97,4 +111,4 @@ yield ThreadItemDoneEvent(
 )
 ```
 
-Provide richer previews and navigation by handling [`entities.onRequestPreview`](https://openai.github.io/chatkit-js/api/openai/chatkit/type-aliases/entitiesoption/#onrequestpreview) and [`entities.onClick`](https://openai.github.io/chatkit-js/api/openai/chatkit/type-aliases/entitiesoption/#onclick) in ChatKit.js, using the `data` payload to pass entity information and deep link into your app.
+Provide richer previews and navigation by handling [`entities.onRequestPreview`](https://openai.github.io/chatkit-js/api/openai/chatkit/type-aliases/entitiesoption/#onrequestpreview) and [`entities.onClick`](https://openai.github.io/chatkit-js/api/openai/chatkit/type-aliases/entitiesoption/#onclick) in ChatKit.js. These callbacks are only invoked for entity annotations with `interactive=True`; use the `data` payload to pass entity information and deep link into your app.
