@@ -33,7 +33,7 @@ class MyRequestContext:
 
 ### Implement your `ChatKitServer`
 
-Subclass `ChatKitServer` and implement `respond`. It runs once per user turn and should yield the events that make up your response. We’ll keep this example simple for now and fill in history loading and model calls in later sections.
+Subclass `ChatKitServer` and implement `respond`. It runs once per user turn and should yield the events that make up your response. We'll keep this example simple for now and fill in history loading and model calls in later sections.
 
 ```python
 from collections.abc import AsyncIterator
@@ -175,17 +175,21 @@ class MyPostgresStore(Store[RequestContext]):
     # Implement the remaining Store methods following the same pattern.
 ```
 
-Customize ID generation by overriding `generate_thread_id` and `generate_item_id` if you need external or deterministic IDs. Store metadata such as `previous_response_id` on `ThreadMetadata` to drive your inference pipeline.
+Customize ID generation by overriding `generate_thread_id` and `generate_item_id` if you need external or deterministic IDs. Store metadata such as a model `last_response_id` on `ThreadMetadata` to drive your inference pipeline.
 
 ## Generate a response using your model
 
-Inside `respond`, you’ll usually:
+Inside `respond`, you'll usually:
 
 1. Load recent thread history.
 2. Prepare model input for your agent.
 3. Run inference and stream events back to the client.
 
-### Load thread history inside `respond`
+### Prepare model input
+
+Before you call your model, decide what conversation context you want the model to see.
+
+#### Load thread history (recommended default)
 
 Fetch recent items so the model sees the conversation state before you build the next turn:
 
@@ -200,22 +204,66 @@ items_page = await self.store.load_thread_items(
 items = list(reversed(items_page.data))
 ```
 
-### Prepare model input
-
-Use the defaults first: `simple_to_agent_input` converts user items into Agents SDK inputs, and `ThreadItemConverter` handles other item types. Override converter methods if you need special handling for hidden context, attachments, or tags.
-
-Respect any `input.inference_options` the client sends (model, tool choice, etc.) when you build your request to the model.
+- Start with the defaults: `simple_to_agent_input(items)` is a convenience wrapper around the **default** `ThreadItemConverter` (it calls `ThreadItemConverter().to_agent_input(items)` under the hood).
+- Customize for your integration: some item types require app-specific translation into model input (for example: **attachments**, **tags**, and some **hidden context items**). In those cases, subclass `ThreadItemConverter` and call your converter directly instead of `simple_to_agent_input`. (If your thread includes attachments/tags and you haven't implemented the converter hooks, conversion will raise `NotImplementedError`.)
 
 ```python
 from agents import Runner
-from chatkit.agents import AgentContext, simple_to_agent_input
 
+from chatkit.agents import AgentContext, ThreadItemConverter, simple_to_agent_input
+
+
+# Option A (defaults):
 input_items = await simple_to_agent_input(items)
+
+# Option B (your integration-specific converter):
+# input_items = await MyThreadItemConverter().to_agent_input(items)
+
 agent_context = AgentContext(
     thread=thread,
     store=self.store,
     request_context=context,
 )
+```
+
+Respect any `input.inference_options` the client sends (model, tool choice, etc.) when you build your request to the model.
+
+#### Using `previous_response_id` (OpenAI Responses API only)
+
+If you are using OpenAI models through the **Responses API**, you can pass `previous_response_id` to `Runner.run_streamed(...)` and (often) send only the *new* user message as model input. This can simplify input construction when the provider can retrieve prior context server-side.
+
+Terminology note: Agents exposes the ID of the most recent model response as `result.last_response_id`. On the *next* turn, you pass that saved value as the `previous_response_id` parameter.
+
+**Important restrictions:**
+
+- **OpenAI Responses API only.** Other model providers won't be able to follow a `previous_response_id`, so you must send thread history yourself.
+- **Only includes model-visible history.** If your integration streams ChatKit-only items (e.g. widgets/workflows emitted directly to the client), the model won't know about them unless you also include them in `input_items`.
+- **Works only while the referenced response is retrievable.** Persist `result.last_response_id` and ensure responses are stored (`store=True` / `ModelSettings(store=True)`); otherwise fall back to rebuilding input from thread items.
+
+Example:
+
+```python
+# `ThreadMetadata.metadata` is a free-form dict for integration-specific state.
+# ChatKit does not define a first-class `last_response_id` field on `ThreadMetadata`;
+# your integration can store it under a key and reuse it on the next turn.
+last_response_id = thread.metadata.get("last_response_id")
+last_response_id = last_response_id if isinstance(last_response_id, str) else None
+
+# Often: send only the new message as input when chaining on the server.
+input_items = await simple_to_agent_input(input)
+
+result = Runner.run_streamed(
+    assistant_agent,
+    input_items,
+    context=agent_context,
+    previous_response_id=last_response_id,
+    auto_previous_response_id=True,
+)
+
+# Persist the new response ID so the next turn can chain again.
+if result.last_response_id:
+    thread.metadata["last_response_id"] = result.last_response_id
+    await self.store.save_thread(thread, context=context)
 ```
 
 ### Run inference and stream events
