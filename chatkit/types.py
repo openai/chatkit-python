@@ -730,7 +730,7 @@ class AttachmentUploadDescriptor(BaseModel):
     """Two-phase upload instructions."""
 
     url: AnyUrl
-    method: Literal["put", "post"]
+    method: Literal["POST", "PUT"]
     """The HTTP method to use when uploading the file for two-phase upload."""
     headers: dict[str, str] = Field(default_factory=dict)
     """Optional headers to include in the upload request."""

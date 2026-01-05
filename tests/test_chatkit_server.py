@@ -110,7 +110,7 @@ class InMemoryFileStore(AttachmentStore):
                 preview_url=AnyUrl(f"https://example.com/{id}/preview"),
                 upload_descriptor=AttachmentUploadDescriptor(
                     url=AnyUrl(f"https://example.com/{id}/upload"),
-                    method="put",
+                    method="PUT",
                     headers={"X-My-Header": "my-value"},
                 ),
             )
@@ -121,7 +121,7 @@ class InMemoryFileStore(AttachmentStore):
                 name=input.name,
                 upload_descriptor=AttachmentUploadDescriptor(
                     url=AnyUrl(f"https://example.com/{id}/upload"),
-                    method="put",
+                    method="PUT",
                     headers={"X-My-Header": "my-value"},
                 ),
             )
@@ -1033,7 +1033,7 @@ async def test_create_file():
         assert attachment.upload_descriptor.url == AnyUrl(
             f"https://example.com/{attachment.id}/upload"
         )
-        assert attachment.upload_descriptor.method == "put"
+        assert attachment.upload_descriptor.method == "PUT"
         assert attachment.upload_descriptor.headers == {"X-My-Header": "my-value"}
         assert attachment.id in store.files
 
@@ -1066,7 +1066,7 @@ async def test_create_image_file():
         assert attachment.upload_descriptor.url == AnyUrl(
             f"https://example.com/{attachment.id}/upload"
         )
-        assert attachment.upload_descriptor.method == "put"
+        assert attachment.upload_descriptor.method == "PUT"
         assert attachment.upload_descriptor.headers == {"X-My-Header": "my-value"}
 
         assert attachment.id in store.files
