@@ -31,6 +31,7 @@ from chatkit.types import (
     AttachmentDeleteParams,
     AttachmentsCreateReq,
     AttachmentsDeleteReq,
+    AttachmentUploadDescriptor,
     ClientToolCallItem,
     FeedbackKind,
     FileAttachment,
@@ -107,14 +108,22 @@ class InMemoryFileStore(AttachmentStore):
                 mime_type=input.mime_type,
                 name=input.name,
                 preview_url=AnyUrl(f"https://example.com/{id}/preview"),
-                upload_url=AnyUrl(f"https://example.com/{id}/upload"),
+                upload_descriptor=AttachmentUploadDescriptor(
+                    url=AnyUrl(f"https://example.com/{id}/upload"),
+                    method="put",
+                    headers={"X-My-Header": "my-value"},
+                ),
             )
         else:
             attachment = FileAttachment(
                 id=id,
                 mime_type=input.mime_type,
                 name=input.name,
-                upload_url=AnyUrl(f"https://example.com/{id}/upload"),
+                upload_descriptor=AttachmentUploadDescriptor(
+                    url=AnyUrl(f"https://example.com/{id}/upload"),
+                    method="put",
+                    headers={"X-My-Header": "my-value"},
+                ),
             )
         self.files[attachment.id] = attachment
         return attachment
@@ -679,6 +688,7 @@ async def test_respond_with_tool_call():
         assert events[1].type == "thread.item.done"
         assert events[1].item.type == "assistant_message"
 
+
 async def test_respond_with_tool_status():
     async def responder(
         thread: ThreadMetadata, input: UserMessageItem | None, context: Any
@@ -1019,9 +1029,12 @@ async def test_create_file():
         assert attachment.mime_type == file_content_type
         assert attachment.name == file_name
         assert attachment.type == "file"
-        assert attachment.upload_url == AnyUrl(
+        assert attachment.upload_descriptor is not None
+        assert attachment.upload_descriptor.url == AnyUrl(
             f"https://example.com/{attachment.id}/upload"
         )
+        assert attachment.upload_descriptor.method == "put"
+        assert attachment.upload_descriptor.headers == {"X-My-Header": "my-value"}
         assert attachment.id in store.files
 
 
@@ -1049,9 +1062,12 @@ async def test_create_image_file():
         assert attachment.preview_url == AnyUrl(
             f"https://example.com/{attachment.id}/preview"
         )
-        assert attachment.upload_url == AnyUrl(
+        assert attachment.upload_descriptor is not None
+        assert attachment.upload_descriptor.url == AnyUrl(
             f"https://example.com/{attachment.id}/upload"
         )
+        assert attachment.upload_descriptor.method == "put"
+        assert attachment.upload_descriptor.headers == {"X-My-Header": "my-value"}
 
         assert attachment.id in store.files
 
