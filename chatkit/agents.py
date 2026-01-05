@@ -38,6 +38,11 @@ from openai.types.responses.response_output_message import Content
 from openai.types.responses.response_output_text import (
     Annotation as ResponsesAnnotation,
 )
+from openai.types.responses.response_output_text import (
+    AnnotationContainerFileCitation,
+    AnnotationFileCitation,
+    AnnotationURLCitation,
+)
 from pydantic import BaseModel, ConfigDict, SkipValidation, TypeAdapter
 from typing_extensions import assert_never
 
@@ -220,10 +225,13 @@ class AgentContext(BaseModel, Generic[TContext]):
         self._events.put_nowait(_QueueCompleteSentinel())
 
 
-def _convert_content(content: Content) -> AssistantMessageContent:
+async def _convert_content(
+    content: Content, converter: "ResponseStreamConverter"
+) -> AssistantMessageContent:
     if content.type == "output_text":
         annotations = [
-            _convert_annotation(annotation) for annotation in content.annotations
+            await _convert_annotation(annotation, converter)
+            for annotation in content.annotations
         ]
         annotations = [a for a in annotations if a is not None]
         return AssistantMessageContent(
@@ -237,7 +245,9 @@ def _convert_content(content: Content) -> AssistantMessageContent:
         )
 
 
-def _convert_annotation(raw_annotation: object) -> Annotation | None:
+async def _convert_annotation(
+    raw_annotation: object, converter: "ResponseStreamConverter"
+) -> Annotation | None:
     # There is a bug in the OpenAPI client that sometimes parses the annotation delta event into the wrong class
     # resulting into annotation being a dict or untyped object instead instead of a ResponsesAnnotation
     annotation = TypeAdapter[ResponsesAnnotation](ResponsesAnnotation).validate_python(
@@ -245,33 +255,13 @@ def _convert_annotation(raw_annotation: object) -> Annotation | None:
     )
 
     if annotation.type == "file_citation":
-        filename = annotation.filename
-        if not filename:
-            return None
-
-        return Annotation(
-            source=FileSource(filename=filename, title=filename),
-            index=annotation.index,
-        )
+        return await converter.file_citation_to_annotation(annotation)
 
     if annotation.type == "url_citation":
-        return Annotation(
-            source=URLSource(
-                url=annotation.url,
-                title=annotation.title,
-            ),
-            index=annotation.end_index,
-        )
+        return await converter.url_citation_to_annotation(annotation)
 
     if annotation.type == "container_file_citation":
-        filename = annotation.filename
-        if not filename:
-            return None
-
-        return Annotation(
-            source=FileSource(filename=filename, title=filename),
-            index=annotation.end_index,
-        )
+        return await converter.container_file_citation_to_annotation(annotation)
 
     return None
 
@@ -425,6 +415,41 @@ class ResponseStreamConverter:
 
         return min(1.0, partial_image_index / self.partial_images)
 
+    async def file_citation_to_annotation(
+        self, file_citation: AnnotationFileCitation
+    ) -> Annotation | None:
+        """Convert a Responses API file citation into an assistant message annotation."""
+        filename = file_citation.filename
+        if not filename:
+            return None
+
+        return Annotation(
+            source=FileSource(filename=filename, title=filename),
+            index=file_citation.index,
+        )
+
+    async def container_file_citation_to_annotation(
+        self, container_file_citation: AnnotationContainerFileCitation
+    ) -> Annotation | None:
+        """Convert a Responses API container file citation into an assistant message annotation."""
+        filename = container_file_citation.filename
+        if not filename:
+            return None
+
+        return Annotation(
+            source=FileSource(filename=filename, title=filename),
+            index=container_file_citation.end_index,
+        )
+
+    async def url_citation_to_annotation(
+        self, url_citation: AnnotationURLCitation
+    ) -> Annotation | None:
+        """Convert a Responses API URL citation into an assistant message annotation."""
+        return Annotation(
+            source=URLSource(url=url_citation.url, title=url_citation.title),
+            index=url_citation.end_index,
+        )
+
 
 _DEFAULT_RESPONSE_STREAM_CONVERTER = ResponseStreamConverter()
 
@@ -546,7 +571,7 @@ async def stream_agent_response(
             if event.type == "response.content_part.added":
                 if event.part.type == "reasoning_text":
                     continue
-                content = _convert_content(event.part)
+                content = await _convert_content(event.part, converter)
                 yield ThreadItemUpdatedEvent(
                     item_id=event.item_id,
                     update=AssistantMessageContentPartAdded(
@@ -574,7 +599,7 @@ async def stream_agent_response(
                     ),
                 )
             elif event.type == "response.output_text.annotation.added":
-                annotation = _convert_annotation(event.annotation)
+                annotation = await _convert_annotation(event.annotation, converter)
                 if annotation:
                     # Manually track annotation indices per content part in case we drop an annotation that
                     # we can't convert to our internal representation (e.g. missing filename).
@@ -613,7 +638,10 @@ async def stream_agent_response(
                             # Reusing the Responses message ID
                             id=item.id,
                             thread_id=thread.id,
-                            content=[_convert_content(c) for c in item.content],
+                            content=[
+                                await _convert_content(c, converter)
+                                for c in item.content
+                            ],
                             created_at=datetime.now(),
                         ),
                     )
@@ -722,7 +750,10 @@ async def stream_agent_response(
                             # Reusing the Responses message ID
                             id=item.id,
                             thread_id=thread.id,
-                            content=[_convert_content(c) for c in item.content],
+                            content=[
+                                await _convert_content(c, converter)
+                                for c in item.content
+                            ],
                             created_at=datetime.now(),
                         ),
                     )
