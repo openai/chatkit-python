@@ -664,7 +664,6 @@ class ChatKitServer(ABC, Generic[TContext]):
         context: TContext,
     ) -> AsyncIterator[ThreadStreamEvent]:
         await self.store.add_thread_item(thread.id, item, context=context)
-        await self._cleanup_pending_client_tool_call(thread, context)
         yield ThreadItemDoneEvent(item=item)
 
         async for event in self._process_events(
