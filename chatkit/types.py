@@ -174,6 +174,29 @@ class AttachmentCreateParams(BaseModel):
     mime_type: str
 
 
+class InputTranscribeReq(BaseReq):
+    """Request to transcribe an audio payload into text."""
+
+    type: Literal["input.transcribe"] = "input.transcribe"
+    params: InputTranscribeParams
+
+
+class InputTranscribeParams(BaseModel):
+    """Parameters for speech transcription."""
+
+    audio_base64: str
+    """Base64-encoded audio bytes."""
+
+    mime_type: str
+    """MIME type for the audio payload (e.g. 'audio/webm', 'audio/wav')."""
+
+
+class TranscriptionResult(BaseModel):
+    """Input speech transcription result."""
+
+    text: str
+
+
 class ItemsListReq(BaseReq):
     """Request to list items inside a thread."""
 
@@ -236,6 +259,7 @@ NonStreamingReq = (
     | AttachmentsDeleteReq
     | ThreadsUpdateReq
     | ThreadsDeleteReq
+    | InputTranscribeReq
 )
 """Union of request types that yield immediate responses."""
 

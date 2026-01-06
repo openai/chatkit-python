@@ -1,4 +1,5 @@
 import asyncio
+import base64
 import sqlite3
 from contextlib import contextmanager
 from datetime import datetime
@@ -38,6 +39,8 @@ from chatkit.types import (
     FileAttachment,
     ImageAttachment,
     InferenceOptions,
+    InputTranscribeParams,
+    InputTranscribeReq,
     ItemFeedbackParams,
     ItemsFeedbackReq,
     ItemsListParams,
@@ -75,6 +78,7 @@ from chatkit.types import (
     ThreadUpdatedEvent,
     ThreadUpdateParams,
     ToolChoice,
+    TranscriptionResult,
     UserMessageInput,
     UserMessageItem,
     UserMessageTextContent,
@@ -159,6 +163,7 @@ def make_server(
     ]
     | None = None,
     file_store: AttachmentStore | None = None,
+    transcribe_callback: Callable[[bytes, str, Any], TranscriptionResult] | None = None,
 ):
     global server_id
     db_path = f"file:{server_id}?mode=memory&cache=shared"
@@ -205,6 +210,13 @@ def make_server(
             if handle_feedback is None:
                 return
             handle_feedback(thread_id, item_ids, feedback, context)
+
+        async def transcribe(
+            self, audio_bytes: bytes, mime_type: str, context: Any
+        ) -> TranscriptionResult:
+            if transcribe_callback is None:
+                return await super().transcribe(audio_bytes, mime_type, context)
+            return transcribe_callback(audio_bytes, mime_type, context)
 
         async def process_streaming(
             self, request_obj, context: Any | None = None
@@ -1885,6 +1897,36 @@ async def test_threads_create_passes_tools_to_responder():
         )
         # Sanity check that the request flowed through.
         assert any(e.type == "thread.item.done" for e in events)
+
+
+async def test_input_transcribe_decodes_base64_and_passes_mime_type():
+    audio_bytes = b"hello audio"
+    audio_b64 = base64.b64encode(audio_bytes).decode("ascii")
+    seen: dict[str, Any] = {}
+
+    def transcribe_callback(
+        audio: bytes, mime: str, context: Any
+    ) -> TranscriptionResult:
+        seen["audio"] = audio
+        seen["mime"] = mime
+        seen["context"] = context
+        return TranscriptionResult(text="ok")
+
+    with make_server(transcribe_callback=transcribe_callback) as server:
+        result = await server.process_non_streaming(
+            InputTranscribeReq(
+                params=InputTranscribeParams(
+                    audio_base64=audio_b64,
+                    mime_type="audio/wav",
+                )
+            )
+        )
+        parsed = TypeAdapter(TranscriptionResult).validate_json(result.json)
+        assert parsed.text == "ok"
+
+    assert seen["audio"] == audio_bytes
+    assert seen["mime"] == "audio/wav"
+    assert seen["context"] == DEFAULT_CONTEXT
 
 
 async def test_retry_after_item_passes_tools_to_responder():
