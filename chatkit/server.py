@@ -1,4 +1,5 @@
 import asyncio
+import base64
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterator
 from contextlib import contextmanager
@@ -41,6 +42,7 @@ from .types import (
     ErrorEvent,
     FeedbackKind,
     HiddenContextItem,
+    InputTranscribeReq,
     ItemsFeedbackReq,
     ItemsListReq,
     NonStreamingReq,
@@ -69,6 +71,7 @@ from .types import (
     ThreadStreamEvent,
     ThreadsUpdateReq,
     ThreadUpdatedEvent,
+    TranscriptionResult,
     UserMessageInput,
     UserMessageItem,
     WidgetComponentUpdated,
@@ -319,6 +322,14 @@ class ChatKitServer(ABC, Generic[TContext]):
         """Persist user feedback for one or more thread items."""
         pass
 
+    async def transcribe(  # noqa: B027
+        self, audio_bytes: bytes, mime_type: str, context: TContext
+    ) -> TranscriptionResult:
+        """Transcribe speech audio to text. Override this method to support dictation."""
+        raise NotImplementedError(
+            "transcribe() must be overridden to support the input.transcribe request."
+        )
+
     def action(
         self,
         thread: ThreadMetadata,
@@ -446,6 +457,12 @@ class ChatKitServer(ABC, Generic[TContext]):
                     request.params.attachment_id, context=context
                 )
                 return b"{}"
+            case InputTranscribeReq():
+                audio_bytes = base64.b64decode(request.params.audio_base64)
+                transcription_result = await self.transcribe(
+                    audio_bytes, request.params.mime_type, context=context
+                )
+                return self._serialize(transcription_result)
             case ItemsListReq():
                 items_list_params = request.params
                 items = await self.store.load_thread_items(
