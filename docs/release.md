@@ -2,6 +2,8 @@
 
 The project follows a slightly modified version of [semantic versioning](https://semver.org/spec/v2.0.0.html). The SDK is still evolving and certain backwards-incompatible changes may be released as minor versions.
 
+For full release notes, see [https://github.com/openai/chatkit-python/releases](https://github.com/openai/chatkit-python/releases).
+
 ## Minor versions
 
 We will increase minor versions for **breaking changes** to any public interfaces. For example, going from `1.0.x` to `1.1.x` might include breaking changes.
@@ -17,6 +19,14 @@ We will increment patch versions for non-breaking changes:
 - Changes to private interfaces
 
 ## Breaking change changelog
+
+### 1.5.0
+
+Two-phase uploads:
+
+- `upload_url` was removed from `FileAttachment` and `ImageAttachment`; use `upload_descriptor` instead.
+- `ChatKitServer` now saves the created attachment metadata in the store when handling the `attachments.create` request; remove the store-write step in `AttachmentStore.create_attachment`.
+
 
 ### 1.4.0
 
