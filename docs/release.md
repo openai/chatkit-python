@@ -18,6 +18,14 @@ We will increment patch versions for non-breaking changes:
 
 ## Breaking change changelog
 
+### 1.5.0
+
+Two-phase uploads:
+
+- `upload_url` was removed from `FileAttachment` and `ImageAttachment`; use `upload_descriptor` instead.
+- `ChatKitServer` now saves the created attachment metadata in the store when handling the `attachments.create` request; remove the store-write step in `AttachmentStore.create_attachment`.
+
+
 ### 1.4.0
 
 - Widget and action classes are still usable but marked as deprecated in favor of using `WidgetTemplate` to build widgets from `.widget` files.
