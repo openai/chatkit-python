@@ -1020,6 +1020,213 @@ async def test_stream_agent_response_emits_annotation_added_events():
     ]
 
 
+async def test_stream_agent_response_annotation_added_normalizes_annotations():
+    context = AgentContext(
+        previous_response_id=None, thread=thread, store=mock_store, request_context=None
+    )
+    result = make_result()
+    item_id = "item_123"
+
+    def add_annotation_event(annotation, sequence_number):
+        result.add_event(
+            RawResponsesStreamEvent(
+                type="raw_response_event",
+                data=Mock(
+                    type="response.output_text.annotation.added",
+                    annotation=annotation,
+                    content_index=0,
+                    item_id=item_id,
+                    annotation_index=sequence_number,
+                    output_index=0,
+                    sequence_number=sequence_number,
+                ),
+            )
+        )
+
+    # Invalid file citation is dropped (empty filename)
+    add_annotation_event(
+        {
+            "type": "file_citation",
+            "file_id": "file_invalid",
+            "filename": "",
+            "index": 0,
+        },
+        sequence_number=0,
+    )
+
+    # Container + URL citations are converted; indices are compacted (0, 1) despite the dropped first event.
+    add_annotation_event(
+        {
+            "type": "container_file_citation",
+            "container_id": "container_1",
+            "file_id": "file_123",
+            "filename": "container.txt",
+            "start_index": 0,
+            "end_index": 3,
+        },
+        sequence_number=1,
+    )
+    add_annotation_event(
+        {
+            "type": "url_citation",
+            "url": "https://example.com",
+            "title": "Example",
+            "start_index": 1,
+            "end_index": 5,
+        },
+        sequence_number=2,
+    )
+
+    result.done()
+
+    events = await all_events(stream_agent_response(context, result))
+    assert events == [
+        ThreadItemUpdatedEvent(
+            item_id=item_id,
+            update=AssistantMessageContentPartAnnotationAdded(
+                content_index=0,
+                annotation_index=0,
+                annotation=Annotation(
+                    source=FileSource(filename="container.txt", title="container.txt"),
+                    index=3,
+                ),
+            ),
+        ),
+        ThreadItemUpdatedEvent(
+            item_id=item_id,
+            update=AssistantMessageContentPartAnnotationAdded(
+                content_index=0,
+                annotation_index=1,
+                annotation=Annotation(
+                    source=URLSource(url="https://example.com", title="Example"),
+                    index=5,
+                ),
+            ),
+        ),
+    ]
+
+
+async def test_custom_annotation_conversion_used_by_stream_agent_response():
+    context = AgentContext(
+        previous_response_id=None, thread=thread, store=mock_store, request_context=None
+    )
+    result = make_result()
+
+    class CustomResponseStreamConverter(ResponseStreamConverter):
+        def __init__(self):
+            super().__init__()
+            self.calls: list[str] = []
+
+        async def file_citation_to_annotation(self, file_citation):
+            self.calls.append("file_citation")
+            return Annotation(
+                source=FileSource(
+                    filename="report.pdf",
+                    title="Usage Report",
+                    description="Usage report for the month of January",
+                ),
+                index=111,
+            )
+
+        async def url_citation_to_annotation(self, url_citation):
+            self.calls.append("url_citation")
+            return Annotation(
+                source=URLSource(url="https://custom.example/url", title="Custom"),
+                index=222,
+            )
+
+    converter = CustomResponseStreamConverter()
+
+    result.add_event(
+        RawResponsesStreamEvent(
+            type="raw_response_event",
+            data=Mock(
+                type="response.output_text.annotation.added",
+                annotation=ResponsesAnnotationFileCitation(
+                    type="file_citation",
+                    file_id="file_123",
+                    filename="file.txt",
+                    index=0,
+                ),
+                content_index=0,
+                item_id="m_1",
+                annotation_index=0,
+                output_index=0,
+                sequence_number=0,
+            ),
+        )
+    )
+
+    result.add_event(
+        RawResponsesStreamEvent(
+            type="raw_response_event",
+            data=ResponseOutputItemDoneEvent(
+                type="response.output_item.done",
+                item=ResponseOutputMessage(
+                    id="m_1",
+                    content=[
+                        ResponseOutputText(
+                            annotations=[
+                                ResponsesAnnotationURLCitation(
+                                    type="url_citation",
+                                    url="https://example.com",
+                                    title="Example",
+                                    start_index=0,
+                                    end_index=7,
+                                )
+                            ],
+                            text="Hello!",
+                            type="output_text",
+                        )
+                    ],
+                    role="assistant",
+                    status="completed",
+                    type="message",
+                ),
+                output_index=0,
+                sequence_number=1,
+            ),
+        )
+    )
+    result.done()
+
+    events = await all_events(
+        stream_agent_response(context, result, converter=converter)
+    )
+    assert len(events) == 2
+
+    assert isinstance(events[0], ThreadItemUpdatedEvent)
+    assert events[0].item_id == "m_1"
+    assert events[0].update == AssistantMessageContentPartAnnotationAdded(
+        content_index=0,
+        annotation_index=0,
+        annotation=Annotation(
+            source=FileSource(
+                filename="report.pdf",
+                title="Usage Report",
+                description="Usage report for the month of January",
+            ),
+            index=111,
+        ),
+    )
+
+    assert isinstance(events[1], ThreadItemDoneEvent)
+    assert isinstance(events[1].item, AssistantMessageItem)
+    assert events[1].item.id == "m_1"
+    assert events[1].item.content == [
+        AssistantMessageContent(
+            text="Hello!",
+            annotations=[
+                Annotation(
+                    source=URLSource(url="https://custom.example/url", title="Custom"),
+                    index=222,
+                )
+            ],
+        )
+    ]
+    assert converter.calls == ["file_citation", "url_citation"]
+
+
 @pytest.mark.parametrize("throw_guardrail", ["input", "output"])
 async def test_stream_agent_response_yields_item_removed_event(throw_guardrail):
     context = AgentContext(
