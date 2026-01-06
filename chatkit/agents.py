@@ -225,47 +225,6 @@ class AgentContext(BaseModel, Generic[TContext]):
         self._events.put_nowait(_QueueCompleteSentinel())
 
 
-async def _convert_content(
-    content: Content, converter: "ResponseStreamConverter"
-) -> AssistantMessageContent:
-    if content.type == "output_text":
-        annotations = [
-            await _convert_annotation(annotation, converter)
-            for annotation in content.annotations
-        ]
-        annotations = [a for a in annotations if a is not None]
-        return AssistantMessageContent(
-            text=content.text,
-            annotations=annotations,
-        )
-    else:
-        return AssistantMessageContent(
-            text=content.refusal,
-            annotations=[],
-        )
-
-
-async def _convert_annotation(
-    raw_annotation: object, converter: "ResponseStreamConverter"
-) -> Annotation | None:
-    # There is a bug in the OpenAPI client that sometimes parses the annotation delta event into the wrong class
-    # resulting into annotation being a dict or untyped object instead instead of a ResponsesAnnotation
-    annotation = TypeAdapter[ResponsesAnnotation](ResponsesAnnotation).validate_python(
-        raw_annotation
-    )
-
-    if annotation.type == "file_citation":
-        return await converter.file_citation_to_annotation(annotation)
-
-    if annotation.type == "url_citation":
-        return await converter.url_citation_to_annotation(annotation)
-
-    if annotation.type == "container_file_citation":
-        return await converter.container_file_citation_to_annotation(annotation)
-
-    return None
-
-
 T1 = TypeVar("T1")
 T2 = TypeVar("T2")
 
@@ -452,6 +411,47 @@ class ResponseStreamConverter:
 
 
 _DEFAULT_RESPONSE_STREAM_CONVERTER = ResponseStreamConverter()
+
+
+async def _convert_content(
+    content: Content, converter: ResponseStreamConverter
+) -> AssistantMessageContent:
+    if content.type == "output_text":
+        annotations = [
+            await _convert_annotation(annotation, converter)
+            for annotation in content.annotations
+        ]
+        annotations = [a for a in annotations if a is not None]
+        return AssistantMessageContent(
+            text=content.text,
+            annotations=annotations,
+        )
+    else:
+        return AssistantMessageContent(
+            text=content.refusal,
+            annotations=[],
+        )
+
+
+async def _convert_annotation(
+    raw_annotation: object, converter: ResponseStreamConverter
+) -> Annotation | None:
+    # There is a bug in the OpenAPI client that sometimes parses the annotation delta event into the wrong class
+    # resulting into annotation being a dict or untyped object instead instead of a ResponsesAnnotation
+    annotation = TypeAdapter[ResponsesAnnotation](ResponsesAnnotation).validate_python(
+        raw_annotation
+    )
+
+    if annotation.type == "file_citation":
+        return await converter.file_citation_to_annotation(annotation)
+
+    if annotation.type == "url_citation":
+        return await converter.url_citation_to_annotation(annotation)
+
+    if annotation.type == "container_file_citation":
+        return await converter.container_file_citation_to_annotation(annotation)
+
+    return None
 
 
 async def stream_agent_response(
