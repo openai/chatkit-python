@@ -45,7 +45,6 @@ from chatkit.types import (
     LockedStatus,
     Page,
     ProgressUpdateEvent,
-    ThoughtTask,
     Thread,
     ThreadAddClientToolOutputParams,
     ThreadAddUserMessageParams,
