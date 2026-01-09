@@ -824,6 +824,7 @@ class ChatKitServer(ABC, Generic[TContext]):
                     )
             case WorkflowItem():
                 if isinstance(update, (WorkflowTaskUpdated, WorkflowTaskAdded)):
+                    updated_item = updated_item.model_copy(deep=True)
                     match update:
                         case WorkflowTaskUpdated():
                             updated_item.workflow.tasks[update.task_index] = update.task
