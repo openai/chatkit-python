@@ -697,7 +697,9 @@ class ChatKitServer(ABC, Generic[TContext]):
             with agents_sdk_user_agent_override():
                 async for event in stream():
                     if isinstance(event, ThreadItemAddedEvent):
-                        pending_items[event.item.id] = event.item
+                        # Stash an isolated copy in case we need to persist unfinished items
+                        # on cancellation; downstream handlers keep using the original event.item.
+                        pending_items[event.item.id] = event.item.model_copy(deep=True)
 
                     match event:
                         case ThreadItemDoneEvent():
@@ -779,27 +781,25 @@ class ChatKitServer(ABC, Generic[TContext]):
         | AssistantMessageContentPartAnnotationAdded
         | AssistantMessageContentPartDone,
     ) -> AssistantMessageItem:
-        updated = item.model_copy(deep=True)
-
         # Pad the content list so the requested content_index exists before we write into it.
         # (Streaming updates can arrive for an index that hasn’t been created yet)
-        while len(updated.content) <= update.content_index:
-            updated.content.append(AssistantMessageContent(text="", annotations=[]))
+        while len(item.content) <= update.content_index:
+            item.content.append(AssistantMessageContent(text="", annotations=[]))
 
         match update:
             case AssistantMessageContentPartAdded():
-                updated.content[update.content_index] = update.content
+                item.content[update.content_index] = update.content
             case AssistantMessageContentPartTextDelta():
-                updated.content[update.content_index].text += update.delta
+                item.content[update.content_index].text += update.delta
             case AssistantMessageContentPartAnnotationAdded():
-                annotations = updated.content[update.content_index].annotations
+                annotations = item.content[update.content_index].annotations
                 if update.annotation_index <= len(annotations):
                     annotations.insert(update.annotation_index, update.annotation)
                 else:
                     annotations.append(update.annotation)
             case AssistantMessageContentPartDone():
-                updated.content[update.content_index] = update.content
-        return updated
+                item.content[update.content_index] = update.content
+        return item
 
     def _update_pending_items(
         self,
