@@ -703,6 +703,8 @@ class Select(WidgetComponentBase):
     """Show a clear control to unset the value."""
     disabled: bool | None = None
     """Disable interactions and apply disabled styles."""
+    searchable: bool | None = None
+    """Enables the search input. Defaults to enabling search when there are more than 15 options."""
 
 
 @_direct_usage_of_named_widget_types_deprecated
