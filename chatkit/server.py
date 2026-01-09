@@ -697,7 +697,9 @@ class ChatKitServer(ABC, Generic[TContext]):
             with agents_sdk_user_agent_override():
                 async for event in stream():
                     if isinstance(event, ThreadItemAddedEvent):
-                        pending_items[event.item.id] = event.item
+                        # Stash an isolated copy in case we need to persist unfinished items
+                        # on cancellation; downstream handlers keep using the original event.item.
+                        pending_items[event.item.id] = event.item.model_copy(deep=True)
 
                     match event:
                         case ThreadItemDoneEvent():
@@ -805,7 +807,6 @@ class ChatKitServer(ABC, Generic[TContext]):
         event: ThreadItemUpdatedEvent,
     ):
         updated_item = pending_items.get(event.item_id)
-        updated_item = updated_item.model_copy(deep=True) if updated_item else None
         update = event.update
         match updated_item:
             case AssistantMessageItem():

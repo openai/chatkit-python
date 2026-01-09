@@ -33,6 +33,7 @@ from chatkit.types import (
     AttachmentsDeleteReq,
     AttachmentUploadDescriptor,
     ClientToolCallItem,
+    CustomTask,
     FeedbackKind,
     FileAttachment,
     ImageAttachment,
@@ -44,6 +45,7 @@ from chatkit.types import (
     LockedStatus,
     Page,
     ProgressUpdateEvent,
+    ThoughtTask,
     Thread,
     ThreadAddClientToolOutputParams,
     ThreadAddUserMessageParams,
@@ -79,6 +81,9 @@ from chatkit.types import (
     UserMessageTextContent,
     WidgetItem,
     WidgetRootUpdated,
+    Workflow,
+    WorkflowItem,
+    WorkflowTaskAdded,
 )
 from chatkit.widgets import Card, Text
 from tests._types import RequestContext
@@ -352,6 +357,65 @@ async def test_stream_cancellation_does_not_persist_pending_empty_assistant_mess
             await server.store.load_item(
                 thread.id, "assistant-message-pending", DEFAULT_CONTEXT
             )
+
+
+async def test_workflow_task_not_duplicated_on_done_event():
+    """
+    Regression test to make sure pending item updates do not modify the
+    origin item that was streamed.
+    """
+
+    async def responder(
+        thread: ThreadMetadata, input: UserMessageItem | None, context: Any
+    ) -> AsyncIterator[ThreadStreamEvent]:
+        workflow_item = WorkflowItem(
+            id="workflow-item",
+            created_at=datetime.now(),
+            thread_id=thread.id,
+            workflow=Workflow(type="custom", tasks=[]),
+        )
+
+        yield ThreadItemAddedEvent(item=workflow_item)
+
+        task = CustomTask(title="foo", content="bar")
+        yield ThreadItemUpdatedEvent(
+            item_id=workflow_item.id,
+            update=WorkflowTaskAdded(task=task, task_index=0),
+        )
+
+        workflow_item.workflow.tasks.append(task)
+        yield ThreadItemDoneEvent(item=workflow_item)
+
+    with make_server(responder) as server:
+        events = await server.process_streaming(
+            ThreadsCreateReq(
+                params=ThreadCreateParams(
+                    input=UserMessageInput(
+                        content=[UserMessageTextContent(text="Hello")],
+                        attachments=[],
+                        inference_options=InferenceOptions(),
+                    )
+                )
+            )
+        )
+
+        thread = next(e.thread for e in events if e.type == "thread.created")
+        workflow_done_event = next(
+            e
+            for e in events
+            if isinstance(e, ThreadItemDoneEvent) and isinstance(e.item, WorkflowItem)
+        )
+        workflow_done_item = cast(WorkflowItem, workflow_done_event.item)
+        assert len(workflow_done_item.workflow.tasks) == 1
+        assert workflow_done_item.workflow.tasks[0].title == "foo"
+
+        stored = await server.store.load_item(
+            thread.id, workflow_done_item.id, DEFAULT_CONTEXT
+        )
+        assert isinstance(stored, WorkflowItem)
+        stored_workflow = cast(WorkflowItem, stored)
+        assert len(stored_workflow.workflow.tasks) == 1
+        assert stored_workflow.workflow.tasks[0].title == "foo"
 
 
 async def test_flows_context_to_responder():
