@@ -3,6 +3,7 @@ from typing import Annotated, Literal
 from pydantic import StringConstraints
 
 VendorIconName = Annotated[str, StringConstraints(pattern=r"^vendor:")]
+LucideIconName = Annotated[str, StringConstraints(pattern=r"^lucide:")]
 
 IconName = (
     Literal[
@@ -72,5 +73,6 @@ IconName = (
         "write-alt2",
     ]
     | VendorIconName
+    | LucideIconName
 )
 """Allowed icon names."""
