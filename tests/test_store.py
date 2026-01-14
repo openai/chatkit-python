@@ -39,7 +39,15 @@ def make_thread_items() -> list[ThreadItem]:
     user_msg = UserMessageItem(
         id="msg_100000",
         content=[UserMessageTextContent(text="Hello!")],
-        attachments=[],
+        attachments=[
+            FileAttachment(
+                id="file_1",
+                type="file",
+                mime_type="text/plain",
+                name="test.txt",
+                metadata={"source": "test"},
+            )
+        ],
         inference_options=InferenceOptions(),
         thread_id="test_thread",
         created_at=now,
@@ -169,6 +177,7 @@ class TestStore(ABC):
             mime_type="image/png",
             name="test.png",
             preview_url=AnyUrl("https://example.com/test.png"),
+            metadata={"source": "test"},
         )
         await self.store.save_attachment(image, DEFAULT_CONTEXT)
         loaded = await self.store.load_attachment(image.id, DEFAULT_CONTEXT)
