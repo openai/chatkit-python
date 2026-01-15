@@ -878,7 +878,11 @@ class ChatKitServer(ABC, Generic[TContext]):
             after = items.after
 
     def _serialize(self, obj: BaseModel) -> bytes:
-        return obj.model_dump_json(by_alias=True, exclude_none=True).encode("utf-8")
+        return obj.model_dump_json(
+            by_alias=True,
+            exclude_none=True,
+            context={"exclude_metadata": True},
+        ).encode("utf-8")
 
     def _to_thread_response(self, thread: ThreadMetadata | Thread) -> Thread:
         def is_hidden(item: ThreadItem) -> bool:

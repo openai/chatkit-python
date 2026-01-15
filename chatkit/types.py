@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any, Generic, Literal
 
-from pydantic import AnyUrl, BaseModel, Field
+from pydantic import AnyUrl, BaseModel, Field, SerializationInfo, model_serializer
 from typing_extensions import Annotated, TypeIs, TypeVar
 
 from chatkit.errors import ErrorCode
@@ -748,6 +748,19 @@ class AttachmentBase(BaseModel):
     Should be set to None after upload is complete or when using direct upload
     where uploading happens when creating the attachment object.
     """
+    metadata: dict[str, Any] | None = None
+    """
+    Integration-only metadata stored with the attachment. Ignored by ChatKit and not
+    returned in ChatKitServer responses. If you serialize attachments from a custom
+    direct-upload endpoint and want to omit this field, pass context={"exclude_metadata": True}.
+    """
+
+    @model_serializer(mode="wrap")
+    def _serialize(self, serializer, info: SerializationInfo):
+        data = serializer(self)
+        if isinstance(data, dict) and (info.context or {}).get("exclude_metadata"):
+            data.pop("metadata", None)
+        return data
 
 
 class FileAttachment(AttachmentBase):

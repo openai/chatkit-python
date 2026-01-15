@@ -106,6 +106,7 @@ class InMemoryFileStore(AttachmentStore):
     ) -> Attachment:
         # Simple in-memory attachment creation
         id = f"atc_{len(self.files) + 1}"
+        metadata = {"source": "test"}
         if input.mime_type.startswith("image/"):
             attachment = ImageAttachment(
                 id=id,
@@ -117,6 +118,7 @@ class InMemoryFileStore(AttachmentStore):
                     method="PUT",
                     headers={"X-My-Header": "my-value"},
                 ),
+                metadata=metadata,
             )
         else:
             attachment = FileAttachment(
@@ -128,6 +130,7 @@ class InMemoryFileStore(AttachmentStore):
                     method="PUT",
                     headers={"X-My-Header": "my-value"},
                 ),
+                metadata=metadata,
             )
         self.files[attachment.id] = attachment
         return attachment
@@ -1100,6 +1103,10 @@ async def test_create_file():
         assert attachment.upload_descriptor.headers == {"X-My-Header": "my-value"}
         assert attachment.id in store.files
 
+        # The `metadata` field is excluded from serialization by default but still stored server-side
+        assert attachment.metadata is None
+        assert store.files[attachment.id].metadata == {"source": "test"}
+
 
 async def test_create_image_file():
     store = InMemoryFileStore()
@@ -1133,6 +1140,43 @@ async def test_create_image_file():
         assert attachment.upload_descriptor.headers == {"X-My-Header": "my-value"}
 
         assert attachment.id in store.files
+
+
+async def test_user_message_attachment_metadata_not_serialized():
+    attachment = FileAttachment(
+        id="file_with_metadata",
+        type="file",
+        mime_type="text/plain",
+        name="test.txt",
+        metadata={"source": "test"},
+    )
+
+    with make_server() as server:
+        await server.store.save_attachment(attachment, DEFAULT_CONTEXT)
+        events = await server.process_streaming(
+            ThreadsCreateReq(
+                params=ThreadCreateParams(
+                    input=UserMessageInput(
+                        content=[UserMessageTextContent(text="Message with file")],
+                        attachments=[attachment.id],
+                        inference_options=InferenceOptions(),
+                    )
+                )
+            )
+        )
+        thread = next(
+            event.thread for event in events if event.type == "thread.created"
+        )
+
+        list_result = await server.process_non_streaming(
+            ItemsListReq(params=ItemsListParams(thread_id=thread.id))
+        )
+        items = TypeAdapter(Page[ThreadItem]).validate_json(list_result.json)
+        user_items = [item for item in items.data if item.type == "user_message"]
+        assert user_items
+        attachments = user_items[0].attachments
+        assert attachments
+        assert all(att.metadata is None for att in attachments)
 
 
 async def test_create_file_without_filestore():
