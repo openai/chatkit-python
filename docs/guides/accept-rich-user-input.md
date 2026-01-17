@@ -182,6 +182,8 @@ To enable entity tagging as @-mentions in the composer, configure [`entities.onT
 
 It should return a list of [Entity](https://openai.github.io/chatkit-js/api/openai/chatkit/type-aliases/entity/) objects that match the query string.
 
+If you want to hint that @-mentions are available, enable the composer `@` button by setting [`entities.showComposerMenu`](https://openai.github.io/chatkit-js/api/openai/chatkit/type-aliases/entitiesoption/#showcomposermenu). When clicked, it inserts `@` into the composer and opens the tag search menu automatically.
+
 ```ts
 const chatkit = useChatKit({
   // ...
@@ -204,6 +206,8 @@ const chatkit = useChatKit({
         },
       ]
     },
+    // Optional: show the "@" button in the composer for added discoverability.
+    showComposerMenu: true,
   },
 })
 ```

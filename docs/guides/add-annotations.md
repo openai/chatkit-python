@@ -13,6 +13,53 @@ Provide the model with citable evidence via tools to receive citation annotation
 
 No additional server-side wiring is required beyond calling `stream_agent_response`. If the model emits citation annotations from tool usage, ChatKit will forward them automatically as `Annotation` objects on the corresponding content parts.
 
+### Customize how citations are converted
+
+Sometimes the default rendering for model-emitted citations is not very helpful. For example, file citations may not include enough metadata for ChatKit to show a meaningful default title or description. You can pass a custom [`ResponseStreamConverter`](../../api/chatkit/agents/#chatkit.agents.ResponseStreamConverter) and override:
+
+- `file_citation_to_annotation`
+- `container_file_citation_to_annotation`
+- `url_citation_to_annotation`
+
+Here is a minimal example that enriches file citations with a more helpful title/description using an internal mapping:
+
+```python
+from chatkit.agents import ResponseStreamConverter, stream_agent_response
+from chatkit.types import Annotation, FileSource
+
+
+class MyResponseStreamConverter(ResponseStreamConverter):
+    def __init__(self, file_lookup: dict[str, dict[str, str]]):
+        super().__init__()
+        self._file_lookup = file_lookup
+
+    async def file_citation_to_annotation(self, citation):
+        info = self._file_lookup.get(citation.file_id, {})
+        return Annotation(
+            source=FileSource(
+                filename=info.get("filename", citation.file_id),
+                title=info.get("title"),
+                description=info.get("description"),
+            ),
+            index=citation.index,
+        )
+
+
+converter = MyResponseStreamConverter(
+    file_lookup={
+        "file_123": {
+            "filename": "q1_report.pdf",
+            "title": "Q1 Report",
+            "description": "Quarterly performance summary",
+        }
+    }
+)
+
+stream_agent_response(..., converter=converter)
+```
+
+You can also return an `EntitySource` instead of a `FileSource` to control the inline label, handle clicks, and customize the popover preview. For more on entity annotations (including `interactive` click/preview hooks), see [Annotating with custom entities](#annotating-with-custom-entities) below.
+
 
 ## Attach sources manually
 
