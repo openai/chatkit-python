@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Generic, Literal, cast
+from typing import Any, Generic, Literal
 
 from pydantic import (
     AnyUrl,
     BaseModel,
     Field,
     SerializationInfo,
-    field_validator,
     model_serializer,
 )
 from typing_extensions import Annotated, TypeIs, TypeVar
@@ -195,14 +194,7 @@ class InputTranscribeParams(BaseModel):
     """Base64-encoded audio bytes."""
 
     mime_type: str
-    """MIME type for the audio payload."""
-
-    @field_validator("mime_type", mode="before")
-    @classmethod
-    def _normalize_mime_type(cls, v: object) -> object:
-        if not isinstance(v, str):
-            return v
-        return v.strip().replace("; ", ";").lower()
+    """Raw MIME type for the audio payload, e.g. "audio/webm;codecs=opus"."""
 
 
 class AudioInput(BaseModel):

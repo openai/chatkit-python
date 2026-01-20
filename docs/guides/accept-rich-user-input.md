@@ -195,22 +195,35 @@ This maps to `ChatKitOptions.composer.dictation`.
 
 ### Implement `ChatKitServer.transcribe`
 
-When dictation is enabled, the client records audio and sends it to your backend for transcription. Implement `ChatKitServer.transcribe` to accept audio bytes and return a transcription result.
+When dictation is enabled, the client records audio and sends it to your backend for transcription. Implement `ChatKitServer.transcribe` to accept audio input and return a transcription result.
+
+The client sends one of:
+
+- `"audio/webm;codecs=opus"` (preferred for Chrome/Firefox/Safari 18.4+)
+- `"audio/mp4"` (fallback for older Safari/iOS)
+- `"audio/ogg;codecs=opus"` (alternative for some environments)
+
+The raw value is available as `audio_input.mime_type`. Use `audio_input.media_type` when you only need the base media type (`"audio/webm"`, `"audio/ogg"`, or `"audio/mp4"`).
 
 Example transcription method using the OpenAI Audio API:
 
 ```python
-async def transcribe(self, audio_bytes: bytes, mime_type: str, context: RequestContext) -> str:
-    ext = "m4a" if mime_type.startswith("audio/mp4") else "webm"
-    audio_file = io.BytesIO(audio_bytes)
-    audio_file.name = f"audio.{ext}"
+async def transcribe(self, audio_input: AudioInput, context: RequestContext) -> TranscriptionResult:
+  ext = {
+      "audio/webm": "webm",
+      "audio/mp4": "m4a",
+      "audio/ogg": "ogg",
+  }.get(audio_input.media_type)
+  if not ext:
+      raise HTTPException(status_code=400, detail="Unexpected audio format")
 
-    client = OpenAI()
-    transcription = client.audio.transcriptions.create(
-        model="gpt-4o-transcribe",
-        file=audio_file
-    )
-    return TranscriptionResult(text=transcription.text)
+  audio_file = io.BytesIO(audio_input.data)
+  audio_file.name = f"audio.{ext}"
+  transcription = client.audio.transcriptions.create(
+      model="gpt-4o-transcribe",
+      file=audio_file
+  )
+  return TranscriptionResult(text=transcription.text)
 ```
 
 Return a `TranscriptionResult` that includes the final `text` that should appear in the composer.

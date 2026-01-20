@@ -327,7 +327,10 @@ class ChatKitServer(ABC, Generic[TContext]):
         self, audio_input: AudioInput, context: TContext
     ) -> TranscriptionResult:
         """Transcribe speech audio to text (dictation).
-        The client sends `audio/webm;codecs=opus`, `audio/ogg;codecs=opus`, or `audio/mp4`.
+
+        The client sends one of: `audio/webm;codecs=opus`, `audio/mp4`, `audio/ogg;codecs=opus`.
+        Audio bytes are in `audio_input.data`. The raw MIME type is `audio_input.mime_type`; use
+        `audio_input.media_type` for the base media type (`audio/webm`, `audio/ogg`, `audio/mp4`).
 
         Args:
             audio_input: Audio bytes plus MIME type metadata for transcription.
