@@ -36,6 +36,7 @@ from .types import (
     AssistantMessageItem,
     AttachmentsCreateReq,
     AttachmentsDeleteReq,
+    AudioInput,
     ChatKitReq,
     ClientToolCallItem,
     ErrorCode,
@@ -323,9 +324,18 @@ class ChatKitServer(ABC, Generic[TContext]):
         pass
 
     async def transcribe(  # noqa: B027
-        self, audio_bytes: bytes, mime_type: str, context: TContext
+        self, audio_input: AudioInput, context: TContext
     ) -> TranscriptionResult:
-        """Transcribe speech audio to text. Override this method to support dictation."""
+        """Transcribe speech audio to text (dictation).
+        The client sends `audio/webm;codecs=opus`, `audio/ogg;codecs=opus`, or `audio/mp4`.
+
+        Args:
+            audio_input: Audio bytes plus MIME type metadata for transcription.
+            context: Arbitrary per-request context provided by the caller.
+
+        Returns:
+            A `TranscriptionResult` whose `text` is what should appear in the composer.
+        """
         raise NotImplementedError(
             "transcribe() must be overridden to support the input.transcribe request."
         )
@@ -460,7 +470,8 @@ class ChatKitServer(ABC, Generic[TContext]):
             case InputTranscribeReq():
                 audio_bytes = base64.b64decode(request.params.audio_base64)
                 transcription_result = await self.transcribe(
-                    audio_bytes, request.params.mime_type, context=context
+                    AudioInput(data=audio_bytes, mime_type=request.params.mime_type),
+                    context=context,
                 )
                 return self._serialize(transcription_result)
             case ItemsListReq():

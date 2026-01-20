@@ -33,6 +33,7 @@ from chatkit.types import (
     AttachmentsCreateReq,
     AttachmentsDeleteReq,
     AttachmentUploadDescriptor,
+    AudioInput,
     ClientToolCallItem,
     CustomTask,
     FeedbackKind,
@@ -163,7 +164,7 @@ def make_server(
     ]
     | None = None,
     file_store: AttachmentStore | None = None,
-    transcribe_callback: Callable[[bytes, str, Any], TranscriptionResult] | None = None,
+    transcribe_callback: Callable[[AudioInput, Any], TranscriptionResult] | None = None,
 ):
     global server_id
     db_path = f"file:{server_id}?mode=memory&cache=shared"
@@ -212,11 +213,11 @@ def make_server(
             handle_feedback(thread_id, item_ids, feedback, context)
 
         async def transcribe(
-            self, audio_bytes: bytes, mime_type: str, context: Any
+            self, audio_input: AudioInput, context: Any
         ) -> TranscriptionResult:
             if transcribe_callback is None:
-                return await super().transcribe(audio_bytes, mime_type, context)
-            return transcribe_callback(audio_bytes, mime_type, context)
+                return await super().transcribe(audio_input, context)
+            return transcribe_callback(audio_input, context)
 
         async def process_streaming(
             self, request_obj, context: Any | None = None
@@ -1899,16 +1900,17 @@ async def test_threads_create_passes_tools_to_responder():
         assert any(e.type == "thread.item.done" for e in events)
 
 
-async def test_input_transcribe_decodes_base64_and_passes_mime_type():
+async def test_input_transcribe_decodes_base64_and_normalizes_mime_type():
     audio_bytes = b"hello audio"
     audio_b64 = base64.b64encode(audio_bytes).decode("ascii")
     seen: dict[str, Any] = {}
 
     def transcribe_callback(
-        audio: bytes, mime: str, context: Any
+        audio_input: AudioInput, context: Any
     ) -> TranscriptionResult:
-        seen["audio"] = audio
-        seen["mime"] = mime
+        seen["audio"] = audio_input.data
+        seen["mime"] = audio_input.mime_type
+        seen["media_type"] = audio_input.media_type
         seen["context"] = context
         return TranscriptionResult(text="ok")
 
@@ -1917,7 +1919,7 @@ async def test_input_transcribe_decodes_base64_and_passes_mime_type():
             InputTranscribeReq(
                 params=InputTranscribeParams(
                     audio_base64=audio_b64,
-                    mime_type="audio/wav",
+                    mime_type="audio/webm; codecs=opus",
                 )
             )
         )
@@ -1925,7 +1927,8 @@ async def test_input_transcribe_decodes_base64_and_passes_mime_type():
         assert parsed.text == "ok"
 
     assert seen["audio"] == audio_bytes
-    assert seen["mime"] == "audio/wav"
+    assert seen["mime"] == "audio/webm;codecs=opus"
+    assert seen["media_type"] == "audio/webm"
     assert seen["context"] == DEFAULT_CONTEXT
 
 

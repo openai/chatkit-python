@@ -1,9 +1,16 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Generic, Literal
+from typing import Any, Generic, Literal, cast
 
-from pydantic import AnyUrl, BaseModel, Field, SerializationInfo, model_serializer
+from pydantic import (
+    AnyUrl,
+    BaseModel,
+    Field,
+    SerializationInfo,
+    field_validator,
+    model_serializer,
+)
 from typing_extensions import Annotated, TypeIs, TypeVar
 
 from chatkit.errors import ErrorCode
@@ -188,7 +195,29 @@ class InputTranscribeParams(BaseModel):
     """Base64-encoded audio bytes."""
 
     mime_type: str
-    """MIME type for the audio payload (e.g. 'audio/webm', 'audio/wav')."""
+    """MIME type for the audio payload."""
+
+    @field_validator("mime_type", mode="before")
+    @classmethod
+    def _normalize_mime_type(cls, v: object) -> object:
+        if not isinstance(v, str):
+            return v
+        return v.strip().replace("; ", ";").lower()
+
+
+class AudioInput(BaseModel):
+    """Audio input data for transcription."""
+
+    data: bytes
+    """Audio data bytes."""
+
+    mime_type: str
+    """Raw MIME type for the audio payload, e.g. "audio/webm;codecs=opus"."""
+
+    @property
+    def media_type(self) -> str:
+        """Media type for the audio payload, e.g. "audio/webm"."""
+        return self.mime_type.split(";", 1)[0]
 
 
 class TranscriptionResult(BaseModel):
