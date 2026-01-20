@@ -1179,6 +1179,81 @@ async def test_user_message_attachment_metadata_not_serialized():
         assert all(att.metadata is None for att in attachments)
 
 
+async def test_user_message_attachment_thread_id_persisted_on_thread_create():
+    attachment = FileAttachment(
+        id="file_thread_id_on_create",
+        type="file",
+        mime_type="text/plain",
+        name="test.txt",
+        thread_id=None,
+    )
+
+    with make_server() as server:
+        # Attachment exists before a thread exists, so it may not have a thread_id yet.
+        await server.store.save_attachment(attachment, DEFAULT_CONTEXT)
+
+        events = await server.process_streaming(
+            ThreadsCreateReq(
+                params=ThreadCreateParams(
+                    input=UserMessageInput(
+                        content=[UserMessageTextContent(text="Message with file")],
+                        attachments=[attachment.id],
+                        inference_options=InferenceOptions(),
+                    )
+                )
+            )
+        )
+        thread = next(e.thread for e in events if e.type == "thread.created")
+
+        # After the user message is saved, the attachment record should be updated
+        # to reflect its thread association.
+        stored = await server.store.load_attachment(attachment.id, DEFAULT_CONTEXT)
+        assert stored.thread_id == thread.id
+
+
+async def test_user_message_attachment_thread_id_persisted_on_add_user_message():
+    with make_server() as server:
+        # Create a thread first.
+        events = await server.process_streaming(
+            ThreadsCreateReq(
+                params=ThreadCreateParams(
+                    input=UserMessageInput(
+                        content=[UserMessageTextContent(text="Start")],
+                        attachments=[],
+                        inference_options=InferenceOptions(),
+                    )
+                )
+            )
+        )
+        thread = next(e.thread for e in events if e.type == "thread.created")
+
+        attachment = FileAttachment(
+            id="file_thread_id_on_add",
+            type="file",
+            mime_type="text/plain",
+            name="test.txt",
+            thread_id=None,
+        )
+        await server.store.save_attachment(attachment, DEFAULT_CONTEXT)
+
+        # Attach the pre-created attachment to a message in an existing thread.
+        await server.process_streaming(
+            ThreadsAddUserMessageReq(
+                params=ThreadAddUserMessageParams(
+                    thread_id=thread.id,
+                    input=UserMessageInput(
+                        content=[UserMessageTextContent(text="Second")],
+                        attachments=[attachment.id],
+                        inference_options=InferenceOptions(),
+                    ),
+                )
+            )
+        )
+
+        stored = await server.store.load_attachment(attachment.id, DEFAULT_CONTEXT)
+        assert stored.thread_id == thread.id
+
+
 async def test_create_file_without_filestore():
     with pytest.raises(RuntimeError):
         with make_server() as server:

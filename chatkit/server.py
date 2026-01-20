@@ -664,6 +664,10 @@ class ChatKitServer(ABC, Generic[TContext]):
         item: UserMessageItem,
         context: TContext,
     ) -> AsyncIterator[ThreadStreamEvent]:
+        # Store the updated attachments (now that they have a thread id).
+        for attachment in item.attachments:
+            await self.store.save_attachment(attachment, context=context)
+
         await self.store.add_thread_item(thread.id, item, context=context)
         yield ThreadItemDoneEvent(item=item)
 
@@ -842,7 +846,9 @@ class ChatKitServer(ABC, Generic[TContext]):
             content=input.content,
             thread_id=thread.id,
             attachments=[
-                await self.store.load_attachment(attachment_id, context)
+                (await self.store.load_attachment(attachment_id, context)).model_copy(
+                    update={"thread_id": thread.id}
+                )
                 for attachment_id in input.attachments
             ],
             quoted_text=input.quoted_text,

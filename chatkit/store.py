@@ -102,7 +102,7 @@ class Store(ABC, Generic[TContext]):
 
     @abstractmethod
     async def save_attachment(self, attachment: Attachment, context: TContext) -> None:
-        """Persist attachment metadata."""
+        """Upsert attachment metadata."""
         pass
 
     @abstractmethod
