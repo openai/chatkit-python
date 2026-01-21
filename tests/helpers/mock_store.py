@@ -163,7 +163,7 @@ class SQLiteStore(Store[RequestContext]):
     ) -> None:
         with self._create_connection() as conn:
             conn.execute(
-                "INSERT INTO files (id, user_id, data) VALUES (?, ?, ?)",
+                "INSERT OR REPLACE INTO files (id, user_id, data) VALUES (?, ?, ?)",
                 (
                     attachment.id,
                     context.user_id,

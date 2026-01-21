@@ -793,6 +793,11 @@ class AttachmentBase(BaseModel):
     Should be set to None after upload is complete or when using direct upload
     where uploading happens when creating the attachment object.
     """
+    thread_id: str | None = None
+    """
+    The thread the attachment belongs to, if any.
+    Added when the user message that contains the attachment is saved to store.
+    """
     metadata: dict[str, Any] | None = None
     """
     Integration-only metadata stored with the attachment. Ignored by ChatKit and not
