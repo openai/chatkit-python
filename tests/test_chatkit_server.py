@@ -1919,7 +1919,7 @@ async def test_input_transcribe_decodes_base64_and_normalizes_mime_type():
             InputTranscribeReq(
                 params=InputTranscribeParams(
                     audio_base64=audio_b64,
-                    mime_type="audio/webm; codecs=opus",
+                    mime_type="audio/webm;codecs=opus",
                 )
             )
         )
