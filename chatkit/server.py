@@ -1,4 +1,5 @@
 import asyncio
+import base64
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterator
 from contextlib import contextmanager
@@ -35,12 +36,14 @@ from .types import (
     AssistantMessageItem,
     AttachmentsCreateReq,
     AttachmentsDeleteReq,
+    AudioInput,
     ChatKitReq,
     ClientToolCallItem,
     ErrorCode,
     ErrorEvent,
     FeedbackKind,
     HiddenContextItem,
+    InputTranscribeReq,
     ItemsFeedbackReq,
     ItemsListReq,
     NonStreamingReq,
@@ -69,6 +72,7 @@ from .types import (
     ThreadStreamEvent,
     ThreadsUpdateReq,
     ThreadUpdatedEvent,
+    TranscriptionResult,
     UserMessageInput,
     UserMessageItem,
     WidgetComponentUpdated,
@@ -319,6 +323,25 @@ class ChatKitServer(ABC, Generic[TContext]):
         """Persist user feedback for one or more thread items."""
         pass
 
+    async def transcribe(  # noqa: B027
+        self, audio_input: AudioInput, context: TContext
+    ) -> TranscriptionResult:
+        """Transcribe speech audio to text (dictation).
+
+        Audio bytes are in `audio_input.data`. The raw MIME type is `audio_input.mime_type`; use
+        `audio_input.media_type` for the base media type (one of: `audio/webm`, `audio/ogg`, `audio/mp4`).
+
+        Args:
+            audio_input: Audio bytes plus MIME type metadata for transcription.
+            context: Arbitrary per-request context provided by the caller.
+
+        Returns:
+            A `TranscriptionResult` whose `text` is what should appear in the composer.
+        """
+        raise NotImplementedError(
+            "transcribe() must be overridden to support the input.transcribe request."
+        )
+
     def action(
         self,
         thread: ThreadMetadata,
@@ -446,6 +469,13 @@ class ChatKitServer(ABC, Generic[TContext]):
                     request.params.attachment_id, context=context
                 )
                 return b"{}"
+            case InputTranscribeReq():
+                audio_bytes = base64.b64decode(request.params.audio_base64)
+                transcription_result = await self.transcribe(
+                    AudioInput(data=audio_bytes, mime_type=request.params.mime_type),
+                    context=context,
+                )
+                return self._serialize(transcription_result)
             case ItemsListReq():
                 items_list_params = request.params
                 items = await self.store.load_thread_items(

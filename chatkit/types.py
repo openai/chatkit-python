@@ -3,7 +3,13 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any, Generic, Literal
 
-from pydantic import AnyUrl, BaseModel, Field, SerializationInfo, model_serializer
+from pydantic import (
+    AnyUrl,
+    BaseModel,
+    Field,
+    SerializationInfo,
+    model_serializer,
+)
 from typing_extensions import Annotated, TypeIs, TypeVar
 
 from chatkit.errors import ErrorCode
@@ -174,6 +180,44 @@ class AttachmentCreateParams(BaseModel):
     mime_type: str
 
 
+class InputTranscribeReq(BaseReq):
+    """Request to transcribe an audio payload into text."""
+
+    type: Literal["input.transcribe"] = "input.transcribe"
+    params: InputTranscribeParams
+
+
+class InputTranscribeParams(BaseModel):
+    """Parameters for speech transcription."""
+
+    audio_base64: str
+    """Base64-encoded audio bytes."""
+
+    mime_type: str
+    """Raw MIME type for the audio payload, e.g. "audio/webm;codecs=opus"."""
+
+
+class AudioInput(BaseModel):
+    """Audio input data for transcription."""
+
+    data: bytes
+    """Audio data bytes."""
+
+    mime_type: str
+    """Raw MIME type for the audio payload, e.g. "audio/webm;codecs=opus"."""
+
+    @property
+    def media_type(self) -> str:
+        """Media type for the audio payload, e.g. "audio/webm"."""
+        return self.mime_type.split(";", 1)[0]
+
+
+class TranscriptionResult(BaseModel):
+    """Input speech transcription result."""
+
+    text: str
+
+
 class ItemsListReq(BaseReq):
     """Request to list items inside a thread."""
 
@@ -236,6 +280,7 @@ NonStreamingReq = (
     | AttachmentsDeleteReq
     | ThreadsUpdateReq
     | ThreadsDeleteReq
+    | InputTranscribeReq
 )
 """Union of request types that yield immediate responses."""
 

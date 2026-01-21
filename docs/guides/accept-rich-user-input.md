@@ -172,6 +172,62 @@ Set `ImageAttachment.preview_url` to allow the client to render thumbnails.
 - If your preview URLs are **permanent/public**, set `preview_url` once when creating the attachment and persist it.
 - If your storage uses **expiring URLs**, generate a fresh `preview_url` when returning attachment metadata (for example, in `Store.load_thread_items` and `Store.load_attachment`) rather than persisting a long-lived URL. In this case, returning a short-lived signed URL directly is the simplest approach. Alternatively, you may return a redirect that resolves to a temporary signed URL, as long as the final URL serves image bytes with appropriate CORS headers.
 
+## Dictation: speech-to-text input
+
+Enable dictation so users can record audio and have it transcribed into text before sending.
+
+### Enable dictation in the client
+
+Turn on dictation in the composer:
+
+```ts
+const chatkit = useChatKit({
+  // ...
+  composer: {
+    dictation: {
+      enabled: true,
+    },
+  },
+});
+```
+
+This maps to `ChatKitOptions.composer.dictation`.
+
+### Implement `ChatKitServer.transcribe`
+
+When dictation is enabled, the client records audio and sends it to your backend for transcription. Implement `ChatKitServer.transcribe` to accept audio input and return a transcription result.
+
+The client sends one of:
+
+- `"audio/webm;codecs=opus"` (preferred for Chrome/Firefox/Safari 18.4+)
+- `"audio/mp4"` (fallback for older Safari/iOS)
+- `"audio/ogg;codecs=opus"` (alternative for some environments)
+
+The raw value is available as `audio_input.mime_type`. Use `audio_input.media_type` when you only need the base media type (`"audio/webm"`, `"audio/ogg"`, or `"audio/mp4"`).
+
+Example transcription method using the OpenAI Audio API:
+
+```python
+async def transcribe(self, audio_input: AudioInput, context: RequestContext) -> TranscriptionResult:
+  ext = {
+      "audio/webm": "webm",
+      "audio/mp4": "m4a",
+      "audio/ogg": "ogg",
+  }.get(audio_input.media_type)
+  if not ext:
+      raise HTTPException(status_code=400, detail="Unexpected audio format")
+
+  audio_file = io.BytesIO(audio_input.data)
+  audio_file.name = f"audio.{ext}"
+  transcription = client.audio.transcriptions.create(
+      model="gpt-4o-transcribe",
+      file=audio_file
+  )
+  return TranscriptionResult(text=transcription.text)
+```
+
+Return a `TranscriptionResult` that includes the final `text` that should appear in the composer.
+
 ## @-mentions: tag entities in user messages
 
 Enable @-mentions so users can tag entities (like documents, tickets, or users) instead of pasting raw identifiers. Mentions travel through ChatKit as structured tags so the model can resolve entities instead of guessing from free text.
