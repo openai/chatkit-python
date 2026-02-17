@@ -1098,8 +1098,14 @@ StrictWidgetComponent = Annotated[
 ]
 
 
+class BasicRoot(DynamicWidgetComponent):
+    """Layout root capable of nesting components or other roots."""
+
+    type: Literal["Basic"] = Field(default="Basic", frozen=True)  # pyright: ignore
+
+
 StrictWidgetRoot = Annotated[
-    Card | ListView,
+    Card | ListView | BasicRoot,
     Field(discriminator="type"),
 ]
 
@@ -1107,13 +1113,7 @@ StrictWidgetRoot = Annotated[
 class DynamicWidgetRoot(DynamicWidgetComponent):
     """Dynamic root widget restricted to root types."""
 
-    type: Literal["Card", "ListView"]  # pyright: ignore
-
-
-class BasicRoot(DynamicWidgetComponent):
-    """Layout root capable of nesting components or other roots."""
-
-    type: Literal["Basic"] = Field(default="Basic", frozen=True)  # pyright: ignore
+    type: Literal["Card", "ListView", "Basic"]  # pyright: ignore
 
 
 WidgetComponent = StrictWidgetComponent | DynamicWidgetComponent
@@ -1178,8 +1178,9 @@ class WidgetTemplate:
         widget_dict = json.loads(rendered)
         return DynamicWidgetRoot.model_validate(widget_dict)
 
+    @deprecated("WidgetTemplate.build_basic is deprecated. Use WidgetTemplate.build instead.")
     def build_basic(self, data: dict[str, Any] | BaseModel | None = None) -> BasicRoot:
-        """Separate method for building basic root widgets until BasicRoot is supported for streamed widgets."""
+        """Deprecated alias for building Basic root widgets."""
         rendered = self.template.render(**self._normalize_data(data))
         widget_dict = json.loads(rendered)
         return BasicRoot.model_validate(widget_dict)

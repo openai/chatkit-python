@@ -244,18 +244,45 @@ def test_widget_template_from_file(
     assert widget.model_dump(exclude_none=True) == expected_widget_dict
 
 
-def test_widget_template_with_basic_root():
+def test_widget_template_build_with_basic_root():
     template = WidgetTemplate.from_file("assets/widgets/basic_root.widget")
 
     with open("tests/assets/widgets/basic_root.json", "r") as file:
         expected_widget_dict = json.load(file)
 
-    widget = template.build_basic(
+    widget = template.build(
         {
             "name": "Harry Potter",
             "bio": "The boy who lived",
         },
     )
+
+    assert isinstance(widget, DynamicWidgetRoot)
+    assert widget.type == "Basic"
+    assert widget.model_dump(exclude_none=True) == expected_widget_dict
+
+    widget_item = WidgetItem(
+        thread_id="1", widget=widget, id="1", created_at=datetime.now()
+    )
+    assert widget_item.widget.type == "Basic"
+
+
+def test_widget_template_build_basic_is_deprecated():
+    template = WidgetTemplate.from_file("assets/widgets/basic_root.widget")
+
+    with open("tests/assets/widgets/basic_root.json", "r") as file:
+        expected_widget_dict = json.load(file)
+
+    with pytest.warns(
+        DeprecationWarning,
+        match="WidgetTemplate.build_basic is deprecated. Use WidgetTemplate.build instead.",
+    ):
+        widget = template.build_basic(
+            {
+                "name": "Harry Potter",
+                "bio": "The boy who lived",
+            },
+        )
 
     assert isinstance(widget, BasicRoot)
     assert widget.model_dump(exclude_none=True) == expected_widget_dict
