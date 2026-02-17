@@ -158,9 +158,12 @@ def diff_widget(
                 components[component.id] = component
 
             if hasattr(component, "children"):
-                children = getattr(component, "children", None) or []
-                for child in children:
-                    recurse(child)
+                children = getattr(component, "children", None)
+                if isinstance(children, WidgetComponentBase):
+                    recurse(children)
+                elif isinstance(children, list):
+                    for child in children:
+                        recurse(child)
 
         recurse(component)
         return components

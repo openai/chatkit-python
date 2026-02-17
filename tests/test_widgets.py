@@ -113,6 +113,28 @@ from chatkit.widgets import (
             ),
             ["widget.root.updated"],
         ),
+        # DynamicWidgetRoot with a single-child object
+        (
+            DynamicWidgetRoot(
+                type="Card",
+                children=DynamicWidgetComponent.model_validate({
+                    "type": "Text",
+                    "id": "text",
+                    "value": "Hello",
+                    "streaming": True,
+                }),
+            ),
+            DynamicWidgetRoot(
+                type="Card",
+                children=DynamicWidgetComponent.model_validate({
+                    "type": "Text",
+                    "id": "text",
+                    "value": "Hello, world!",
+                    "streaming": True,
+                }),
+            ),
+            ["widget.streaming_text.value_delta"],
+        ),
     ],
 )
 def test_diff(
