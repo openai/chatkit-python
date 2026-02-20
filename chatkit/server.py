@@ -52,6 +52,7 @@ from .types import (
     StreamingReq,
     StreamOptions,
     StreamOptionsEvent,
+    SyncCustomActionResponse,
     Thread,
     ThreadCreatedEvent,
     ThreadItem,
@@ -69,6 +70,7 @@ from .types import (
     ThreadsGetByIdReq,
     ThreadsListReq,
     ThreadsRetryAfterItemReq,
+    ThreadsSyncCustomActionReq,
     ThreadStreamEvent,
     ThreadsUpdateReq,
     ThreadUpdatedEvent,
@@ -355,6 +357,19 @@ class ChatKitServer(ABC, Generic[TContext]):
             "See https://github.com/openai/chatkit-python/blob/main/docs/widgets.md#widget-actions"
         )
 
+    def sync_action(
+        self,
+        thread: ThreadMetadata,
+        action: Action[str, Any],
+        sender: WidgetItem | None,
+        context: TContext,
+    ) -> SyncCustomActionResponse:
+        """Handle a widget or client-dispatched action and return a SyncCustomActionResponse."""
+        raise NotImplementedError(
+            "The sync_action() method must be overridden to react to sync actions. "
+            "See https://github.com/openai/chatkit-python/blob/main/docs/widgets.md#widget-actions"
+        )
+
     def get_stream_options(
         self, thread: ThreadMetadata, context: TContext
     ) -> StreamOptions:
@@ -504,6 +519,8 @@ class ChatKitServer(ABC, Generic[TContext]):
                     request.params.thread_id, context=context
                 )
                 return b"{}"
+            case ThreadsSyncCustomActionReq():
+                return await self._process_sync_custom_action(request, context)
             case _:
                 assert_never(request)
 
@@ -670,6 +687,33 @@ class ChatKitServer(ABC, Generic[TContext]):
 
             case _:
                 assert_never(request)
+
+    async def _process_sync_custom_action(
+        self, request: ThreadsSyncCustomActionReq, context: TContext
+    ) -> bytes:
+        thread_metadata = await self.store.load_thread(
+            request.params.thread_id, context=context
+        )
+
+        item: ThreadItem | None = None
+        if request.params.item_id:
+            item = await self.store.load_item(
+                request.params.thread_id,
+                request.params.item_id,
+                context=context,
+            )
+
+        if item and not isinstance(item, WidgetItem):
+            raise ValueError("threads.sync_custom_action requires a widget sender item")
+
+        return self._serialize(
+            self.sync_action(
+                thread_metadata,
+                request.params.action,
+                item,
+                context,
+            )
+        )
 
     async def _cleanup_pending_client_tool_call(
         self, thread: ThreadMetadata, context: TContext

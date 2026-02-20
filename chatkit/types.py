@@ -115,6 +115,13 @@ class ThreadsCustomActionReq(BaseReq):
     params: ThreadCustomActionParams
 
 
+class ThreadsSyncCustomActionReq(BaseReq):
+    """Request to execute a custom action and return a single item update."""
+
+    type: Literal["threads.sync_custom_action"] = "threads.sync_custom_action"
+    params: ThreadCustomActionParams
+
+
 class ThreadCustomActionParams(BaseModel):
     """Parameters describing the custom action to execute."""
 
@@ -281,6 +288,7 @@ NonStreamingReq = (
     | ThreadsUpdateReq
     | ThreadsDeleteReq
     | InputTranscribeReq
+    | ThreadsSyncCustomActionReq
 )
 """Union of request types that yield immediate responses."""
 
@@ -537,6 +545,11 @@ ThreadItemUpdate = (
     | GeneratedImageUpdated
 )
 """Union of possible updates applied to thread items."""
+
+
+class SyncCustomActionResponse(BaseModel):
+    """Single thread item update returned by a sync custom action."""
+    updated_item: ThreadItem | None = None
 
 
 ### THREAD TYPES

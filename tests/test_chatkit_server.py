@@ -49,6 +49,7 @@ from chatkit.types import (
     LockedStatus,
     Page,
     ProgressUpdateEvent,
+    SyncCustomActionResponse,
     Thread,
     ThreadAddClientToolOutputParams,
     ThreadAddUserMessageParams,
@@ -74,6 +75,7 @@ from chatkit.types import (
     ThreadsGetByIdReq,
     ThreadsListReq,
     ThreadsRetryAfterItemReq,
+    ThreadsSyncCustomActionReq,
     ThreadStreamEvent,
     ThreadsUpdateReq,
     ThreadUpdatedEvent,
@@ -163,6 +165,11 @@ def make_server(
         AsyncIterator[ThreadStreamEvent],
     ]
     | None = None,
+    sync_action_callback: Callable[
+        [ThreadMetadata, Action[str, Any], WidgetItem | None, Any],
+        SyncCustomActionResponse,
+    ]
+    | None = None,
     file_store: AttachmentStore | None = None,
     transcribe_callback: Callable[[AudioInput, Any], TranscriptionResult] | None = None,
 ):
@@ -186,6 +193,17 @@ def make_server(
             if action_callback is None:
                 raise ValueError("action_callback not wired up")
             return action_callback(thread, action, sender, context)
+
+        def sync_action(
+            self,
+            thread: ThreadMetadata,
+            action: Action[str, Any],
+            sender: WidgetItem | None,
+            context: Any,
+        ) -> SyncCustomActionResponse:
+            if sync_action_callback is None:
+                raise ValueError("sync_action_callback not wired up")
+            return sync_action_callback(thread, action, sender, context)
 
         def respond(
             self,
@@ -977,6 +995,95 @@ async def test_calls_action():
         assert isinstance(events[1], ThreadItemUpdatedEvent)
         assert events[1].update.type == "widget.root.updated"
         assert events[1].update.widget == Card(children=[Text(value="Email sent!")])
+
+
+async def test_calls_action_sync():
+    sync_actions = []
+
+    async def responder(
+        thread: ThreadMetadata,
+        input: UserMessageItem | None,
+        context: Any,
+    ) -> AsyncIterator[ThreadStreamEvent]:
+        yield ThreadItemDoneEvent(
+            item=WidgetItem(
+                id="widget_1",
+                type="widget",
+                created_at=datetime.now(),
+                thread_id=thread.id,
+                widget=Card(
+                    children=[
+                        Text(
+                            key="text_1",
+                            value="test",
+                        )
+                    ],
+                ),
+            ),
+        )
+
+    def sync_action(
+        thread: ThreadMetadata,
+        action: Action[str, Any],
+        sender: WidgetItem | None,
+        context: Any,
+    ) -> SyncCustomActionResponse:
+        sync_actions.append((action, sender))
+        assert sender
+
+        return SyncCustomActionResponse(
+            updated_item=sender.model_copy(
+                update={
+                    "widget": Card(
+                        children=[
+                            Text(value="Email sent!"),
+                        ]
+                    )
+                }
+            )
+        )
+
+    with make_server(responder, sync_action_callback=sync_action) as server:
+        events = await server.process_streaming(
+            ThreadsCreateReq(
+                params=ThreadCreateParams(
+                    input=UserMessageInput(
+                        content=[UserMessageTextContent(text="Show widget")],
+                        attachments=[],
+                        inference_options=InferenceOptions(),
+                    )
+                )
+            )
+        )
+        thread = next(
+            event.thread for event in events if event.type == "thread.created"
+        )
+        widget_item = next(
+            event.item
+            for event in events
+            if isinstance(event, ThreadItemDoneEvent)
+            and isinstance(event.item, WidgetItem)
+        )
+
+        result = await server.process_non_streaming(
+            ThreadsSyncCustomActionReq(
+                params=ThreadCustomActionParams(
+                    thread_id=thread.id,
+                    item_id=widget_item.id,
+                    action=Action(type="create_user", payload={"user_id": "123"}),
+                )
+            )
+        )
+        response = TypeAdapter(SyncCustomActionResponse).validate_json(result.json)
+
+        assert sync_actions
+        assert sync_actions[0] == (
+            Action(type="create_user", payload={"user_id": "123"}),
+            widget_item,
+        )
+        assert response.updated_item == widget_item.model_copy(
+            update={"widget": Card(children=[Text(value="Email sent!")])}
+        )
 
 
 async def test_add_feedback():
