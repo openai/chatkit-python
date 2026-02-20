@@ -1,0 +1,1645 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../add-annotations/">
+      
+      
+        <link rel="next" href="../keep-your-app-in-sync-with-chatkit/">
+      
+      
+      <link rel="icon" href="../../images/favicon-platform.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.21">
+    
+    
+      
+        <title>Stream generated images - Chatkit Python SDK</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.2a3383ac.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#stream-generated-images" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Chatkit Python SDK" class="md-header__button md-logo" aria-label="Chatkit Python SDK" data-md-component="logo">
+      
+  <img src="../../assets/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Chatkit Python SDK
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Stream generated images
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/openai/chatkit-python" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.0.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    chatkit-python
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Chatkit Python SDK" class="md-nav__button md-logo" aria-label="Chatkit Python SDK" data-md-component="logo">
+      
+  <img src="../../assets/logo.svg" alt="logo">
+
+    </a>
+    Chatkit Python SDK
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/openai/chatkit-python" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.0.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    chatkit-python
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Overview
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Quick start
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    Concepts
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Concepts
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/threads/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Threads and items
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/thread-stream-events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Thread stream events
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Tools
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/widgets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Widgets
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/actions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Actions
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/entities/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Entities
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    Guides
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Guides
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../respond-to-user-message/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Respond to a user message
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../browse-past-threads/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Let users browse past threads
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../accept-rich-user-input/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Accept rich user input
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../let-users-pick-tools-and-models/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Let users pick tools and models
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pass-extra-app-context-to-your-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Pass extra app context to your model
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../update-client-during-response/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Update the client during a response
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../build-interactive-responses-with-widgets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Build interactive responses with widgets
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../add-annotations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Add annotations in assistant messages
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Stream generated images
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Stream generated images
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#add-an-image-generation-tool-to-your-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      Add an image generation tool to your agent
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#avoid-storing-raw-base64-in-your-datastore" class="md-nav__link">
+    <span class="md-ellipsis">
+      Avoid storing raw base64 in your datastore
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Avoid storing raw base64 in your datastore">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#override-responsestreamconverterbase64_image_to_url" class="md-nav__link">
+    <span class="md-ellipsis">
+      Override ResponseStreamConverter.base64_image_to_url
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pass-your-converter-to-stream_agent_response" class="md-nav__link">
+    <span class="md-ellipsis">
+      Pass your converter to stream_agent_response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#convert-generated-image-thread-items-to-model-input" class="md-nav__link">
+    <span class="md-ellipsis">
+      Convert generated image thread items to model input
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Convert generated image thread items to model input">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#override-threaditemconvertergenerated_image_to_input" class="md-nav__link">
+    <span class="md-ellipsis">
+      Override ThreadItemConverter.generated_image_to_input
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#stream-partial-images-progressive-previews" class="md-nav__link">
+    <span class="md-ellipsis">
+      Stream partial images (progressive previews)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Stream partial images (progressive previews)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enable-partial-images-in-the-tool-config" class="md-nav__link">
+    <span class="md-ellipsis">
+      Enable partial images in the tool config
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#show-progress-for-partial-images" class="md-nav__link">
+    <span class="md-ellipsis">
+      Show progress for partial images
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../keep-your-app-in-sync-with-chatkit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Keep your app in sync with ChatKit
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../let-your-app-draft-and-send-messages/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Let your app draft and send messages
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../handle-feedback/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Handle feedback
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../prepare-your-app-for-production/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Prepare your app for production
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    API Reference
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            API Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/chatkit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Overview
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_2" id="__nav_5_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Modules
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_2">
+            <span class="md-nav__icon md-icon"></span>
+            Modules
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/chatkit/agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    agents
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/chatkit/errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    errors
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/chatkit/server/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    server
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/chatkit/store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    store
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/chatkit/types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    types
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/chatkit/widgets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    widgets
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/chatkit/icons/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    icons
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Release process / changelog
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://openai.github.io/chatkit-js/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    ChatKit JS Docs
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#add-an-image-generation-tool-to-your-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      Add an image generation tool to your agent
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#avoid-storing-raw-base64-in-your-datastore" class="md-nav__link">
+    <span class="md-ellipsis">
+      Avoid storing raw base64 in your datastore
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Avoid storing raw base64 in your datastore">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#override-responsestreamconverterbase64_image_to_url" class="md-nav__link">
+    <span class="md-ellipsis">
+      Override ResponseStreamConverter.base64_image_to_url
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pass-your-converter-to-stream_agent_response" class="md-nav__link">
+    <span class="md-ellipsis">
+      Pass your converter to stream_agent_response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#convert-generated-image-thread-items-to-model-input" class="md-nav__link">
+    <span class="md-ellipsis">
+      Convert generated image thread items to model input
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Convert generated image thread items to model input">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#override-threaditemconvertergenerated_image_to_input" class="md-nav__link">
+    <span class="md-ellipsis">
+      Override ThreadItemConverter.generated_image_to_input
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#stream-partial-images-progressive-previews" class="md-nav__link">
+    <span class="md-ellipsis">
+      Stream partial images (progressive previews)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Stream partial images (progressive previews)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enable-partial-images-in-the-tool-config" class="md-nav__link">
+    <span class="md-ellipsis">
+      Enable partial images in the tool config
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#show-progress-for-partial-images" class="md-nav__link">
+    <span class="md-ellipsis">
+      Show progress for partial images
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="stream-generated-images">Stream generated images</h1>
+<p>Stream generated images to the client while your agent is running, and persist them in a storage-friendly format.</p>
+<p>This guide covers:</p>
+<ul>
+<li>Adding an image generation tool to your agent</li>
+<li>Converting streamed base64 images into URLs so your datastore does not store raw base64 strings</li>
+<li>Converting generated image thread items to model input for continued conversation</li>
+<li>Streaming partial images (progressive previews)</li>
+</ul>
+<h2 id="add-an-image-generation-tool-to-your-agent">Add an image generation tool to your agent</h2>
+<p>To let the model generate images, add the Agents SDK image generation tool to your agent's tool list.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">agents</span><span class="w"> </span><span class="kn">import</span> <span class="n">Agent</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">agents.tool</span><span class="w"> </span><span class="kn">import</span> <span class="n">ImageGenerationTool</span>
+
+
+<span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;designer&quot;</span><span class="p">,</span>
+    <span class="n">instructions</span><span class="o">=</span><span class="s2">&quot;Generate images when asked.&quot;</span><span class="p">,</span>
+    <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">ImageGenerationTool</span><span class="p">(</span><span class="n">tool_config</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;image_generation&quot;</span><span class="p">})],</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>Once enabled, <code>stream_agent_response</code> will translate image generation output into ChatKit thread items:</p>
+<ul>
+<li>A <code>GeneratedImageItem</code> is added when an image generation call starts.</li>
+<li>It is updated (for partial images) and finalized when the result arrives.</li>
+</ul>
+<h2 id="avoid-storing-raw-base64-in-your-datastore">Avoid storing raw base64 in your datastore</h2>
+<p>By default, ChatKit stores generated images as a data URL (for example, <code>data:image/png;base64,...</code>) by using <code>ResponseStreamConverter.base64_image_to_url</code>.</p>
+<p>That's convenient for demos, but it can bloat your persisted thread items. In production, you'll usually want to:</p>
+<ul>
+<li>Write the bytes to object storage / a file store</li>
+<li>Persist only a URL (or a signed URL) on the <code>GeneratedImageItem</code></li>
+</ul>
+<h3 id="override-responsestreamconverterbase64_image_to_url">Override <code>ResponseStreamConverter.base64_image_to_url</code></h3>
+<p>Subclass <code>ResponseStreamConverter</code> and override <code>base64_image_to_url</code>. This method is called for both:</p>
+<ul>
+<li>Final images</li>
+<li>Partial images (when <code>partial_images</code> streaming is enabled)</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">base64</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">chatkit.agents</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResponseStreamConverter</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MyResponseStreamConverter</span><span class="p">(</span><span class="n">ResponseStreamConverter</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">base64_image_to_url</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">image_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">base64_image</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">partial_image_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="c1"># `image_id` stays the same for the whole generation call (including partial updates).</span>
+        <span class="c1"># Use `partial_image_index` to derive distinct blob IDs for each partial image.</span>
+        <span class="n">blob_id</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">image_id</span>
+            <span class="k">if</span> <span class="n">partial_image_index</span> <span class="ow">is</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">image_id</span><span class="si">}</span><span class="s2">-partial-</span><span class="si">{</span><span class="n">partial_image_index</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="c1"># Replace `upload_blob(...)` with your app&#39;s storage call (S3, GCS, filesystem, etc).</span>
+        <span class="c1"># It should return a URL that your client can load later.</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">upload_blob</span><span class="p">(</span>
+            <span class="n">blob_id</span><span class="p">,</span>
+            <span class="n">base64</span><span class="o">.</span><span class="n">b64decode</span><span class="p">(</span><span class="n">base64_image</span><span class="p">),</span>
+            <span class="s2">&quot;image/png&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">url</span>
+</code></pre></div>
+<h3 id="pass-your-converter-to-stream_agent_response">Pass your converter to <code>stream_agent_response</code></h3>
+<p>Create your converter and pass it into <code>stream_agent_response</code>. The returned URL will be what gets persisted on the <code>GeneratedImageItem</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">agents</span><span class="w"> </span><span class="kn">import</span> <span class="n">Runner</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">chatkit.agents</span><span class="w"> </span><span class="kn">import</span> <span class="n">AgentContext</span><span class="p">,</span> <span class="n">stream_agent_response</span>
+
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">respond</span><span class="p">(</span><span class="o">...</span><span class="p">):</span>
+    <span class="n">agent_context</span> <span class="o">=</span> <span class="n">AgentContext</span><span class="p">(</span>
+        <span class="n">thread</span><span class="o">=</span><span class="n">thread</span><span class="p">,</span>
+        <span class="n">store</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">,</span>
+        <span class="n">request_context</span><span class="o">=</span><span class="n">context</span><span class="p">,</span>
+        <span class="n">previous_response_id</span><span class="o">=</span><span class="n">thread</span><span class="o">.</span><span class="n">previous_response_id</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">Runner</span><span class="o">.</span><span class="n">run_streamed</span><span class="p">(</span><span class="n">agent</span><span class="p">,</span> <span class="n">input_items</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">agent_context</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">stream_agent_response</span><span class="p">(</span>
+        <span class="n">agent_context</span><span class="p">,</span>
+        <span class="n">result</span><span class="p">,</span>
+        <span class="n">converter</span><span class="o">=</span><span class="n">MyResponseStreamConverter</span><span class="p">(),</span>
+    <span class="p">):</span>
+        <span class="k">yield</span> <span class="n">event</span>
+</code></pre></div>
+<h2 id="convert-generated-image-thread-items-to-model-input">Convert generated image thread items to model input</h2>
+<p>On later turns, you'll often feed prior thread items (including generated images) back into the model as context.</p>
+<p>By default, <code>ThreadItemConverter.generated_image_to_input</code> sends the generated image back to the model as:</p>
+<ul>
+<li>A short text preface</li>
+<li>An <code>input_image</code> content part with <code>image_url=item.image.url</code></li>
+</ul>
+<p>If <code>item.image.url</code> is not publicly reachable by the model runtime (for example, it's a private intranet URL, or a localhost URL, or requires cookies), image understanding and image-to-image flows may fail.</p>
+<p>Two common fixes:</p>
+<ul>
+<li>Convert the stored image back into a base64 <code>data:</code> URL when building model input</li>
+<li>Generate a temporary public (signed) URL for the duration of the run</li>
+</ul>
+<h3 id="override-threaditemconvertergenerated_image_to_input">Override <code>ThreadItemConverter.generated_image_to_input</code></h3>
+<p>Override <code>generated_image_to_input</code> and replace <code>image_url</code> with something the image API can fetch.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">base64</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">openai.types.responses</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResponseInputImageParam</span><span class="p">,</span> <span class="n">ResponseInputTextParam</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">openai.types.responses.response_input_item_param</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">chatkit.agents</span><span class="w"> </span><span class="kn">import</span> <span class="n">ThreadItemConverter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">chatkit.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">GeneratedImageItem</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MyThreadItemConverter</span><span class="p">(</span><span class="n">ThreadItemConverter</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">generated_image_to_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">GeneratedImageItem</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">item</span><span class="o">.</span><span class="n">image</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="c1"># Option A: rehydrate to a data URL (works when you can fetch bytes yourself).</span>
+        <span class="c1"># Replace `download_blob(...)` with your app&#39;s storage call to fetch the image bytes.</span>
+        <span class="n">image_bytes</span> <span class="o">=</span> <span class="n">download_blob</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">image</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="n">b64</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">image_bytes</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+        <span class="n">image_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;data:image/png;base64,</span><span class="si">{</span><span class="n">b64</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="c1"># Option B: generate a temporary public URL instead:</span>
+        <span class="c1"># image_url = create_signed_url(item.image.id, expires_in_seconds=60)</span>
+
+        <span class="k">return</span> <span class="n">Message</span><span class="p">(</span>
+            <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;message&quot;</span><span class="p">,</span>
+            <span class="n">role</span><span class="o">=</span><span class="s2">&quot;user&quot;</span><span class="p">,</span>
+            <span class="n">content</span><span class="o">=</span><span class="p">[</span>
+                <span class="n">ResponseInputTextParam</span><span class="p">(</span>
+                    <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;input_text&quot;</span><span class="p">,</span>
+                    <span class="n">text</span><span class="o">=</span><span class="s2">&quot;The following image was generated by the agent.&quot;</span><span class="p">,</span>
+                <span class="p">),</span>
+                <span class="n">ResponseInputImageParam</span><span class="p">(</span>
+                    <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;input_image&quot;</span><span class="p">,</span>
+                    <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+                    <span class="n">image_url</span><span class="o">=</span><span class="n">image_url</span><span class="p">,</span>
+                <span class="p">),</span>
+            <span class="p">],</span>
+        <span class="p">)</span>
+</code></pre></div>
+<p>When building your model input, use your custom converter instead of <code>simple_to_agent_input</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="n">input_items</span> <span class="o">=</span> <span class="k">await</span> <span class="n">MyThreadItemConverter</span><span class="p">()</span><span class="o">.</span><span class="n">to_agent_input</span><span class="p">(</span><span class="n">items</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="stream-partial-images-progressive-previews">Stream partial images (progressive previews)</h2>
+<p>You can stream partial images so users see progressive previews as the image is being generated.</p>
+<h3 id="enable-partial-images-in-the-tool-config">Enable partial images in the tool config</h3>
+<p>Set <code>partial_images</code> in the tool config:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">agents.tool</span><span class="w"> </span><span class="kn">import</span> <span class="n">ImageGenerationTool</span>
+
+<span class="n">image_tool</span> <span class="o">=</span> <span class="n">ImageGenerationTool</span><span class="p">(</span>
+    <span class="n">tool_config</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;image_generation&quot;</span><span class="p">,</span> <span class="s2">&quot;partial_images&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">},</span>
+<span class="p">)</span>
+</code></pre></div>
+<h3 id="show-progress-for-partial-images">Show progress for partial images</h3>
+<p>Pass the same <code>partial_images</code> value to <code>ResponseStreamConverter</code> (or your subclass). ChatKit uses it to compute a <code>progress</code> value (between 0 and 1) for each partial image update.</p>
+<div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">stream_agent_response</span><span class="p">(</span>
+    <span class="n">agent_context</span><span class="p">,</span>
+    <span class="n">result</span><span class="p">,</span>
+    <span class="n">converter</span><span class="o">=</span><span class="n">MyResponseStreamConverter</span><span class="p">(</span><span class="n">partial_images</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
+<span class="p">):</span>
+    <span class="k">yield</span> <span class="n">event</span>
+</code></pre></div>
+<p>During the run, ChatKit will emit:</p>
+<ul>
+<li><code>ThreadItemAddedEvent</code> for the initial <code>GeneratedImageItem</code></li>
+<li><code>ThreadItemUpdatedEvent</code> with <code>GeneratedImageUpdated(image=..., progress=...)</code> for each partial image</li>
+<li><code>ThreadItemDoneEvent</code> when the final image arrives</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../..", "features": ["content.code.copy", "content.code.select", "navigation.path", "navigation.sections", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.f55a23d4.min.js"></script>
+      
+    
+  </body>
+</html>

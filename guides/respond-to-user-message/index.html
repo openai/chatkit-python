@@ -1,0 +1,1823 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../../concepts/entities/">
+      
+      
+        <link rel="next" href="../browse-past-threads/">
+      
+      
+      <link rel="icon" href="../../images/favicon-platform.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.21">
+    
+    
+      
+        <title>Respond to a user message - Chatkit Python SDK</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.2a3383ac.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#respond-to-a-user-message" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Chatkit Python SDK" class="md-header__button md-logo" aria-label="Chatkit Python SDK" data-md-component="logo">
+      
+  <img src="../../assets/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Chatkit Python SDK
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Respond to a user message
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/openai/chatkit-python" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.0.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    chatkit-python
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Chatkit Python SDK" class="md-nav__button md-logo" aria-label="Chatkit Python SDK" data-md-component="logo">
+      
+  <img src="../../assets/logo.svg" alt="logo">
+
+    </a>
+    Chatkit Python SDK
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/openai/chatkit-python" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.0.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    chatkit-python
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Overview
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Quick start
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    Concepts
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Concepts
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/threads/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Threads and items
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/thread-stream-events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Thread stream events
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Tools
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/widgets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Widgets
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/actions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Actions
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/entities/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Entities
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    Guides
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Guides
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Respond to a user message
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Respond to a user message
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#install-chatkit" class="md-nav__link">
+    <span class="md-ellipsis">
+      Install ChatKit
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#build-and-run-your-chatkit-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build and run your ChatKit server
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Build and run your ChatKit server">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#define-a-request-context" class="md-nav__link">
+    <span class="md-ellipsis">
+      Define a request context
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implement-your-chatkitserver" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implement your ChatKitServer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wire-chatkit-to-your-web-framework" class="md-nav__link">
+    <span class="md-ellipsis">
+      Wire ChatKit to your web framework
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-request-context-flows-into-chatkit" class="md-nav__link">
+    <span class="md-ellipsis">
+      How request context flows into ChatKit
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implement-your-chatkit-data-store" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implement your ChatKit data store
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#generate-a-response-using-your-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      Generate a response using your model
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Generate a response using your model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prepare-model-input" class="md-nav__link">
+    <span class="md-ellipsis">
+      Prepare model input
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Prepare model input">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#load-thread-history-recommended-default" class="md-nav__link">
+    <span class="md-ellipsis">
+      Load thread history (recommended default)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-previous_response_id-openai-responses-api-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      Using previous_response_id (OpenAI Responses API only)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run-inference-and-stream-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      Run inference and stream events
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-add-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Next: add features
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../browse-past-threads/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Let users browse past threads
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../accept-rich-user-input/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Accept rich user input
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../let-users-pick-tools-and-models/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Let users pick tools and models
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pass-extra-app-context-to-your-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Pass extra app context to your model
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../update-client-during-response/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Update the client during a response
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../build-interactive-responses-with-widgets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Build interactive responses with widgets
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../add-annotations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Add annotations in assistant messages
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../stream-generated-images/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Stream generated images
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../keep-your-app-in-sync-with-chatkit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Keep your app in sync with ChatKit
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../let-your-app-draft-and-send-messages/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Let your app draft and send messages
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../handle-feedback/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Handle feedback
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../prepare-your-app-for-production/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Prepare your app for production
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    API Reference
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            API Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/chatkit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Overview
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_2" id="__nav_5_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Modules
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_2">
+            <span class="md-nav__icon md-icon"></span>
+            Modules
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/chatkit/agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    agents
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/chatkit/errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    errors
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/chatkit/server/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    server
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/chatkit/store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    store
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/chatkit/types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    types
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/chatkit/widgets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    widgets
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/chatkit/icons/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    icons
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Release process / changelog
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://openai.github.io/chatkit-js/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    ChatKit JS Docs
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#install-chatkit" class="md-nav__link">
+    <span class="md-ellipsis">
+      Install ChatKit
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#build-and-run-your-chatkit-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build and run your ChatKit server
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Build and run your ChatKit server">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#define-a-request-context" class="md-nav__link">
+    <span class="md-ellipsis">
+      Define a request context
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implement-your-chatkitserver" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implement your ChatKitServer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wire-chatkit-to-your-web-framework" class="md-nav__link">
+    <span class="md-ellipsis">
+      Wire ChatKit to your web framework
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-request-context-flows-into-chatkit" class="md-nav__link">
+    <span class="md-ellipsis">
+      How request context flows into ChatKit
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implement-your-chatkit-data-store" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implement your ChatKit data store
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#generate-a-response-using-your-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      Generate a response using your model
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Generate a response using your model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prepare-model-input" class="md-nav__link">
+    <span class="md-ellipsis">
+      Prepare model input
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Prepare model input">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#load-thread-history-recommended-default" class="md-nav__link">
+    <span class="md-ellipsis">
+      Load thread history (recommended default)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-previous_response_id-openai-responses-api-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      Using previous_response_id (OpenAI Responses API only)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run-inference-and-stream-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      Run inference and stream events
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-add-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Next: add features
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="respond-to-a-user-message">Respond to a user message</h1>
+<p>This guide covers how to implement and run a ChatKit server that responds to user messages, including thread loading, inference, event streaming, and persistence.</p>
+<h2 id="install-chatkit">Install ChatKit</h2>
+<p>Install the SDK from PyPI:</p>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>openai-chatkit
+</code></pre></div>
+<h2 id="build-and-run-your-chatkit-server">Build and run your ChatKit server</h2>
+<p>Your ChatKit server does three main things:</p>
+<ol>
+<li>Accept HTTP requests from your client.</li>
+<li>Construct a request context (user id, auth, feature flags, etc.).</li>
+<li>Call <code>ChatKitServer.respond</code> to produce streamed events.</li>
+</ol>
+<h3 id="define-a-request-context">Define a request context</h3>
+<p>First, define a small context object that will be created per request and passed through your server, store, and agents:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MyRequestContext</span><span class="p">:</span>
+    <span class="n">user_id</span><span class="p">:</span> <span class="nb">str</span>
+</code></pre></div>
+<h3 id="implement-your-chatkitserver">Implement your <code>ChatKitServer</code></h3>
+<p>Subclass <code>ChatKitServer</code> and implement <code>respond</code>. It runs once per user turn and should yield the events that make up your response. We'll keep this example simple for now and fill in history loading and model calls in later sections.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncIterator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">chatkit.server</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChatKitServer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">chatkit.types</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AssistantMessageContent</span><span class="p">,</span>
+    <span class="n">AssistantMessageItem</span><span class="p">,</span>
+    <span class="n">ThreadItemDoneEvent</span><span class="p">,</span>
+    <span class="n">ThreadMetadata</span><span class="p">,</span>
+    <span class="n">ThreadStreamEvent</span><span class="p">,</span>
+    <span class="n">UserMessageItem</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MyChatKitServer</span><span class="p">(</span><span class="n">ChatKitServer</span><span class="p">[</span><span class="n">MyRequestContext</span><span class="p">]):</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">respond</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">thread</span><span class="p">:</span> <span class="n">ThreadMetadata</span><span class="p">,</span>
+        <span class="nb">input</span><span class="p">:</span> <span class="n">UserMessageItem</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">context</span><span class="p">:</span> <span class="n">MyRequestContext</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">ThreadStreamEvent</span><span class="p">]:</span>
+        <span class="c1"># Replace this with your inference pipeline.</span>
+        <span class="k">yield</span> <span class="n">ThreadItemDoneEvent</span><span class="p">(</span>
+            <span class="n">item</span><span class="o">=</span><span class="n">AssistantMessageItem</span><span class="p">(</span>
+                <span class="n">thread_id</span><span class="o">=</span><span class="n">thread</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="o">.</span><span class="n">generate_item_id</span><span class="p">(</span><span class="s2">&quot;message&quot;</span><span class="p">,</span> <span class="n">thread</span><span class="p">,</span> <span class="n">context</span><span class="p">),</span>
+                <span class="n">created_at</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span>
+                <span class="n">content</span><span class="o">=</span><span class="p">[</span><span class="n">AssistantMessageContent</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;Hi there!&quot;</span><span class="p">)],</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+</code></pre></div>
+<h3 id="wire-chatkit-to-your-web-framework">Wire ChatKit to your web framework</h3>
+<p>Expose a single <code>/chatkit</code> endpoint that forwards requests to your <code>MyChatKitServer</code> instance. For example, with FastAPI:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">fastapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">FastAPI</span><span class="p">,</span> <span class="n">Request</span><span class="p">,</span> <span class="n">Response</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">fastapi.responses</span><span class="w"> </span><span class="kn">import</span> <span class="n">StreamingResponse</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">chatkit.server</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChatKitServer</span><span class="p">,</span> <span class="n">StreamingResult</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">FastAPI</span><span class="p">()</span>
+<span class="n">store</span> <span class="o">=</span> <span class="n">MyPostgresStore</span><span class="p">(</span><span class="n">conn_info</span><span class="p">)</span>
+<span class="n">server</span> <span class="o">=</span> <span class="n">MyChatKitServer</span><span class="p">(</span><span class="n">store</span><span class="p">)</span>
+
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/chatkit&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">chatkit_endpoint</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">):</span>
+    <span class="c1"># Build a per-request context from the incoming HTTP request.</span>
+    <span class="n">context</span> <span class="o">=</span> <span class="n">MyRequestContext</span><span class="p">(</span><span class="n">user_id</span><span class="o">=</span><span class="s2">&quot;abc123&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Let ChatKit handle the request and return either a streaming or JSON result.</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">server</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">body</span><span class="p">(),</span> <span class="n">context</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">StreamingResult</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">StreamingResponse</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">media_type</span><span class="o">=</span><span class="s2">&quot;text/event-stream&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">json</span><span class="p">,</span> <span class="n">media_type</span><span class="o">=</span><span class="s2">&quot;application/json&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="how-request-context-flows-into-chatkit">How request context flows into ChatKit</h3>
+<p><code>ChatKitServer[TContext]</code> and <code>Store[TContext]</code> are generic over a request context type you choose (user id, org, auth scopes, feature flags). Construct it per request and pass it to <code>server.process</code>; it flows into <code>respond</code> and your store methods.</p>
+<div class="highlight"><pre><span></span><code><span class="n">context</span> <span class="o">=</span> <span class="n">MyRequestContext</span><span class="p">(</span><span class="n">user_id</span><span class="o">=</span><span class="s2">&quot;abc123&quot;</span><span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">server</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">body</span><span class="p">(),</span> <span class="n">context</span><span class="p">)</span>
+</code></pre></div>
+<p>Request metadata in the payload is available before calling <code>process</code>; include it in your context for auth, tracing, or feature flags.</p>
+<h2 id="implement-your-chatkit-data-store">Implement your ChatKit data store</h2>
+<p>Implement the <code>Store</code> interface to control how threads, messages, tool calls, and widgets are stored. Prefer serializing thread items as JSON so schema changes do not break storage. Example Postgres store:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">MyPostgresStore</span><span class="p">(</span><span class="n">Store</span><span class="p">[</span><span class="n">RequestContext</span><span class="p">]):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conninfo</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_conninfo</span> <span class="o">=</span> <span class="n">conninfo</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_schema</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_init_schema</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span><span class="p">()</span> <span class="k">as</span> <span class="n">conn</span><span class="p">,</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
+            <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                CREATE TABLE IF NOT EXISTS threads (</span>
+<span class="sd">                    id TEXT PRIMARY KEY,</span>
+<span class="sd">                    user_id TEXT NOT NULL,</span>
+<span class="sd">                    created_at TIMESTAMPTZ NOT NULL,</span>
+<span class="sd">                    data JSONB NOT NULL</span>
+<span class="sd">                );</span>
+<span class="sd">                &quot;&quot;&quot;</span>
+            <span class="p">)</span>
+
+            <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                CREATE TABLE IF NOT EXISTS items (</span>
+<span class="sd">                    id TEXT PRIMARY KEY,</span>
+<span class="sd">                    thread_id TEXT NOT NULL</span>
+<span class="sd">                        REFERENCES threads (id)</span>
+<span class="sd">                        ON DELETE CASCADE,</span>
+<span class="sd">                    user_id TEXT NOT NULL,</span>
+<span class="sd">                    created_at TIMESTAMPTZ NOT NULL,</span>
+<span class="sd">                    data JSONB NOT NULL</span>
+<span class="sd">                );</span>
+<span class="sd">                &quot;&quot;&quot;</span>
+            <span class="p">)</span>
+
+            <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">load_thread</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">thread_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">RequestContext</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ThreadMetadata</span><span class="p">:</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span><span class="p">()</span> <span class="k">as</span> <span class="n">conn</span><span class="p">,</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">(</span><span class="n">row_factory</span><span class="o">=</span><span class="n">tuple_row</span><span class="p">)</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
+            <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                <span class="s2">&quot;SELECT data FROM threads WHERE id = </span><span class="si">%s</span><span class="s2"> AND user_id = </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="p">(</span><span class="n">thread_id</span><span class="p">,</span> <span class="n">context</span><span class="o">.</span><span class="n">user_id</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="n">row</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">row</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">NotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Thread </span><span class="si">{</span><span class="n">thread_id</span><span class="si">}</span><span class="s2"> not found&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">ThreadMetadata</span><span class="o">.</span><span class="n">model_validate</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">save_thread</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">thread</span><span class="p">:</span> <span class="n">ThreadMetadata</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">RequestContext</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">payload</span> <span class="o">=</span> <span class="n">thread</span><span class="o">.</span><span class="n">model_dump</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span><span class="p">()</span> <span class="k">as</span> <span class="n">conn</span><span class="p">,</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
+            <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                INSERT INTO threads (id, user_id, created_at, data)</span>
+<span class="sd">                VALUES (%s, %s, %s, %s)</span>
+<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span>
+                <span class="p">(</span><span class="n">thread</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">context</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span> <span class="n">thread</span><span class="o">.</span><span class="n">created_at</span><span class="p">,</span> <span class="n">payload</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+    <span class="c1"># Implement the remaining Store methods following the same pattern.</span>
+</code></pre></div>
+<p>Customize ID generation by overriding <code>generate_thread_id</code> and <code>generate_item_id</code> if you need external or deterministic IDs. Store metadata such as a model <code>last_response_id</code> on <code>ThreadMetadata</code> to drive your inference pipeline.</p>
+<h2 id="generate-a-response-using-your-model">Generate a response using your model</h2>
+<p>Inside <code>respond</code>, you'll usually:</p>
+<ol>
+<li>Load recent thread history.</li>
+<li>Prepare model input for your agent.</li>
+<li>Run inference and stream events back to the client.</li>
+</ol>
+<h3 id="prepare-model-input">Prepare model input</h3>
+<p>Before you call your model, decide what conversation context you want the model to see.</p>
+<h4 id="load-thread-history-recommended-default">Load thread history (recommended default)</h4>
+<p>Fetch recent items so the model sees the conversation state before you build the next turn:</p>
+<div class="highlight"><pre><span></span><code><span class="n">items_page</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="o">.</span><span class="n">load_thread_items</span><span class="p">(</span>
+    <span class="n">thread</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+    <span class="n">after</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">limit</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>  <span class="c1"># Tune this limit based on your model/context budget.</span>
+    <span class="n">order</span><span class="o">=</span><span class="s2">&quot;desc&quot;</span><span class="p">,</span>
+    <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">items</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">items_page</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>
+</code></pre></div>
+<ul>
+<li>Start with the defaults: <code>simple_to_agent_input(items)</code> is a convenience wrapper around the <strong>default</strong> <code>ThreadItemConverter</code> (it calls <code>ThreadItemConverter().to_agent_input(items)</code> under the hood).</li>
+<li>Customize for your integration: some item types require app-specific translation into model input (for example: <strong>attachments</strong>, <strong>tags</strong>, and some <strong>hidden context items</strong>). In those cases, subclass <code>ThreadItemConverter</code> and call your converter directly instead of <code>simple_to_agent_input</code>. (If your thread includes attachments/tags and you haven't implemented the converter hooks, conversion will raise <code>NotImplementedError</code>.)</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">agents</span><span class="w"> </span><span class="kn">import</span> <span class="n">Runner</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">chatkit.agents</span><span class="w"> </span><span class="kn">import</span> <span class="n">AgentContext</span><span class="p">,</span> <span class="n">ThreadItemConverter</span><span class="p">,</span> <span class="n">simple_to_agent_input</span>
+
+
+<span class="c1"># Option A (defaults):</span>
+<span class="n">input_items</span> <span class="o">=</span> <span class="k">await</span> <span class="n">simple_to_agent_input</span><span class="p">(</span><span class="n">items</span><span class="p">)</span>
+
+<span class="c1"># Option B (your integration-specific converter):</span>
+<span class="c1"># input_items = await MyThreadItemConverter().to_agent_input(items)</span>
+
+<span class="n">agent_context</span> <span class="o">=</span> <span class="n">AgentContext</span><span class="p">(</span>
+    <span class="n">thread</span><span class="o">=</span><span class="n">thread</span><span class="p">,</span>
+    <span class="n">store</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">,</span>
+    <span class="n">request_context</span><span class="o">=</span><span class="n">context</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>Respect any <code>input.inference_options</code> the client sends (model, tool choice, etc.) when you build your request to the model.</p>
+<h4 id="using-previous_response_id-openai-responses-api-only">Using <code>previous_response_id</code> (OpenAI Responses API only)</h4>
+<p>If you are using OpenAI models through the <strong>Responses API</strong>, you can pass <code>previous_response_id</code> to <code>Runner.run_streamed(...)</code> and (often) send only the <em>new</em> user message as model input. This can simplify input construction when the provider can retrieve prior context server-side.</p>
+<p>Terminology note: Agents exposes the ID of the most recent model response as <code>result.last_response_id</code>. On the <em>next</em> turn, you pass that saved value as the <code>previous_response_id</code> parameter.</p>
+<p><strong>Important restrictions:</strong></p>
+<ul>
+<li><strong>OpenAI Responses API only.</strong> Other model providers won't be able to follow a <code>previous_response_id</code>, so you must send thread history yourself.</li>
+<li><strong>Only includes model-visible history.</strong> If your integration streams ChatKit-only items (e.g. widgets/workflows emitted directly to the client), the model won't know about them unless you also include them in <code>input_items</code>.</li>
+<li><strong>Works only while the referenced response is retrievable.</strong> Persist <code>result.last_response_id</code> and ensure responses are stored (<code>store=True</code> / <code>ModelSettings(store=True)</code>); otherwise fall back to rebuilding input from thread items.</li>
+</ul>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># `ThreadMetadata.metadata` is a free-form dict for integration-specific state.</span>
+<span class="c1"># ChatKit does not define a first-class `last_response_id` field on `ThreadMetadata`;</span>
+<span class="c1"># your integration can store it under a key and reuse it on the next turn.</span>
+<span class="n">last_response_id</span> <span class="o">=</span> <span class="n">thread</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;last_response_id&quot;</span><span class="p">)</span>
+<span class="n">last_response_id</span> <span class="o">=</span> <span class="n">last_response_id</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">last_response_id</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+
+<span class="c1"># Often: send only the new message as input when chaining on the server.</span>
+<span class="n">input_items</span> <span class="o">=</span> <span class="k">await</span> <span class="n">simple_to_agent_input</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">Runner</span><span class="o">.</span><span class="n">run_streamed</span><span class="p">(</span>
+    <span class="n">assistant_agent</span><span class="p">,</span>
+    <span class="n">input_items</span><span class="p">,</span>
+    <span class="n">context</span><span class="o">=</span><span class="n">agent_context</span><span class="p">,</span>
+    <span class="n">previous_response_id</span><span class="o">=</span><span class="n">last_response_id</span><span class="p">,</span>
+    <span class="n">auto_previous_response_id</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Persist the new response ID so the next turn can chain again.</span>
+<span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">last_response_id</span><span class="p">:</span>
+    <span class="n">thread</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;last_response_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">last_response_id</span>
+    <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="o">.</span><span class="n">save_thread</span><span class="p">(</span><span class="n">thread</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="run-inference-and-stream-events">Run inference and stream events</h3>
+<p>Run your agent and stream events back to the client. <code>stream_agent_response</code> converts an Agents run into ChatKit events; you can also yield events manually.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">agents</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">InputGuardrailTripwireTriggered</span><span class="p">,</span>
+    <span class="n">OutputGuardrailTripwireTriggered</span><span class="p">,</span>
+    <span class="n">Runner</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">chatkit.agents</span><span class="w"> </span><span class="kn">import</span> <span class="n">stream_agent_response</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">chatkit.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">ErrorEvent</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">Runner</span><span class="o">.</span><span class="n">run_streamed</span><span class="p">(</span>
+    <span class="n">assistant_agent</span><span class="p">,</span>
+    <span class="n">input_items</span><span class="p">,</span>
+    <span class="n">context</span><span class="o">=</span><span class="n">agent_context</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">stream_agent_response</span><span class="p">(</span><span class="n">agent_context</span><span class="p">,</span> <span class="n">result</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">event</span>
+<span class="k">except</span> <span class="n">InputGuardrailTripwireTriggered</span><span class="p">:</span>
+    <span class="k">yield</span> <span class="n">ErrorEvent</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="s2">&quot;We blocked that message for safety.&quot;</span><span class="p">)</span>
+<span class="k">except</span> <span class="n">OutputGuardrailTripwireTriggered</span><span class="p">:</span>
+    <span class="k">yield</span> <span class="n">ErrorEvent</span><span class="p">(</span>
+        <span class="n">message</span><span class="o">=</span><span class="s2">&quot;The assistant response was blocked.&quot;</span><span class="p">,</span>
+        <span class="n">allow_retry</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
+</code></pre></div>
+<p>To stream events from a server tool during the same turn, use <code>ctx.context.stream(...)</code> inside the tool:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">agents</span><span class="w"> </span><span class="kn">import</span> <span class="n">RunContextWrapper</span><span class="p">,</span> <span class="n">function_tool</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">chatkit.agents</span><span class="w"> </span><span class="kn">import</span> <span class="n">AgentContext</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">chatkit.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProgressUpdateEvent</span>
+
+
+<span class="nd">@function_tool</span><span class="p">()</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">load_document</span><span class="p">(</span><span class="n">ctx</span><span class="p">:</span> <span class="n">RunContextWrapper</span><span class="p">[</span><span class="n">AgentContext</span><span class="p">],</span> <span class="n">document_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">await</span> <span class="n">ctx</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">stream</span><span class="p">(</span><span class="n">ProgressUpdateEvent</span><span class="p">(</span><span class="n">icon</span><span class="o">=</span><span class="s2">&quot;document&quot;</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Loading document...&quot;</span><span class="p">))</span>
+    <span class="k">return</span> <span class="k">await</span> <span class="n">get_document_by_id</span><span class="p">(</span><span class="n">document_id</span><span class="p">)</span>
+</code></pre></div>
+<p><code>stream_agent_response</code> will forward these events alongside any assistant text or tool call updates. Client tool calls are also supported via <code>ctx.context.client_tool_call</code> when you register the tool on both client and server.</p>
+<h2 id="next-add-features">Next: add features</h2>
+<ul>
+<li><a href="../browse-past-threads/">Let users browse past threads</a></li>
+<li><a href="../accept-rich-user-input/">Accept rich user input</a></li>
+<li><a href="../let-users-pick-tools-and-models/">Let users pick tools and models</a></li>
+<li><a href="../pass-extra-app-context-to-your-model/">Pass extra app context to your model</a></li>
+<li><a href="../update-client-during-response/">Update the client during a response</a></li>
+<li><a href="../build-interactive-responses-with-widgets/">Build interactive responses with widgets</a></li>
+<li><a href="../add-annotations/">Add annotations in assistant messages</a></li>
+<li><a href="../stream-generated-images/">Stream generated images</a></li>
+<li><a href="../keep-your-app-in-sync-with-chatkit/">Keep your app in sync with ChatKit</a></li>
+<li><a href="../let-your-app-draft-and-send-messages/">Let your app draft and send messages</a></li>
+<li><a href="../handle-feedback/">Handle feedback</a></li>
+<li><a href="../prepare-your-app-for-production/">Prepare your app for production</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../..", "features": ["content.code.copy", "content.code.select", "navigation.path", "navigation.sections", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.f55a23d4.min.js"></script>
+      
+    
+  </body>
+</html>

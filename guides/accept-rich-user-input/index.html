@@ -1,0 +1,1905 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../browse-past-threads/">
+      
+      
+        <link rel="next" href="../let-users-pick-tools-and-models/">
+      
+      
+      <link rel="icon" href="../../images/favicon-platform.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.21">
+    
+    
+      
+        <title>Accept rich user input - Chatkit Python SDK</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.2a3383ac.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#accept-rich-user-input" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Chatkit Python SDK" class="md-header__button md-logo" aria-label="Chatkit Python SDK" data-md-component="logo">
+      
+  <img src="../../assets/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Chatkit Python SDK
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Accept rich user input
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/openai/chatkit-python" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.0.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    chatkit-python
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Chatkit Python SDK" class="md-nav__button md-logo" aria-label="Chatkit Python SDK" data-md-component="logo">
+      
+  <img src="../../assets/logo.svg" alt="logo">
+
+    </a>
+    Chatkit Python SDK
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/openai/chatkit-python" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.0.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    chatkit-python
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Overview
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Quick start
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    Concepts
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Concepts
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/threads/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Threads and items
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/thread-stream-events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Thread stream events
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Tools
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/widgets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Widgets
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/actions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Actions
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/entities/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Entities
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    Guides
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Guides
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../respond-to-user-message/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Respond to a user message
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../browse-past-threads/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Let users browse past threads
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Accept rich user input
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Accept rich user input
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#attachments-let-users-upload-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      Attachments: let users upload files
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Attachments: let users upload files">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enable-attachments-in-the-client" class="md-nav__link">
+    <span class="md-ellipsis">
+      Enable attachments in the client
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configure-an-upload-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Configure an upload strategy
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#enforce-attachment-access-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      Enforce attachment access control
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#direct-upload" class="md-nav__link">
+    <span class="md-ellipsis">
+      Direct upload
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#two-phase-upload" class="md-nav__link">
+    <span class="md-ellipsis">
+      Two-phase upload
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#convert-attachments-to-model-input" class="md-nav__link">
+    <span class="md-ellipsis">
+      Convert attachments to model input
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#show-image-attachment-previews-in-thread" class="md-nav__link">
+    <span class="md-ellipsis">
+      Show image attachment previews in thread
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dictation-speech-to-text-input" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dictation: speech-to-text input
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Dictation: speech-to-text input">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enable-dictation-in-the-client" class="md-nav__link">
+    <span class="md-ellipsis">
+      Enable dictation in the client
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implement-chatkitservertranscribe" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implement ChatKitServer.transcribe
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-mentions-tag-entities-in-user-messages" class="md-nav__link">
+    <span class="md-ellipsis">
+      @-mentions: tag entities in user messages
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="@-mentions: tag entities in user messages">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enable-as-you-type-entity-lookup-in-the-composer" class="md-nav__link">
+    <span class="md-ellipsis">
+      Enable as-you-type entity lookup in the composer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#convert-tags-into-model-input-in-your-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      Convert tags into model input in your server
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pair-mentions-with-retrieval-tool-calls" class="md-nav__link">
+    <span class="md-ellipsis">
+      Pair mentions with retrieval tool calls
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prompt-the-model-about-mentions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Prompt the model about mentions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#handle-clicks-and-previews" class="md-nav__link">
+    <span class="md-ellipsis">
+      Handle clicks and previews
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../let-users-pick-tools-and-models/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Let users pick tools and models
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pass-extra-app-context-to-your-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Pass extra app context to your model
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../update-client-during-response/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Update the client during a response
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../build-interactive-responses-with-widgets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Build interactive responses with widgets
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../add-annotations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Add annotations in assistant messages
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../stream-generated-images/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Stream generated images
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../keep-your-app-in-sync-with-chatkit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Keep your app in sync with ChatKit
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../let-your-app-draft-and-send-messages/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Let your app draft and send messages
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../handle-feedback/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Handle feedback
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../prepare-your-app-for-production/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Prepare your app for production
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    API Reference
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            API Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/chatkit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Overview
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_2" id="__nav_5_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Modules
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_2">
+            <span class="md-nav__icon md-icon"></span>
+            Modules
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/chatkit/agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    agents
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/chatkit/errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    errors
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/chatkit/server/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    server
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/chatkit/store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    store
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/chatkit/types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    types
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/chatkit/widgets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    widgets
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/chatkit/icons/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    icons
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Release process / changelog
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://openai.github.io/chatkit-js/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    ChatKit JS Docs
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#attachments-let-users-upload-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      Attachments: let users upload files
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Attachments: let users upload files">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enable-attachments-in-the-client" class="md-nav__link">
+    <span class="md-ellipsis">
+      Enable attachments in the client
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configure-an-upload-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Configure an upload strategy
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#enforce-attachment-access-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      Enforce attachment access control
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#direct-upload" class="md-nav__link">
+    <span class="md-ellipsis">
+      Direct upload
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#two-phase-upload" class="md-nav__link">
+    <span class="md-ellipsis">
+      Two-phase upload
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#convert-attachments-to-model-input" class="md-nav__link">
+    <span class="md-ellipsis">
+      Convert attachments to model input
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#show-image-attachment-previews-in-thread" class="md-nav__link">
+    <span class="md-ellipsis">
+      Show image attachment previews in thread
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dictation-speech-to-text-input" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dictation: speech-to-text input
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Dictation: speech-to-text input">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enable-dictation-in-the-client" class="md-nav__link">
+    <span class="md-ellipsis">
+      Enable dictation in the client
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implement-chatkitservertranscribe" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implement ChatKitServer.transcribe
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-mentions-tag-entities-in-user-messages" class="md-nav__link">
+    <span class="md-ellipsis">
+      @-mentions: tag entities in user messages
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="@-mentions: tag entities in user messages">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enable-as-you-type-entity-lookup-in-the-composer" class="md-nav__link">
+    <span class="md-ellipsis">
+      Enable as-you-type entity lookup in the composer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#convert-tags-into-model-input-in-your-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      Convert tags into model input in your server
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pair-mentions-with-retrieval-tool-calls" class="md-nav__link">
+    <span class="md-ellipsis">
+      Pair mentions with retrieval tool calls
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prompt-the-model-about-mentions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Prompt the model about mentions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#handle-clicks-and-previews" class="md-nav__link">
+    <span class="md-ellipsis">
+      Handle clicks and previews
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="accept-rich-user-input">Accept rich user input</h1>
+<p>This guide explains how a ChatKit server accepts user input beyond plain text—such as attachments and @-mentions—and makes it available to your inference pipeline.</p>
+<p>At a high level:</p>
+<ul>
+<li>Attachments let users upload files that your model can read.</li>
+<li>@-mentions let users tag entities so the model does not have to guess from free text.</li>
+</ul>
+<h2 id="attachments-let-users-upload-files">Attachments: let users upload files</h2>
+<p>Let users attach files/images by turning on client support, choosing an upload strategy, wiring the upload endpoints, and converting attachments to model inputs.</p>
+<h3 id="enable-attachments-in-the-client">Enable attachments in the client</h3>
+<p>Turn on attachments in the composer and configure client-side limits:</p>
+<div class="highlight"><pre><span></span><code><span class="kd">const</span><span class="w"> </span><span class="nx">chatkit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">useChatKit</span><span class="p">({</span>
+<span class="w">  </span><span class="c1">// ...</span>
+<span class="w">  </span><span class="nx">composer</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">attachments</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">enabled</span><span class="o">:</span><span class="w"> </span><span class="kt">true</span><span class="p">,</span>
+<span class="w">      </span><span class="c1">// configure accepted MIME types, count, and size limits here</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="p">});</span>
+</code></pre></div>
+<p>Under the hood this maps to <code>ChatKitOptions.composer.attachments</code>; see the <a href="https://openai.github.io/chatkit-js/api/openai/chatkit/type-aliases/composeroption/#attachments"><code>composer.attachments</code> docs</a> for all available options.</p>
+<h3 id="configure-an-upload-strategy">Configure an upload strategy</h3>
+<p>Set <a href="https://openai.github.io/chatkit-js/api/openai/chatkit/type-aliases/fileuploadstrategy/"><code>ChatKitOptions.api.uploadStrategy</code></a> to:</p>
+<ul>
+<li><strong>Direct</strong>: your backend exposes a single upload URL that accepts the bytes and writes attachment metadata to your <code>Store</code>. Simpler and faster when you control uploads directly from the app server.</li>
+<li><strong>Two-phase</strong>: the client makes a ChatKit API request to create an attachment metadata record (which forwards the request to <code>AttachmentStore</code>), you return an <code>upload_url</code> as part of the created attachment metadata, and the client uploads bytes in a second step. Prefer this when you front object storage with presigned/temporary URLs or want to offload upload bandwidth (for example, to a third-party blob storage).</li>
+</ul>
+<p>Both strategies still require an <code>AttachmentStore</code> for delete cleanup. Choose direct for simplicity on the same origin; choose two-phase for cloud storage and larger files.</p>
+<h3 id="enforce-attachment-access-control">Enforce attachment access control</h3>
+<p>Neither attachment metadata nor file bytes are protected by ChatKit. Use the <code>context</code> passed into your <code>AttachmentStore</code> methods to authorize every create/read/delete. Only return IDs, bytes, or signed URLs when the caller owns the attachment, and prefer short-lived download URLs. Skipping these checks can leak customer data.</p>
+<h3 id="direct-upload">Direct upload</h3>
+<p>Add the upload endpoint referenced in <code>uploadStrategy</code>. It must:</p>
+<ul>
+<li>accept <code>multipart/form-data</code> with a <code>file</code> field,</li>
+<li>store the bytes wherever you like,</li>
+<li>create <code>Attachment</code> metadata, persist it via <code>Store.save_attachment</code>, and</li>
+<li>return the <code>Attachment</code> JSON.</li>
+</ul>
+<p>Implement <code>AttachmentStore.delete_attachment</code> to delete the stored bytes; <code>ChatKitServer</code> will then call <code>Store.delete_attachment</code> to drop metadata.</p>
+<p>Example client configuration:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nx">type</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;direct&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">uploadUrl</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;/files&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Example FastAPI direct upload endpoint:</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/files&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">upload_file</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">):</span>
+    <span class="n">form_data</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="p">()</span>
+    <span class="n">file</span> <span class="o">=</span> <span class="n">form_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;file&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Your blob store upload</span>
+    <span class="n">attachment</span> <span class="o">=</span> <span class="k">await</span> <span class="n">upload_to_blob_store</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="n">attachment</span><span class="o">.</span><span class="n">model_dump_json</span><span class="p">(),</span> <span class="n">media_type</span><span class="o">=</span><span class="s2">&quot;application/json&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="two-phase-upload">Two-phase upload</h3>
+<p>Implement <code>AttachmentStore.create_attachment</code> to:</p>
+<ul>
+<li>build an <code>upload_url</code> that accepts <code>multipart/form-data</code> with a <code>file</code> field (direct PUTs are currently not supported),</li>
+<li>build the <code>Attachment</code> model,</li>
+<li>persist it via <code>Store.save_attachment</code>, and</li>
+<li>return it.</li>
+</ul>
+<p>Implement <code>AttachmentStore.delete_attachment</code> to delete the stored bytes; <code>ChatKitServer</code> will call <code>Store.delete_attachment</code> afterward.</p>
+<ul>
+<li>The client POSTs the bytes to <code>upload_url</code> after it receives the created attachment metadata in the response.</li>
+</ul>
+<p>Client configuration:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nx">type</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;two_phase&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Example two-phase store issuing a multipart upload URL:</p>
+<div class="highlight"><pre><span></span><code><span class="n">attachment_store</span> <span class="o">=</span> <span class="n">BlobAttachmentStore</span><span class="p">()</span>
+<span class="n">server</span> <span class="o">=</span> <span class="n">MyChatKitServer</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="n">data_store</span><span class="p">,</span> <span class="n">attachment_store</span><span class="o">=</span><span class="n">attachment_store</span><span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">BlobAttachmentStore</span><span class="p">(</span><span class="n">AttachmentStore</span><span class="p">[</span><span class="n">RequestContext</span><span class="p">]):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate_attachment_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mime_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">RequestContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">f</span>\<span class="s2">&quot;att_{uuid4().hex}</span><span class="se">\&quot;</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">create_attachment</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">:</span> <span class="n">AttachmentCreateParams</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">RequestContext</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Attachment</span><span class="p">:</span>
+        <span class="n">att_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_attachment_id</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">mime_type</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+        <span class="n">upload_url</span> <span class="o">=</span> <span class="n">issue_multipart_upload_url</span><span class="p">(</span><span class="n">att_id</span><span class="p">,</span> <span class="nb">input</span><span class="o">.</span><span class="n">mime_type</span><span class="p">)</span>  <span class="c1"># your blob store</span>
+        <span class="n">attachment</span> <span class="o">=</span> <span class="n">Attachment</span><span class="p">(</span>
+            <span class="nb">id</span><span class="o">=</span><span class="n">att_id</span><span class="p">,</span>
+            <span class="n">mime_type</span><span class="o">=</span><span class="nb">input</span><span class="o">.</span><span class="n">mime_type</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="nb">input</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">upload_url</span><span class="o">=</span><span class="n">upload_url</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">await</span> <span class="n">data_store</span><span class="o">.</span><span class="n">save_attachment</span><span class="p">(</span><span class="n">attachment</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">attachment</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">delete_attachment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attachment_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">RequestContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">await</span> <span class="n">delete_blob</span><span class="p">(</span><span class="n">att_id</span><span class="o">=</span><span class="n">attachment_id</span><span class="p">)</span>  <span class="c1"># your blob store</span>
+</code></pre></div>
+<h3 id="convert-attachments-to-model-input">Convert attachments to model input</h3>
+<p>Attachments arrive on <code>input_user_message.attachments</code> in <code>ChatKitServer.respond</code>. The default <code>ThreadItemConverter</code> does not handle them, so subclass and implement <code>attachment_to_message_content</code> to return a <code>ResponseInputContentParam</code> before calling <code>Runner.run_streamed</code>.</p>
+<p>Example using a blob fetch helper:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">chatkit.agents</span><span class="w"> </span><span class="kn">import</span> <span class="n">ThreadItemConverter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">chatkit.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">ImageAttachment</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">openai.types.responses</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResponseInputFileParam</span><span class="p">,</span> <span class="n">ResponseInputImageParam</span>
+
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">read_bytes</span><span class="p">(</span><span class="n">attachment_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+    <span class="o">...</span>  <span class="c1"># fetch from your blob store</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">as_data_url</span><span class="p">(</span><span class="n">mime</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">content</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">return</span> <span class="s2">&quot;data:&quot;</span> <span class="o">+</span> <span class="n">mime</span> <span class="o">+</span> <span class="s2">&quot;;base64,&quot;</span> <span class="o">+</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">content</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MyConverter</span><span class="p">(</span><span class="n">ThreadItemConverter</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">attachment_to_message_content</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attachment</span><span class="p">):</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="k">await</span> <span class="n">read_bytes</span><span class="p">(</span><span class="n">attachment</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attachment</span><span class="p">,</span> <span class="n">ImageAttachment</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">ResponseInputImageParam</span><span class="p">(</span>
+                <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;input_image&quot;</span><span class="p">,</span>
+                <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+                <span class="n">image_url</span><span class="o">=</span><span class="n">as_data_url</span><span class="p">(</span><span class="n">attachment</span><span class="o">.</span><span class="n">mime_type</span><span class="p">,</span> <span class="n">content</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">attachment</span><span class="o">.</span><span class="n">mime_type</span> <span class="o">==</span> <span class="s2">&quot;application/pdf&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">ResponseInputFileParam</span><span class="p">(</span>
+                <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;input_file&quot;</span><span class="p">,</span>
+                <span class="n">file_data</span><span class="o">=</span><span class="n">as_data_url</span><span class="p">(</span><span class="n">attachment</span><span class="o">.</span><span class="n">mime_type</span><span class="p">,</span> <span class="n">content</span><span class="p">),</span>
+                <span class="n">filename</span><span class="o">=</span><span class="n">attachment</span><span class="o">.</span><span class="n">name</span> <span class="ow">or</span> <span class="s2">&quot;unknown&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="c1"># For other text formats, check for API support first before</span>
+        <span class="c1"># sending as a ResponseInputFileParam.</span>
+</code></pre></div>
+<h3 id="show-image-attachment-previews-in-thread">Show image attachment previews in thread</h3>
+<p>Set <code>ImageAttachment.preview_url</code> to allow the client to render thumbnails.</p>
+<ul>
+<li>If your preview URLs are <strong>permanent/public</strong>, set <code>preview_url</code> once when creating the attachment and persist it.</li>
+<li>If your storage uses <strong>expiring URLs</strong>, generate a fresh <code>preview_url</code> when returning attachment metadata (for example, in <code>Store.load_thread_items</code> and <code>Store.load_attachment</code>) rather than persisting a long-lived URL. In this case, returning a short-lived signed URL directly is the simplest approach. Alternatively, you may return a redirect that resolves to a temporary signed URL, as long as the final URL serves image bytes with appropriate CORS headers.</li>
+</ul>
+<h2 id="dictation-speech-to-text-input">Dictation: speech-to-text input</h2>
+<p>Enable dictation so users can record audio and have it transcribed into text before sending.</p>
+<h3 id="enable-dictation-in-the-client">Enable dictation in the client</h3>
+<p>Turn on dictation in the composer:</p>
+<div class="highlight"><pre><span></span><code><span class="kd">const</span><span class="w"> </span><span class="nx">chatkit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">useChatKit</span><span class="p">({</span>
+<span class="w">  </span><span class="c1">// ...</span>
+<span class="w">  </span><span class="nx">composer</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">dictation</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">enabled</span><span class="o">:</span><span class="w"> </span><span class="kt">true</span><span class="p">,</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="p">});</span>
+</code></pre></div>
+<p>This maps to <code>ChatKitOptions.composer.dictation</code>.</p>
+<h3 id="implement-chatkitservertranscribe">Implement <code>ChatKitServer.transcribe</code></h3>
+<p>When dictation is enabled, the client records audio and sends it to your backend for transcription. Implement <code>ChatKitServer.transcribe</code> to accept audio input and return a transcription result.</p>
+<p>The client sends one of:</p>
+<ul>
+<li><code>"audio/webm;codecs=opus"</code> (preferred for Chrome/Firefox/Safari 18.4+)</li>
+<li><code>"audio/mp4"</code> (fallback for older Safari/iOS)</li>
+<li><code>"audio/ogg;codecs=opus"</code> (alternative for some environments)</li>
+</ul>
+<p>The raw value is available as <code>audio_input.mime_type</code>. Use <code>audio_input.media_type</code> when you only need the base media type (<code>"audio/webm"</code>, <code>"audio/ogg"</code>, or <code>"audio/mp4"</code>).</p>
+<p>Example transcription method using the OpenAI Audio API:</p>
+<div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">transcribe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">audio_input</span><span class="p">:</span> <span class="n">AudioInput</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">RequestContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TranscriptionResult</span><span class="p">:</span>
+  <span class="n">ext</span> <span class="o">=</span> <span class="p">{</span>
+      <span class="s2">&quot;audio/webm&quot;</span><span class="p">:</span> <span class="s2">&quot;webm&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;audio/mp4&quot;</span><span class="p">:</span> <span class="s2">&quot;m4a&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;audio/ogg&quot;</span><span class="p">:</span> <span class="s2">&quot;ogg&quot;</span><span class="p">,</span>
+  <span class="p">}</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">audio_input</span><span class="o">.</span><span class="n">media_type</span><span class="p">)</span>
+  <span class="k">if</span> <span class="ow">not</span> <span class="n">ext</span><span class="p">:</span>
+      <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Unexpected audio format&quot;</span><span class="p">)</span>
+
+  <span class="n">audio_file</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">audio_input</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+  <span class="n">audio_file</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;audio.</span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&quot;</span>
+  <span class="n">transcription</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">audio</span><span class="o">.</span><span class="n">transcriptions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+      <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4o-transcribe&quot;</span><span class="p">,</span>
+      <span class="n">file</span><span class="o">=</span><span class="n">audio_file</span>
+  <span class="p">)</span>
+  <span class="k">return</span> <span class="n">TranscriptionResult</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">transcription</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+</code></pre></div>
+<p>Return a <code>TranscriptionResult</code> that includes the final <code>text</code> that should appear in the composer.</p>
+<h2 id="-mentions-tag-entities-in-user-messages">@-mentions: tag entities in user messages</h2>
+<p>Enable @-mentions so users can tag entities (like documents, tickets, or users) instead of pasting raw identifiers. Mentions travel through ChatKit as structured tags so the model can resolve entities instead of guessing from free text.</p>
+<h3 id="enable-as-you-type-entity-lookup-in-the-composer">Enable as-you-type entity lookup in the composer</h3>
+<p>To enable entity tagging as @-mentions in the composer, configure <a href="https://openai.github.io/chatkit-js/api/openai/chatkit/type-aliases/entitiesoption/#ontagsearch"><code>entities.onTagSearch</code></a> as a ChatKit.js option.</p>
+<p>It should return a list of <a href="https://openai.github.io/chatkit-js/api/openai/chatkit/type-aliases/entity/">Entity</a> objects that match the query string.</p>
+<p>If you want to hint that @-mentions are available, enable the composer <code>@</code> button by setting <a href="https://openai.github.io/chatkit-js/api/openai/chatkit/type-aliases/entitiesoption/#showcomposermenu"><code>entities.showComposerMenu</code></a>. When clicked, it inserts <code>@</code> into the composer and opens the tag search menu automatically.</p>
+<div class="highlight"><pre><span></span><code><span class="kd">const</span><span class="w"> </span><span class="nx">chatkit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">useChatKit</span><span class="p">({</span>
+<span class="w">  </span><span class="c1">// ...</span>
+<span class="w">  </span><span class="nx">entities</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">onTagSearch</span><span class="o">:</span><span class="w"> </span><span class="kt">async</span><span class="w"> </span><span class="p">(</span><span class="nx">query</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="nx">id</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;article_123&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nx">title</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;The Future of AI&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nx">group</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Trending&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nx">icon</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;globe&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nx">data</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="kr">type</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;article&quot;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="nx">id</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;article_124&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nx">title</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;One weird trick to improve your sleep&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nx">group</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Trending&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nx">icon</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;globe&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nx">data</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="kr">type</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;article&quot;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">      </span><span class="p">]</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="c1">// Optional: show the &quot;@&quot; button in the composer for added discoverability.</span>
+<span class="w">    </span><span class="nx">showComposerMenu</span><span class="o">:</span><span class="w"> </span><span class="kt">true</span><span class="p">,</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="p">})</span>
+</code></pre></div>
+<h3 id="convert-tags-into-model-input-in-your-server">Convert tags into model input in your server</h3>
+<p>Mentions arrive server-side as structured tags. Override <code>ThreadItemConverter.tag_to_message_content</code> to describe what each tag refers to and translate it into model-readable content.</p>
+<p>Example converter method that wraps the tagged entity details in custom markup:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">chatkit.agents</span><span class="w"> </span><span class="kn">import</span> <span class="n">ThreadItemConverter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">chatkit.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">UserMessageTagContent</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">openai.types.responses</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResponseInputTextParam</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MyThreadItemConverter</span><span class="p">(</span><span class="n">ThreadItemConverter</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">tag_to_message_content</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="p">:</span> <span class="n">UserMessageTagContent</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResponseInputTextParam</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">tag</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;article&quot;</span><span class="p">:</span>
+            <span class="c1"># Load or unpack the entity the tag refers to</span>
+            <span class="n">summary</span> <span class="o">=</span> <span class="k">await</span> <span class="n">fetch_article_summary</span><span class="p">(</span><span class="n">tag</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">ResponseInputTextParam</span><span class="p">(</span>
+                <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;input_text&quot;</span><span class="p">,</span>
+                <span class="n">text</span><span class="o">=</span><span class="p">(</span>
+                    <span class="s2">&quot;&lt;ARTICLE_TAG&gt;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;ID: </span><span class="si">{</span><span class="n">tag</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;Title: </span><span class="si">{</span><span class="n">tag</span><span class="o">.</span><span class="n">text</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;Summary: </span><span class="si">{</span><span class="n">summary</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                    <span class="s2">&quot;&lt;/ARTICLE_TAG&gt;&quot;</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
+</code></pre></div>
+<h3 id="pair-mentions-with-retrieval-tool-calls">Pair mentions with retrieval tool calls</h3>
+<p>When the referenced content is too large to inline, keep the tag lean (id + short summary) and let the model fetch details via a tool. In your system prompt, tell the assistant to call the retrieval tool when it sees an <code>ARTICLE_TAG</code>.</p>
+<p>Example tool paired with the converter above:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">agents</span><span class="w"> </span><span class="kn">import</span> <span class="n">Agent</span><span class="p">,</span> <span class="n">StopAtTools</span><span class="p">,</span> <span class="n">RunContextWrapper</span><span class="p">,</span> <span class="n">function_tool</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">chatkit.agents</span><span class="w"> </span><span class="kn">import</span> <span class="n">AgentContext</span>
+
+
+<span class="nd">@function_tool</span><span class="p">(</span><span class="n">description_override</span><span class="o">=</span><span class="s2">&quot;Fetch full article content by id.&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">fetch_article</span><span class="p">(</span><span class="n">ctx</span><span class="p">:</span> <span class="n">RunContextWrapper</span><span class="p">[</span><span class="n">AgentContext</span><span class="p">],</span> <span class="n">article_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="n">article</span> <span class="o">=</span> <span class="k">await</span> <span class="n">load_article_content</span><span class="p">(</span><span class="n">article_id</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="n">article</span><span class="o">.</span><span class="n">title</span><span class="p">,</span>
+        <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">article</span><span class="o">.</span><span class="n">body</span><span class="p">,</span>
+        <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="n">article</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+    <span class="p">}</span>
+
+
+<span class="n">assistant</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">[</span><span class="n">AgentContext</span><span class="p">](</span>
+    <span class="o">...</span><span class="p">,</span>
+    <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">fetch_article</span><span class="p">],</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>In <code>tag_to_message_content</code>, include the id the tool expects (for example, <code>tag.id</code> or <code>tag.data["article_id"]</code>). The model can then decide to call <code>fetch_article</code> to pull the full text instead of relying solely on the brief summary in the tag.</p>
+<h3 id="prompt-the-model-about-mentions">Prompt the model about mentions</h3>
+<p>Add short system guidance to help the assistant understand the input item that adds details about the @-mention.</p>
+<p>For example:</p>
+<div class="highlight"><pre><span></span><code>- &lt;ARTICLE_TAG&gt;...&lt;/ARTICLE_TAG&gt; is a summary of an article the user referenced.
+- Use it as trusted context when answering questions about that article.
+- Do not restate the summary verbatim; answer the user’s question concisely.
+- Call the `fetch_article` tool with the article id from the tag when more
+  detail is needed or the user asks for specifics not in the summary.
+</code></pre></div>
+<p>Combined with the converter above, the model receives explicit, disambiguated entity context while users keep a rich mention UI.</p>
+<h3 id="handle-clicks-and-previews">Handle clicks and previews</h3>
+<p>Clicks and hover previews apply to the tagged entities shown in past user messages. Mark an entity as interactive when you return it from <code>onTagSearch</code> so the client knows to wire these callbacks:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nx">id</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;article_123&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">title</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;The Future of AI&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">group</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Trending&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">icon</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;globe&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">interactive</span><span class="o">:</span><span class="w"> </span><span class="kt">true</span><span class="p">,</span><span class="w"> </span><span class="c1">// clickable/previewable</span>
+<span class="w">  </span><span class="nx">data</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="kr">type</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;article&quot;</span><span class="w"> </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<ul>
+<li><code>entities.onClick</code> fires when a user clicks a tag in the transcript. Handle navigation or open a detail view. See the <a href="https://openai.github.io/chatkit-js/api/openai/chatkit/type-aliases/entitiesoption/#onclick">onClick option</a>.</li>
+<li><code>entities.onRequestPreview</code> runs when the user hovers or taps a tag that has <code>interactive: true</code>. Return a <code>BasicRoot</code> widget; you can build one with <code>WidgetTemplate.build_basic(...)</code> if you are building the preview widgets server-side. See the <a href="https://openai.github.io/chatkit-js/api/openai/chatkit/type-aliases/entitiesoption/#onrequestpreview">onRequestPreview option</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../..", "features": ["content.code.copy", "content.code.select", "navigation.path", "navigation.sections", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.f55a23d4.min.js"></script>
+      
+    
+  </body>
+</html>
