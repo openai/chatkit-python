@@ -357,7 +357,7 @@ class ChatKitServer(ABC, Generic[TContext]):
             "See https://github.com/openai/chatkit-python/blob/main/docs/widgets.md#widget-actions"
         )
 
-    def sync_action(
+    async def sync_action(
         self,
         thread: ThreadMetadata,
         action: Action[str, Any],
@@ -707,7 +707,7 @@ class ChatKitServer(ABC, Generic[TContext]):
             raise ValueError("threads.sync_custom_action requires a widget sender item")
 
         return self._serialize(
-            self.sync_action(
+            await self.sync_action(
                 thread_metadata,
                 request.params.action,
                 item,

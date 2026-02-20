@@ -194,7 +194,7 @@ def make_server(
                 raise ValueError("action_callback not wired up")
             return action_callback(thread, action, sender, context)
 
-        def sync_action(
+        async def sync_action(
             self,
             thread: ThreadMetadata,
             action: Action[str, Any],
