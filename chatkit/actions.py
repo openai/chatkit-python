@@ -16,6 +16,7 @@ class ActionConfig(BaseModel):
     payload: Any = None
     handler: Handler = DEFAULT_HANDLER
     loadingBehavior: LoadingBehavior = DEFAULT_LOADING_BEHAVIOR
+    streaming: bool = True
 
 
 TType = TypeVar("TType", bound=str)
@@ -32,6 +33,7 @@ class Action(BaseModel, Generic[TType, TPayload]):
         payload: TPayload,
         handler: Handler = DEFAULT_HANDLER,
         loading_behavior: LoadingBehavior = DEFAULT_LOADING_BEHAVIOR,
+        streaming: bool = True,
     ) -> ActionConfig:
         actionType: Any = None
         anno = cls.model_fields["type"].annotation
@@ -50,4 +52,5 @@ class Action(BaseModel, Generic[TType, TPayload]):
             payload=payload,
             handler=handler,
             loadingBehavior=loading_behavior,
+            streaming=streaming,
         )

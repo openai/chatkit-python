@@ -14,9 +14,14 @@ If you leave the handler unset, the action is delivered to `ChatKitServer.action
 
 When you set `handler: "client"`, the action flows into the client SDK’s `widgets.onAction` callback so you can do immediate UI work such as opening dialogs, navigating, or running local validation. Client handlers can still forward a follow-up action to the server with `chatkit.sendCustomAction()` after local logic finishes. The server thread stays unchanged unless you explicitly send that follow-up action or a message.
 
+### Sync server-handled actions
+
+Normally, widget actions are blocked while a thread is streaming a response. This prevents race conditions, but it can be limiting when a widget action is only going to update itself or trigger side effects outside the thread. To get around this limitation, set `streaming: "false"`, which delivers the action to `ChatKitServer.sync_action(thread, action, sender, context)`. Use this handler to run any side effects and update the widget's UI as needed.
+
 ## Client-sent actions using the chatkit.sendCustomAction() command
 
 Your client integration can also initiate actions directly with `chatkit.sendCustomAction(action, itemId?)`, optionally namespaced to a specific widget item. The server receives these in `ChatKitServer.action` just like a widget-triggered action and can stream widgets, messages, or client effects in response. This pattern is useful when a flow starts outside a widget—or after a client-handled action—but you still want the server to persist results or involve the model.
 
 ## Related guides
+
 - [Build interactive responses with widgets](../guides/build-interactive-responses-with-widgets.md)
