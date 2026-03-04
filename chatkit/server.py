@@ -977,4 +977,5 @@ class ChatKitServer(ABC, Generic[TContext]):
             created_at=thread.created_at,
             items=items,
             status=thread.status,
+            allowed_image_domains=thread.allowed_image_domains,
         )
