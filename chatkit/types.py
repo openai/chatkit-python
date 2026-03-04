@@ -562,7 +562,7 @@ class ThreadMetadata(BaseModel):
     id: str
     created_at: datetime
     status: ThreadStatus = Field(default_factory=lambda: ActiveStatus())
-    # TODO - make not client rendered
+    allowed_image_domains: list[str] | None = None
     metadata: dict[str, Any] = Field(default_factory=dict)
 
 

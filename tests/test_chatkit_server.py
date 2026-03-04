@@ -1,5 +1,6 @@
 import asyncio
 import base64
+import json
 import sqlite3
 from contextlib import contextmanager
 from datetime import datetime
@@ -637,6 +638,78 @@ async def test_saves_thread_locked_fields():
         assert loaded.status == LockedStatus(reason="Because")
         assert events[-1].type == "thread.updated"
         assert events[-1].thread.status == LockedStatus(reason="Because")
+
+
+async def test_saves_allowed_image_domains_and_streams_thread_updated():
+    async def responder(
+        thread: ThreadMetadata, input: UserMessageItem | None, context: Any
+    ) -> AsyncIterator[ThreadStreamEvent]:
+        thread.allowed_image_domains = ["example.com", "images.example.com"]
+        return
+        yield
+
+    with make_server(responder) as server:
+        events = await server.process_streaming(
+            ThreadsCreateReq(
+                params=ThreadCreateParams(
+                    input=UserMessageInput(
+                        content=[UserMessageTextContent(text="Hello, world!")],
+                        attachments=[],
+                        inference_options=InferenceOptions(),
+                    )
+                )
+            )
+        )
+        thread = next(
+            event.thread for event in events if event.type == "thread.created"
+        )
+        loaded = await server.store.load_thread(thread.id, DEFAULT_CONTEXT)
+        assert loaded.allowed_image_domains == ["example.com", "images.example.com"]
+        assert events[-1].type == "thread.updated"
+        assert events[-1].thread.allowed_image_domains == [
+            "example.com",
+            "images.example.com",
+        ]
+
+
+async def test_omits_unset_allowed_image_domains_in_created_and_updated_json_events():
+    async def responder(
+        thread: ThreadMetadata, input: UserMessageItem | None, context: Any
+    ) -> AsyncIterator[ThreadStreamEvent]:
+        thread.title = "Updated title"
+        return
+        yield
+
+    with make_server(responder) as server:
+        stream = await server.process(
+            ThreadsCreateReq(
+                params=ThreadCreateParams(
+                    input=UserMessageInput(
+                        content=[UserMessageTextContent(text="Hello, world!")],
+                        attachments=[],
+                        inference_options=InferenceOptions(),
+                    )
+                )
+            ).model_dump_json(),
+            DEFAULT_CONTEXT,
+        )
+        assert isinstance(stream, StreamingResult)
+
+        thread_created_event: dict[str, Any] | None = None
+        thread_updated_event: dict[str, Any] | None = None
+        async for raw in stream.json_events:
+            event = json.loads(raw.split(b"data: ")[1])
+            if event["type"] == "thread.created":
+                thread_created_event = event
+            if event["type"] == "thread.updated":
+                thread_updated_event = event
+
+        assert thread_created_event is not None
+        assert "allowed_image_domains" not in thread_created_event["thread"]
+
+        assert thread_updated_event is not None
+        assert thread_updated_event["thread"]["title"] == "Updated title"
+        assert "allowed_image_domains" not in thread_updated_event["thread"]
 
 
 async def test_emits_thread_updated_mid_stream_and_persists():
