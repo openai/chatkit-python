@@ -23,7 +23,7 @@ from agents import (
     StreamEvent,
     ToolCallItem,
 )
-from agents._run_impl import QueueCompleteSentinel
+from agents.result import QueueCompleteSentinel
 from openai.types.responses import (
     EasyInputMessageParam,
     ResponseFileSearchToolCall,
