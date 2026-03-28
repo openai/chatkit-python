@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 
 import pytest
-from helpers.mock_store import SQLiteStore
+from .helpers.mock_store import SQLiteStore
 from pydantic import AnyUrl
 
 from chatkit.store import NotFoundError, Store
@@ -20,7 +20,7 @@ from chatkit.types import (
     WidgetItem,
 )
 from chatkit.widgets import Card, Col, Text
-from tests._types import RequestContext
+from ._types import RequestContext
 
 
 def make_thread(thread_id="test_thread", created_at=None):

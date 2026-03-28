@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import Any, AsyncIterator, Callable, cast
 
 import pytest
-from helpers.mock_store import SQLiteStore
+from .helpers.mock_store import SQLiteStore
 from pydantic import AnyUrl, TypeAdapter
 
 from chatkit.actions import Action
@@ -93,8 +93,8 @@ from chatkit.types import (
     WorkflowTaskAdded,
 )
 from chatkit.widgets import Card, Text
-from tests._types import RequestContext
-from tests.test_store import make_thread_items
+from ._types import RequestContext
+from .test_store import make_thread_items
 
 server_id = 0
 

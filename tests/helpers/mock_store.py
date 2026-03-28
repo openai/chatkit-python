@@ -11,7 +11,7 @@ from chatkit.types import (
     ThreadItem,
     ThreadMetadata,
 )
-from tests._types import RequestContext
+from .._types import RequestContext
 
 from .mock_widget import SampleWidget
 
