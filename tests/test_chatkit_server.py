@@ -50,6 +50,7 @@ from chatkit.types import (
     LockedStatus,
     Page,
     ProgressUpdateEvent,
+    SDKHiddenContextItem,
     SyncCustomActionResponse,
     Thread,
     ThreadAddClientToolOutputParams,
@@ -843,6 +844,124 @@ async def test_respond_with_tool_call():
         assert events[3].item.name == "tool_call_1"
         assert events[3].item.arguments == {"arg1": "val1", "arg2": False}
         assert events[3].item.call_id == "tool_call_1"
+
+        events = await server.process_streaming(
+            ThreadsAddClientToolOutputReq(
+                params=ThreadAddClientToolOutputParams(
+                    thread_id=thread.id,
+                    result={"text": "Wow!"},
+                )
+            )
+        )
+
+        assert len(events) == 2
+        assert events[0].type == "stream_options"
+        assert events[1].type == "thread.item.done"
+        assert events[1].item.type == "assistant_message"
+
+
+async def test_add_client_tool_output_finds_pending_tool_call_before_latest_item():
+    async def responder(
+        thread: ThreadMetadata, input: UserMessageItem | None, context: Any
+    ) -> AsyncIterator[ThreadStreamEvent]:
+        if isinstance(input, UserMessageItem):
+            yield ThreadItemDoneEvent(
+                item=ClientToolCallItem(
+                    id="msg_1",
+                    created_at=datetime.now(),
+                    name="tool_call_1",
+                    arguments={"arg1": "val1"},
+                    call_id="tool_call_1",
+                    thread_id=thread.id,
+                ),
+            )
+        elif input is None:
+            yield ThreadItemDoneEvent(
+                item=AssistantMessageItem(
+                    id="msg_2",
+                    content=[
+                        AssistantMessageContent(text="Glad the tool call succeeded!")
+                    ],
+                    created_at=datetime.now(),
+                    thread_id=thread.id,
+                ),
+            )
+
+    with make_server(responder) as server:
+        events = await server.process_streaming(
+            ThreadsCreateReq(
+                params=ThreadCreateParams(
+                    input=UserMessageInput(
+                        content=[UserMessageTextContent(text="Hello, world!")],
+                        attachments=[],
+                        inference_options=InferenceOptions(),
+                    )
+                )
+            )
+        )
+        thread = next(
+            event.thread for event in events if isinstance(event, ThreadCreatedEvent)
+        )
+
+        await server.store.add_thread_item(
+            thread.id,
+            SDKHiddenContextItem(
+                id="hidden_1",
+                created_at=datetime.now(),
+                thread_id=thread.id,
+                content="The user cancelled the stream.",
+            ),
+            DEFAULT_CONTEXT,
+        )
+
+        events = await server.process_streaming(
+            ThreadsAddClientToolOutputReq(
+                params=ThreadAddClientToolOutputParams(
+                    thread_id=thread.id,
+                    result={"text": "Wow!"},
+                )
+            )
+        )
+
+        tool_call = await server.store.load_item(thread.id, "msg_1", DEFAULT_CONTEXT)
+        assert isinstance(tool_call, ClientToolCallItem)
+        assert tool_call.status == "completed"
+        assert tool_call.output == {"text": "Wow!"}
+        assert len(events) == 2
+        assert events[0].type == "stream_options"
+        assert events[1].type == "thread.item.done"
+        assert events[1].item.type == "assistant_message"
+
+
+async def test_add_client_tool_output_without_pending_tool_call_continues_inference():
+    async def responder(
+        thread: ThreadMetadata, input: UserMessageItem | None, context: Any
+    ) -> AsyncIterator[ThreadStreamEvent]:
+        if input is None:
+            yield ThreadItemDoneEvent(
+                item=AssistantMessageItem(
+                    id="msg_1",
+                    content=[AssistantMessageContent(text="Continued")],
+                    created_at=datetime.now(),
+                    thread_id=thread.id,
+                ),
+            )
+
+    with make_server(responder) as server:
+        events = await server.process_streaming(
+            ThreadsCreateReq(
+                params=ThreadCreateParams(
+                    input=UserMessageInput(
+                        content=[UserMessageTextContent(text="Hello, world!")],
+                        attachments=[],
+                        inference_options=InferenceOptions(),
+                    )
+                )
+            )
+        )
+        thread = next(
+            event.thread for event in events if isinstance(event, ThreadCreatedEvent)
+        )
 
         events = await server.process_streaming(
             ThreadsAddClientToolOutputReq(

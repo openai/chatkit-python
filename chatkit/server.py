@@ -581,33 +581,18 @@ class ChatKitServer(ABC, Generic[TContext]):
                 thread = await self.store.load_thread(
                     request.params.thread_id, context=context
                 )
-                items = await self.store.load_thread_items(
-                    thread.id, None, 1, "desc", context
-                )
-                tool_call = next(
-                    (
-                        item
-                        for item in items.data
-                        if isinstance(item, ClientToolCallItem)
-                        and item.status == "pending"
-                    ),
-                    None,
-                )
-                if not tool_call:
-                    raise ValueError(
-                        f"Last thread item in {thread.id} was not a ClientToolCallItem"
-                    )
+                tool_call = await self._load_pending_client_tool_call(thread, context)
+                if tool_call:
+                    tool_call.output = request.params.result
+                    tool_call.status = "completed"
 
-                tool_call.output = request.params.result
-                tool_call.status = "completed"
+                    await self.store.save_item(thread.id, tool_call, context=context)
 
-                await self.store.save_item(thread.id, tool_call, context=context)
-
-                # Safety against dangling pending tool calls if there are
-                # multiple in a row, which should be impossible, and
-                # integrations should ultimately filter out pending tool calls
-                # when creating input response messages.
-                await self._cleanup_pending_client_tool_call(thread, context)
+                    # Safety against dangling pending tool calls if there are
+                    # multiple in a row, which should be impossible, and
+                    # integrations should ultimately filter out pending tool calls
+                    # when creating input response messages.
+                    await self._cleanup_pending_client_tool_call(thread, context)
 
                 async for event in self._process_events(
                     thread,
@@ -731,6 +716,17 @@ class ChatKitServer(ABC, Generic[TContext]):
                 await self.store.delete_thread_item(
                     thread.id, tool_call.id, context=context
                 )
+
+    async def _load_pending_client_tool_call(
+        self, thread: ThreadMetadata, context: TContext
+    ) -> ClientToolCallItem | None:
+        items = await self.store.load_thread_items(
+            thread.id, None, DEFAULT_PAGE_SIZE, "desc", context
+        )
+        for item in items.data:
+            if isinstance(item, ClientToolCallItem) and item.status == "pending":
+                return item
+        return None
 
     async def _process_new_thread_item_respond(
         self,
