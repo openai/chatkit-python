@@ -52,6 +52,10 @@ from .types import (
     StreamingReq,
     StreamOptions,
     StreamOptionsEvent,
+    StructuredInputAnswer,
+    StructuredInputItem,
+    StructuredInputMultipleChoice,
+    StructuredInputSubmission,
     SyncCustomActionResponse,
     Thread,
     ThreadCreatedEvent,
@@ -63,6 +67,7 @@ from .types import (
     ThreadItemUpdatedEvent,
     ThreadMetadata,
     ThreadsAddClientToolOutputReq,
+    ThreadsAddStructuredInputReq,
     ThreadsAddUserMessageReq,
     ThreadsCreateReq,
     ThreadsCustomActionReq,
@@ -616,6 +621,41 @@ class ChatKitServer(ABC, Generic[TContext]):
                 ):
                     yield event
 
+            case ThreadsAddStructuredInputReq():
+                thread = await self.store.load_thread(
+                    request.params.thread_id, context=context
+                )
+                item = await self.store.load_item(
+                    request.params.thread_id,
+                    request.params.item_id,
+                    context=context,
+                )
+                if not isinstance(item, StructuredInputItem):
+                    raise ValueError(
+                        f"Item {request.params.item_id} is not a StructuredInputItem"
+                    )
+
+                updated_item = await self._apply_structured_input_submission(
+                    item,
+                    request.params.input,
+                )
+
+                async def stream_structured_input_response() -> AsyncIterator[
+                    ThreadStreamEvent
+                ]:
+                    # Keep this replacement inside _process_events so it is persisted
+                    # through the same event pipeline as other thread item replacements.
+                    yield ThreadItemReplacedEvent(item=updated_item)
+                    async for event in self.respond(thread, None, context):
+                        yield event
+
+                async for event in self._process_events(
+                    thread,
+                    context,
+                    stream_structured_input_response,
+                ):
+                    yield event
+
             case ThreadsRetryAfterItemReq():
                 thread_metadata = await self.store.load_thread(
                     request.params.thread_id, context=context
@@ -714,6 +754,48 @@ class ChatKitServer(ABC, Generic[TContext]):
                 context,
             )
         )
+
+    async def _apply_structured_input_submission(
+        self,
+        item: StructuredInputItem,
+        submission: StructuredInputSubmission,
+    ) -> StructuredInputItem:
+        if item.status != "pending":
+            raise ValueError(f"Structured input item {item.id} is not pending")
+
+        updated_item = item.model_copy(deep=True)
+        questions_by_id = {
+            question.id: question for question in updated_item.inputs
+        }
+        submitted_question_ids = set(submission.answers)
+        unknown_question_ids = submitted_question_ids.difference(questions_by_id)
+        if unknown_question_ids:
+            unknown = ", ".join(sorted(unknown_question_ids))
+            logger.warning(
+                f"Structured input item {item.id} received unknown question id(s), ignoring: {unknown}"
+            )
+
+        for question in updated_item.inputs:
+            answer = submission.answers.get(question.id)
+
+            if (
+                submission.status == "skipped" or
+                answer is None or
+                answer.skipped or
+                not answer.values
+            ):
+                question.answer = StructuredInputAnswer(skipped=True)
+                continue
+
+            values = answer.values
+            if isinstance(question, StructuredInputMultipleChoice):
+                if not question.multiple:
+                    values = values[:1]
+
+            question.answer = StructuredInputAnswer(values=values)
+
+        updated_item.status = submission.status
+        return updated_item
 
     async def _cleanup_pending_client_tool_call(
         self, thread: ThreadMetadata, context: TContext

@@ -85,6 +85,10 @@ from chatkit.types import (
     HiddenContextItem,
     InferenceOptions,
     Page,
+    StructuredInputAnswer,
+    StructuredInputFreeform,
+    StructuredInputItem,
+    StructuredInputMultipleChoice,
     TaskItem,
     ThoughtTask,
     Thread,
@@ -722,6 +726,43 @@ async def test_input_item_converter_with_client_tool_call():
         "type": "function_call_output",
         "call_id": "ctc_123",
         "output": json.dumps({"success": True}),
+    }
+
+
+async def test_input_item_converter_with_structured_input():
+    items = [
+        StructuredInputItem(
+            id="si_123",
+            thread_id=thread.id,
+            created_at=datetime.now(),
+            status="answered",
+            inputs=[
+                StructuredInputMultipleChoice(
+                    id="subject",
+                    question="Which subject is this lesson for?",
+                    options=["Math", "Science"],
+                    answer=StructuredInputAnswer(values=["Math"]),
+                ),
+                StructuredInputFreeform(
+                    id="details",
+                    question="Anything else to know?",
+                    answer=StructuredInputAnswer(skipped=True),
+                ),
+            ],
+        )
+    ]
+
+    input_items = await simple_to_agent_input(items)
+    assert len(input_items) == 1
+    assert input_items[0] == {
+        "content": [
+            {
+                "text": "A structured input request was displayed to the user with the following status: answered\n<StructuredInput>\n- Which subject is this lesson for?: Math\n- Anything else to know?: skipped\n</StructuredInput>",
+                "type": "input_text",
+            },
+        ],
+        "role": "user",
+        "type": "message",
     }
 
 
