@@ -553,14 +553,19 @@ async def stream_agent_response(
 
             if event.type == "run_item_stream_event":
                 event = event.item
-                if (
-                    event.type == "tool_call_item"
-                    and event.raw_item.type == "function_call"
-                ):
-                    current_tool_call = event.raw_item.call_id
-                    current_item_id = event.raw_item.id
-                    assert current_item_id
-                    produced_items.add(current_item_id)
+                if event.type == "tool_call_item":
+                    raw_item = event.raw_item
+                    if isinstance(raw_item, dict):
+                        if raw_item.get("type") == "function_call":
+                            current_tool_call = event.call_id
+                            current_item_id = raw_item.get("id")
+                            assert current_item_id
+                            produced_items.add(current_item_id)
+                    elif raw_item.type == "function_call":
+                        current_tool_call = event.call_id
+                        current_item_id = raw_item.id
+                        assert current_item_id
+                        produced_items.add(current_item_id)
                 continue
 
             if event.type != "raw_response_event":

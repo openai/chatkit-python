@@ -8,9 +8,10 @@ dependencies = ["pydantic", "uvicorn", "openai", "openai-agents>=0.3.2", "jinja2
 
 [dependency-groups]
 dev = [
+  "griffe==1.14.0",
   "pytest", "pytest-asyncio", "debugpy", "fastapi", "python-multipart", "psycopg2-binary", "flask", "pyright",
   "mypy", "ruff==0.9.2",
-  "mkdocs", "mkdocs-material", "mkdocstrings[python]", "mkdocs-gen-files"
+  "mkdocs", "mkdocs-material", "mkdocstrings==0.30.1", "mkdocstrings-python==1.18.2", "mkdocs-gen-files"
 ]
 lint = [
   "ruff"
