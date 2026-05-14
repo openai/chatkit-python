@@ -715,11 +715,18 @@ class StructuredInputBase(BaseModel):
     """Answer recorded for this structured input, if available."""
 
 
+class StructuredInputMultipleChoiceOption(BaseModel):
+    """Option shown for a multiple-choice structured input."""
+
+    value: str
+    """Text value submitted when this option is selected."""
+
+
 class StructuredInputMultipleChoice(StructuredInputBase):
     """Structured input answered by choosing one or more options."""
 
     type: Literal["multiple_choice"] = "multiple_choice"
-    options: list[str]
+    options: list[StructuredInputMultipleChoiceOption]
     """Suggested choices to display before the freeform custom answer affordance."""
     multiple: bool = False
     """Whether the user may submit more than one text value."""

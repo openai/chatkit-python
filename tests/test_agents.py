@@ -89,6 +89,7 @@ from chatkit.types import (
     StructuredInputFreeform,
     StructuredInputItem,
     StructuredInputMultipleChoice,
+    StructuredInputMultipleChoiceOption,
     TaskItem,
     ThoughtTask,
     Thread,
@@ -758,7 +759,10 @@ async def test_input_item_converter_with_structured_input():
                 StructuredInputMultipleChoice(
                     id="subject",
                     question="Which subject is this lesson for?",
-                    options=["Math", "Science"],
+                    options=[
+                        StructuredInputMultipleChoiceOption(value="Math"),
+                        StructuredInputMultipleChoiceOption(value="Science"),
+                    ],
                     answer=StructuredInputAnswer(values=["Math"]),
                 ),
                 StructuredInputFreeform(

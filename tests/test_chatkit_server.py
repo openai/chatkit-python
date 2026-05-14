@@ -54,6 +54,7 @@ from chatkit.types import (
     StructuredInputFreeform,
     StructuredInputItem,
     StructuredInputMultipleChoice,
+    StructuredInputMultipleChoiceOption,
     StructuredInputSubmission,
     SyncCustomActionResponse,
     Thread,
@@ -1093,7 +1094,10 @@ async def test_add_structured_input_replaces_item_with_custom_answer_and_resumes
                         StructuredInputMultipleChoice(
                             id="subject",
                             question="Which subject is this lesson for?",
-                            options=["Math", "Science"],
+                            options=[
+                                StructuredInputMultipleChoiceOption(value="Math"),
+                                StructuredInputMultipleChoiceOption(value="Science"),
+                            ],
                         ),
                         StructuredInputFreeform(
                             id="details",
@@ -1191,7 +1195,10 @@ async def test_add_structured_input_treats_omitted_answers_as_skipped():
                         StructuredInputMultipleChoice(
                             id="subject",
                             question="Which subject is this lesson for?",
-                            options=["Math", "Science"],
+                            options=[
+                                StructuredInputMultipleChoiceOption(value="Math"),
+                                StructuredInputMultipleChoiceOption(value="Science"),
+                            ],
                         ),
                         StructuredInputFreeform(
                             id="details",
@@ -1327,7 +1334,10 @@ async def test_add_structured_input_truncates_extra_single_choice_values():
                     StructuredInputMultipleChoice(
                         id="subject",
                         question="Which subject is this lesson for?",
-                        options=["Math", "Science"],
+                        options=[
+                            StructuredInputMultipleChoiceOption(value="Math"),
+                            StructuredInputMultipleChoiceOption(value="Science"),
+                        ],
                     ),
                 ],
             )

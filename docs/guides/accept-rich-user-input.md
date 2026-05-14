@@ -246,6 +246,7 @@ from chatkit.types import (
     StructuredInputFreeform,
     StructuredInputItem,
     StructuredInputMultipleChoice,
+    StructuredInputMultipleChoiceOption,
     ThreadItemDoneEvent,
 )
 
@@ -259,7 +260,11 @@ yield ThreadItemDoneEvent(
             StructuredInputMultipleChoice(
                 id="priority",
                 question="What priority should I use?",
-                options=["Low", "Medium", "High"],
+                options=[
+                    StructuredInputMultipleChoiceOption(value="Low"),
+                    StructuredInputMultipleChoiceOption(value="Medium"),
+                    StructuredInputMultipleChoiceOption(value="High"),
+                ],
             ),
             StructuredInputFreeform(
                 id="notes",
