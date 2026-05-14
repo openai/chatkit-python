@@ -50,9 +50,16 @@ from chatkit.types import (
     LockedStatus,
     Page,
     ProgressUpdateEvent,
+    StructuredInputAnswerSubmission,
+    StructuredInputFreeform,
+    StructuredInputItem,
+    StructuredInputMultipleChoice,
+    StructuredInputMultipleChoiceOption,
+    StructuredInputSubmission,
     SyncCustomActionResponse,
     Thread,
     ThreadAddClientToolOutputParams,
+    ThreadAddStructuredInputParams,
     ThreadAddUserMessageParams,
     ThreadCreatedEvent,
     ThreadCreateParams,
@@ -69,6 +76,7 @@ from chatkit.types import (
     ThreadMetadata,
     ThreadRetryAfterItemParams,
     ThreadsAddClientToolOutputReq,
+    ThreadsAddStructuredInputReq,
     ThreadsAddUserMessageReq,
     ThreadsCreateReq,
     ThreadsCustomActionReq,
@@ -1068,6 +1076,322 @@ async def test_calls_action():
         assert isinstance(events[1], ThreadItemUpdatedEvent)
         assert events[1].update.type == "widget.root.updated"
         assert events[1].update.widget == Card(children=[Text(value="Email sent!")])
+
+
+async def test_add_structured_input_replaces_item_with_custom_answer_and_resumes_response():
+    async def responder(
+        thread: ThreadMetadata,
+        input: UserMessageItem | None,
+        context: Any,
+    ) -> AsyncIterator[ThreadStreamEvent]:
+        if input is not None:
+            yield ThreadItemDoneEvent(
+                item=StructuredInputItem(
+                    id="si_1",
+                    thread_id=thread.id,
+                    created_at=datetime.now(),
+                    inputs=[
+                        StructuredInputMultipleChoice(
+                            id="subject",
+                            question="Which subject is this lesson for?",
+                            options=[
+                                StructuredInputMultipleChoiceOption(value="Math"),
+                                StructuredInputMultipleChoiceOption(value="Science"),
+                            ],
+                        ),
+                        StructuredInputFreeform(
+                            id="details",
+                            question="Anything else to know?",
+                        ),
+                    ],
+                )
+            )
+            return
+
+        yield ThreadItemDoneEvent(
+            item=AssistantMessageItem(
+                id="msg_after_structured_input",
+                content=[AssistantMessageContent(text="Thanks, continuing now.")],
+                created_at=datetime.now(),
+                thread_id=thread.id,
+            )
+        )
+
+    with make_server(responder) as server:
+        events = await server.process_streaming(
+            ThreadsCreateReq(
+                params=ThreadCreateParams(
+                    input=UserMessageInput(
+                        content=[UserMessageTextContent(text="Plan a lesson")],
+                        attachments=[],
+                        inference_options=InferenceOptions(),
+                    )
+                )
+            )
+        )
+        thread = next(
+            event.thread for event in events if isinstance(event, ThreadCreatedEvent)
+        )
+
+        events = await server.process_streaming(
+            ThreadsAddStructuredInputReq(
+                params=ThreadAddStructuredInputParams(
+                    thread_id=thread.id,
+                    item_id="si_1",
+                    input=StructuredInputSubmission(
+                        status="answered",
+                        answers={
+                            "subject": StructuredInputAnswerSubmission(
+                                values=["Private class"]
+                            ),
+                            "details": StructuredInputAnswerSubmission(
+                                values=["Please include group work."]
+                            ),
+                        },
+                    ),
+                )
+            )
+        )
+
+        replaced_event = next(
+            event for event in events if isinstance(event, ThreadItemReplacedEvent)
+        )
+        assert isinstance(replaced_event.item, StructuredInputItem)
+        assert replaced_event.item.status == "answered"
+        assert replaced_event.item.inputs[0].answer is not None
+        assert replaced_event.item.inputs[0].answer.values == ["Private class"]
+        assert replaced_event.item.inputs[1].answer is not None
+        assert replaced_event.item.inputs[1].answer.values == [
+            "Please include group work."
+        ]
+
+        persisted_item = await server.store.load_item(
+            thread.id,
+            "si_1",
+            DEFAULT_CONTEXT,
+        )
+        assert persisted_item == replaced_event.item
+        assert any(
+            isinstance(event, ThreadItemDoneEvent)
+            and isinstance(event.item, AssistantMessageItem)
+            and event.item.id == "msg_after_structured_input"
+            for event in events
+        )
+
+
+async def test_add_structured_input_treats_omitted_answers_as_skipped():
+    async def responder(
+        thread: ThreadMetadata,
+        input: UserMessageItem | None,
+        context: Any,
+    ) -> AsyncIterator[ThreadStreamEvent]:
+        if input is not None:
+            yield ThreadItemDoneEvent(
+                item=StructuredInputItem(
+                    id="si_1",
+                    thread_id=thread.id,
+                    created_at=datetime.now(),
+                    inputs=[
+                        StructuredInputMultipleChoice(
+                            id="subject",
+                            question="Which subject is this lesson for?",
+                            options=[
+                                StructuredInputMultipleChoiceOption(value="Math"),
+                                StructuredInputMultipleChoiceOption(value="Science"),
+                            ],
+                        ),
+                        StructuredInputFreeform(
+                            id="details",
+                            question="Anything else to know?",
+                        ),
+                    ],
+                )
+            )
+
+    with make_server(responder) as server:
+        events = await server.process_streaming(
+            ThreadsCreateReq(
+                params=ThreadCreateParams(
+                    input=UserMessageInput(
+                        content=[UserMessageTextContent(text="Plan a lesson")],
+                        attachments=[],
+                        inference_options=InferenceOptions(),
+                    )
+                )
+            )
+        )
+        thread = next(
+            event.thread for event in events if isinstance(event, ThreadCreatedEvent)
+        )
+
+        events = await server.process_streaming(
+            ThreadsAddStructuredInputReq(
+                params=ThreadAddStructuredInputParams(
+                    thread_id=thread.id,
+                    item_id="si_1",
+                    input=StructuredInputSubmission(
+                        status="answered",
+                        answers={
+                            "subject": StructuredInputAnswerSubmission(
+                                values=["Math"]
+                            ),
+                        },
+                    ),
+                )
+            )
+        )
+
+        replaced_event = next(
+            event for event in events if isinstance(event, ThreadItemReplacedEvent)
+        )
+        assert isinstance(replaced_event.item, StructuredInputItem)
+        subject_answer = replaced_event.item.inputs[0].answer
+        assert subject_answer is not None
+        assert subject_answer.values == ["Math"]
+        details_answer = replaced_event.item.inputs[1].answer
+        assert details_answer is not None
+        assert details_answer.skipped
+
+
+async def test_add_structured_input_ignores_unknown_answer_ids():
+    async def responder(
+        thread: ThreadMetadata,
+        input: UserMessageItem | None,
+        context: Any,
+    ) -> AsyncIterator[ThreadStreamEvent]:
+        if input is not None:
+            yield ThreadItemDoneEvent(
+                item=StructuredInputItem(
+                    id="si_1",
+                    thread_id=thread.id,
+                    created_at=datetime.now(),
+                    inputs=[
+                        StructuredInputFreeform(
+                            id="details",
+                            question="Anything else to know?",
+                        ),
+                    ],
+                )
+            )
+
+    with make_server(responder) as server:
+        events = await server.process_streaming(
+            ThreadsCreateReq(
+                params=ThreadCreateParams(
+                    input=UserMessageInput(
+                        content=[UserMessageTextContent(text="Plan a lesson")],
+                        attachments=[],
+                        inference_options=InferenceOptions(),
+                    )
+                )
+            )
+        )
+        thread = next(
+            event.thread for event in events if isinstance(event, ThreadCreatedEvent)
+        )
+
+        events = await server.process_streaming(
+            ThreadsAddStructuredInputReq(
+                params=ThreadAddStructuredInputParams(
+                    thread_id=thread.id,
+                    item_id="si_1",
+                    input=StructuredInputSubmission(
+                        status="answered",
+                        answers={
+                            "details": StructuredInputAnswerSubmission(
+                                values=["Please include group work."]
+                            ),
+                            "unknown": StructuredInputAnswerSubmission(
+                                values=["ignored"]
+                            ),
+                        },
+                    ),
+                )
+            )
+        )
+
+        replaced_event = next(
+            event for event in events if isinstance(event, ThreadItemReplacedEvent)
+        )
+        assert isinstance(replaced_event.item, StructuredInputItem)
+        answer = replaced_event.item.inputs[0].answer
+        assert answer is not None
+        assert answer.values == ["Please include group work."]
+
+
+async def test_add_structured_input_truncates_extra_single_choice_values():
+    async def responder(
+        thread: ThreadMetadata,
+        input: UserMessageItem | None,
+        context: Any,
+    ) -> AsyncIterator[ThreadStreamEvent]:
+        yield ThreadItemDoneEvent(
+            item=StructuredInputItem(
+                id="si_1",
+                thread_id=thread.id,
+                created_at=datetime.now(),
+                inputs=[
+                    StructuredInputMultipleChoice(
+                        id="subject",
+                        question="Which subject is this lesson for?",
+                        options=[
+                            StructuredInputMultipleChoiceOption(value="Math"),
+                            StructuredInputMultipleChoiceOption(value="Science"),
+                        ],
+                    ),
+                ],
+            )
+        )
+
+    with make_server(responder) as server:
+        events = await server.process_streaming(
+            ThreadsCreateReq(
+                params=ThreadCreateParams(
+                    input=UserMessageInput(
+                        content=[UserMessageTextContent(text="Plan a lesson")],
+                        attachments=[],
+                        inference_options=InferenceOptions(),
+                    )
+                )
+            )
+        )
+        thread = next(
+            event.thread for event in events if isinstance(event, ThreadCreatedEvent)
+        )
+
+        events = await server.process_streaming(
+            ThreadsAddStructuredInputReq(
+                params=ThreadAddStructuredInputParams(
+                    thread_id=thread.id,
+                    item_id="si_1",
+                    input=StructuredInputSubmission(
+                        status="answered",
+                        answers={
+                            "subject": StructuredInputAnswerSubmission(
+                                values=["Math", "Science"],
+                            ),
+                        },
+                    ),
+                )
+            )
+        )
+
+        replaced_event = next(
+            event for event in events if isinstance(event, ThreadItemReplacedEvent)
+        )
+        assert isinstance(replaced_event.item, StructuredInputItem)
+        answer = replaced_event.item.inputs[0].answer
+        assert answer is not None
+        assert answer.values == ["Math"]
+
+        persisted_item = await server.store.load_item(
+            thread.id,
+            "si_1",
+            DEFAULT_CONTEXT,
+        )
+        assert isinstance(persisted_item, StructuredInputItem)
+        assert persisted_item.status == "answered"
+        assert persisted_item.inputs[0].answer == answer
 
 
 async def test_calls_action_sync():

@@ -108,6 +108,39 @@ class ThreadAddClientToolOutputParams(BaseModel):
     result: Any
 
 
+class StructuredInputAnswerSubmission(BaseModel):
+    """Client-submitted answer for a structured input."""
+
+    values: list[str] = Field(default_factory=list)
+    """Text answer values submitted for the structured input."""
+    skipped: bool = False
+    """Whether this structured input answer was skipped."""
+
+
+class StructuredInputSubmission(BaseModel):
+    """Client-submitted answers for a pending structured input item."""
+
+    status: Literal["answered", "skipped"] = "answered"
+    """Overall status for the structured input submission."""
+    answers: dict[str, StructuredInputAnswerSubmission] = Field(default_factory=dict)
+    """Answers keyed by structured input id."""
+
+
+class ThreadsAddStructuredInputReq(BaseReq):
+    """Request to submit answers for a pending structured input item."""
+
+    type: Literal["threads.add_structured_input"] = "threads.add_structured_input"
+    params: ThreadAddStructuredInputParams
+
+
+class ThreadAddStructuredInputParams(BaseModel):
+    """Parameters for adding structured input to a thread."""
+
+    thread_id: str
+    item_id: str
+    input: StructuredInputSubmission
+
+
 class ThreadsCustomActionReq(BaseReq):
     """Request to execute a custom action within a thread."""
 
@@ -272,6 +305,7 @@ StreamingReq = (
     ThreadsCreateReq
     | ThreadsAddUserMessageReq
     | ThreadsAddClientToolOutputReq
+    | ThreadsAddStructuredInputReq
     | ThreadsRetryAfterItemReq
     | ThreadsCustomActionReq
 )
@@ -308,6 +342,7 @@ def is_streaming_req(request: ChatKitReq) -> TypeIs[StreamingReq]:
             ThreadsAddUserMessageReq,
             ThreadsRetryAfterItemReq,
             ThreadsAddClientToolOutputReq,
+            ThreadsAddStructuredInputReq,
             ThreadsCustomActionReq,
         ),
     )
@@ -660,6 +695,66 @@ class GeneratedImageItem(ThreadItemBase):
     image: GeneratedImage | None = None
 
 
+class StructuredInputAnswer(BaseModel):
+    """Answer recorded for a structured input."""
+
+    values: list[str] = Field(default_factory=list)
+    """Text answer values recorded for the structured input."""
+    skipped: bool = False
+    """Whether this structured input answer was skipped."""
+
+
+class StructuredInputBase(BaseModel):
+    """Base fields shared by structured inputs."""
+
+    id: str
+    """Stable id for this structured input."""
+    question: str
+    """Question shown to the user."""
+    answer: StructuredInputAnswer | None = None
+    """Answer recorded for this structured input, if available."""
+
+
+class StructuredInputMultipleChoiceOption(BaseModel):
+    """Option shown for a multiple-choice structured input."""
+
+    value: str
+    """Text value submitted when this option is selected."""
+
+
+class StructuredInputMultipleChoice(StructuredInputBase):
+    """Structured input answered by choosing one or more options."""
+
+    type: Literal["multiple_choice"] = "multiple_choice"
+    options: list[StructuredInputMultipleChoiceOption]
+    """Suggested choices to display before the freeform custom answer affordance."""
+    multiple: bool = False
+    """Whether the user may submit more than one text value."""
+
+
+class StructuredInputFreeform(StructuredInputBase):
+    """Structured input answered with freeform text."""
+
+    type: Literal["freeform"] = "freeform"
+    description: str | None = None
+    """Supporting text shown with this input."""
+
+
+StructuredInput = Annotated[
+    StructuredInputMultipleChoice | StructuredInputFreeform,
+    Field(discriminator="type"),
+]
+"""Structured input variants supported by a structured input item."""
+
+
+class StructuredInputItem(ThreadItemBase):
+    """Thread item requesting structured input from the user."""
+
+    type: Literal["structured_input"] = "structured_input"
+    status: Literal["pending", "answered", "skipped"] = "pending"
+    inputs: list[StructuredInput]
+
+
 class TaskItem(ThreadItemBase):
     """Thread item containing a task."""
 
@@ -706,6 +801,7 @@ ThreadItem = Annotated[
     | ClientToolCallItem
     | WidgetItem
     | GeneratedImageItem
+    | StructuredInputItem
     | WorkflowItem
     | TaskItem
     | HiddenContextItem

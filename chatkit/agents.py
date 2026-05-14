@@ -66,6 +66,7 @@ from .types import (
     GeneratedImageUpdated,
     HiddenContextItem,
     SDKHiddenContextItem,
+    StructuredInputItem,
     Task,
     TaskItem,
     ThoughtTask,
@@ -552,14 +553,19 @@ async def stream_agent_response(
 
             if event.type == "run_item_stream_event":
                 event = event.item
-                if (
-                    event.type == "tool_call_item"
-                    and event.raw_item.type == "function_call"
-                ):
-                    current_tool_call = event.raw_item.call_id
-                    current_item_id = event.raw_item.id
-                    assert current_item_id
-                    produced_items.add(current_item_id)
+                if event.type == "tool_call_item":
+                    raw_item = event.raw_item
+                    if isinstance(raw_item, dict):
+                        if raw_item.get("type") == "function_call":
+                            current_tool_call = event.call_id
+                            current_item_id = raw_item.get("id")
+                            assert current_item_id
+                            produced_items.add(current_item_id)
+                    elif raw_item.type == "function_call":
+                        current_tool_call = event.call_id
+                        current_item_id = raw_item.id
+                        assert current_item_id
+                        produced_items.add(current_item_id)
                 continue
 
             if event.type != "raw_response_event":
@@ -964,6 +970,39 @@ class ThreadItemConverter:
             role="user",
         )
 
+    async def structured_input_to_input(
+        self, item: StructuredInputItem
+    ) -> TResponseInputItem | list[TResponseInputItem] | None:
+        """
+        Convert a StructuredInputItem into input item(s) to send to the model.
+        """
+        lines = []
+        for question in item.inputs:
+            answer = question.answer
+            if answer is None:
+                lines.append(f"- {question.question}: unanswered")
+            elif answer.skipped:
+                lines.append(f"- {question.question}: skipped")
+            else:
+                lines.append(f"- {question.question}: {', '.join(answer.values)}")
+
+        text = (
+            "A structured input request was displayed to the user with the following "
+            f"status: {item.status}\n<StructuredInput>\n"
+            + "\n".join(lines)
+            + "\n</StructuredInput>"
+        )
+        return Message(
+            type="message",
+            content=[
+                ResponseInputTextParam(
+                    type="input_text",
+                    text=text,
+                ),
+            ],
+            role="user",
+        )
+
     async def workflow_to_input(
         self, item: WorkflowItem
     ) -> TResponseInputItem | list[TResponseInputItem] | None:
@@ -1171,6 +1210,9 @@ class ThreadItemConverter:
                 return out if isinstance(out, list) else [out]
             case TaskItem():
                 out = await self.task_to_input(item) or []
+                return out if isinstance(out, list) else [out]
+            case StructuredInputItem():
+                out = await self.structured_input_to_input(item) or []
                 return out if isinstance(out, list) else [out]
             case HiddenContextItem():
                 out = await self.hidden_context_to_input(item) or []

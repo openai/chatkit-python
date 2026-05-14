@@ -2,6 +2,7 @@ import asyncio
 import json
 from collections.abc import AsyncIterator
 from datetime import datetime
+from importlib import import_module
 from typing import cast
 from unittest.mock import AsyncMock, Mock
 
@@ -23,7 +24,6 @@ from agents import (
     StreamEvent,
     ToolCallItem,
 )
-from agents._run_impl import QueueCompleteSentinel
 from openai.types.responses import (
     EasyInputMessageParam,
     ResponseFileSearchToolCall,
@@ -85,6 +85,11 @@ from chatkit.types import (
     HiddenContextItem,
     InferenceOptions,
     Page,
+    StructuredInputAnswer,
+    StructuredInputFreeform,
+    StructuredInputItem,
+    StructuredInputMultipleChoice,
+    StructuredInputMultipleChoiceOption,
     TaskItem,
     ThoughtTask,
     Thread,
@@ -112,13 +117,31 @@ mock_store.load_thread_items = AsyncMock(return_value=Page())
 mock_store.add_thread_item = AsyncMock()
 
 
+def make_queue_complete_sentinel():
+    for module_name in (
+        "agents.result",
+        "agents.run_internal.run_steps",
+        "agents._run_impl",
+    ):
+        try:
+            module = import_module(module_name)
+        except ImportError:
+            continue
+
+        sentinel = getattr(module, "QueueCompleteSentinel", None)
+        if sentinel is not None:
+            return sentinel()
+
+    raise ImportError("QueueCompleteSentinel not found in installed agents package")
+
+
 class RunResult(RunResultStreaming):
     def add_event(self, event: StreamEvent):
         self._event_queue.put_nowait(event)
 
     def done(self):
         self.is_complete = True
-        self._event_queue.put_nowait(QueueCompleteSentinel())
+        self._event_queue.put_nowait(make_queue_complete_sentinel())
 
     def throw_input_guardrails(self):
         self._stored_exception = InputGuardrailTripwireTriggered(
@@ -131,7 +154,7 @@ class RunResult(RunResultStreaming):
             )
         )
         self.is_complete = True
-        self._event_queue.put_nowait(QueueCompleteSentinel())
+        self._event_queue.put_nowait(make_queue_complete_sentinel())
 
     def throw_output_guardrails(self):
         self._stored_exception = OutputGuardrailTripwireTriggered(
@@ -146,7 +169,7 @@ class RunResult(RunResultStreaming):
             )
         )
         self.is_complete = True
-        self._event_queue.put_nowait(QueueCompleteSentinel())
+        self._event_queue.put_nowait(make_queue_complete_sentinel())
 
 
 def make_result() -> RunResult:
@@ -722,6 +745,46 @@ async def test_input_item_converter_with_client_tool_call():
         "type": "function_call_output",
         "call_id": "ctc_123",
         "output": json.dumps({"success": True}),
+    }
+
+
+async def test_input_item_converter_with_structured_input():
+    items = [
+        StructuredInputItem(
+            id="si_123",
+            thread_id=thread.id,
+            created_at=datetime.now(),
+            status="answered",
+            inputs=[
+                StructuredInputMultipleChoice(
+                    id="subject",
+                    question="Which subject is this lesson for?",
+                    options=[
+                        StructuredInputMultipleChoiceOption(value="Math"),
+                        StructuredInputMultipleChoiceOption(value="Science"),
+                    ],
+                    answer=StructuredInputAnswer(values=["Math"]),
+                ),
+                StructuredInputFreeform(
+                    id="details",
+                    question="Anything else to know?",
+                    answer=StructuredInputAnswer(skipped=True),
+                ),
+            ],
+        )
+    ]
+
+    input_items = await simple_to_agent_input(items)
+    assert len(input_items) == 1
+    assert input_items[0] == {
+        "content": [
+            {
+                "text": "A structured input request was displayed to the user with the following status: answered\n<StructuredInput>\n- Which subject is this lesson for?: Math\n- Anything else to know?: skipped\n</StructuredInput>",
+                "type": "input_text",
+            },
+        ],
+        "role": "user",
+        "type": "message",
     }
 
 

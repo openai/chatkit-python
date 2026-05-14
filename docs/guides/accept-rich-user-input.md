@@ -1,10 +1,11 @@
 # Accept rich user input
 
-This guide explains how a ChatKit server accepts user input beyond plain text—such as attachments and @-mentions—and makes it available to your inference pipeline.
+This guide explains how a ChatKit server accepts user input beyond plain text, such as attachments, structured follow-up answers, and @-mentions, and makes it available to your inference pipeline.
 
 At a high level:
 
 - Attachments let users upload files that your model can read.
+- Structured input lets the assistant ask for specific follow-up answers.
 - @-mentions let users tag entities so the model does not have to guess from free text.
 
 ## Attachments: let users upload files
@@ -228,6 +229,64 @@ async def transcribe(self, audio_input: AudioInput, context: RequestContext) -> 
 
 Return a `TranscriptionResult` that includes the final `text` that should appear in the composer.
 
+## Structured input: ask for specific answers
+
+Structured input lets your assistant ask the user for small, typed follow-up answers as part of the conversation. The prompt takes over the composer with focused controls, plus a skip option. Use structured input when the next step depends on specific choices or short fields, and free-text back-and-forth would be slower or easier to misread.
+
+The server streams a [`StructuredInputItem`](../api/chatkit/types.md#chatkit.types.StructuredInputItem) during `respond`. ChatKit renders the questions in the composer area instead of the normal free-text input, then records the result on the same thread item when the user answers or skips.
+
+### Stream a structured input item
+
+Yield a `StructuredInputItem` from `respond` when you need the user to answer before continuing.
+
+```python
+from datetime import datetime
+
+from chatkit.types import (
+    StructuredInputFreeform,
+    StructuredInputItem,
+    StructuredInputMultipleChoice,
+    StructuredInputMultipleChoiceOption,
+    ThreadItemDoneEvent,
+)
+
+
+yield ThreadItemDoneEvent(
+    item=StructuredInputItem(
+        id=self.store.generate_item_id("message", thread, context),
+        thread_id=thread.id,
+        created_at=datetime.now(),
+        inputs=[
+            StructuredInputMultipleChoice(
+                id="priority",
+                question="What priority should I use?",
+                options=[
+                    StructuredInputMultipleChoiceOption(value="Low"),
+                    StructuredInputMultipleChoiceOption(value="Medium"),
+                    StructuredInputMultipleChoiceOption(value="High"),
+                ],
+            ),
+            StructuredInputFreeform(
+                id="notes",
+                question="Any extra context?",
+                description="Optional details to include.",
+            ),
+        ],
+    )
+)
+return
+```
+
+Use [`StructuredInputMultipleChoice`](../api/chatkit/types.md#chatkit.types.StructuredInputMultipleChoice) for choice prompts and [`StructuredInputFreeform`](../api/chatkit/types.md#chatkit.types.StructuredInputFreeform) for short text answers. Set `multiple=True` on multiple-choice input when the user may submit more than one value.
+
+After the user submits or skips, ChatKit records the result on the structured input item.
+
+### Convert structured input submissions into model input
+
+The default [`ThreadItemConverter`](../api/chatkit/agents.md#chatkit.agents.ThreadItemConverter) includes structured input items in model input. It describes the prompt status and each answer as answered, skipped, or unanswered.
+
+If your model needs a different format, override `ThreadItemConverter.structured_input_to_input` before calling `Runner.run_streamed`.
+
 ## @-mentions: tag entities in user messages
 
 Enable @-mentions so users can tag entities (like documents, tickets, or users) instead of pasting raw identifiers. Mentions travel through ChatKit as structured tags so the model can resolve entities instead of guessing from free text.
@@ -361,4 +420,3 @@ Clicks and hover previews apply to the tagged entities shown in past user messag
 
 - `entities.onClick` fires when a user clicks a tag in the transcript. Handle navigation or open a detail view. See the [onClick option](https://openai.github.io/chatkit-js/api/openai/chatkit/type-aliases/entitiesoption/#onclick).
 - `entities.onRequestPreview` runs when the user hovers or taps a tag that has `interactive: true`. Return a `BasicRoot` widget; you can build one with `WidgetTemplate.build_basic(...)` if you are building the preview widgets server-side. See the [onRequestPreview option](https://openai.github.io/chatkit-js/api/openai/chatkit/type-aliases/entitiesoption/#onrequestpreview).
-
