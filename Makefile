@@ -1,34 +1,40 @@
-.PHONY: sync format format-check lint mypy pyright tests gen-docs build-docs serve-docs deploy-docs check
+.PHONY: sync install format format-check lint mypy pyright test build serve-docs deploy-docs check
 
-install:
-	uv sync --all-extras --all-packages --group dev
+UV_ENV := env -i PATH="$(PATH)" HOME="$(HOME)"
+UV := $(UV_ENV) uv --no-config
+UV_LOCK_ARGS := --locked --default-index https://pypi.org/simple
+
+sync:
+	$(UV) sync $(UV_LOCK_ARGS) --all-extras --all-packages --group dev
+
+install: sync
 
 format:
-	uv run ruff format
-	uv run ruff check --fix
+	$(UV) run $(UV_LOCK_ARGS) ruff format
+	$(UV) run $(UV_LOCK_ARGS) ruff check --fix
 
 format-check:
-	uv run ruff format --check
+	$(UV) run $(UV_LOCK_ARGS) ruff format --check
 
 lint:
-	uv run ruff check
+	$(UV) run $(UV_LOCK_ARGS) ruff check
 
 mypy:
-	uv run mypy .
+	$(UV) run $(UV_LOCK_ARGS) mypy .
 
 pyright:
-	uv run pyright
+	$(UV) run $(UV_LOCK_ARGS) pyright
 
 test:
-	PYTHONPATH=. uv run pytest
+	$(UV_ENV) PYTHONPATH=. uv --no-config run $(UV_LOCK_ARGS) pytest
 
 build:
-	uv build
+	$(UV) build --default-index https://pypi.org/simple
 
 serve-docs:
-	uv run mkdocs serve
+	$(UV) run $(UV_LOCK_ARGS) mkdocs serve
 
 deploy-docs:
-	uv run mkdocs gh-deploy --force --verbose
+	$(UV) run $(UV_LOCK_ARGS) mkdocs gh-deploy --force --verbose
 
 check: format-check lint pyright test
