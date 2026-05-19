@@ -27,6 +27,7 @@ from agents import (
 from openai.types.responses import (
     EasyInputMessageParam,
     ResponseFileSearchToolCall,
+    ResponseFunctionToolCall,
     ResponseInputContentParam,
     ResponseInputTextParam,
     ResponseOutputItemAddedEvent,
@@ -59,6 +60,7 @@ from openai.types.responses.response_text_done_event import ResponseTextDoneEven
 
 from chatkit.agents import (
     AgentContext,
+    ClientToolCall,
     ResponseStreamConverter,
     ThreadItemConverter,
     accumulate_text,
@@ -309,6 +311,48 @@ async def test_returns_widget_full_replace_generator():
     assert events[2].item.widget == Card(
         children=[Text(key="other text", value="World!", streaming=False)]
     )
+
+
+async def test_client_tool_call_uses_raw_function_call_id():
+    context = AgentContext(
+        previous_response_id=None,
+        thread=thread,
+        store=mock_store,
+        request_context=None,
+        client_tool_call=ClientToolCall(name="get_selection", arguments={}),
+    )
+    result = make_result()
+    raw_item = ResponseFunctionToolCall(
+        id="fc_123",
+        type="function_call",
+        call_id="call_123",
+        name="get_selection",
+        arguments="{}",
+        status="completed",
+    )
+    result.add_event(
+        RunItemStreamEvent(
+            name="tool_called",
+            item=ToolCallItem(
+                agent=Agent("Assistant"),
+                raw_item=raw_item,
+            ),
+        )
+    )
+    result.done()
+
+    events = await all_events(
+        stream_agent_response(
+            context=context,
+            result=result,
+        )
+    )
+
+    assert len(events) == 1
+    assert isinstance(events[0], ThreadItemDoneEvent)
+    assert isinstance(events[0].item, ClientToolCallItem)
+    assert events[0].item.id == "fc_123"
+    assert events[0].item.call_id == "call_123"
 
 
 async def test_accumulate_text():
