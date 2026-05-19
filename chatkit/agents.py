@@ -23,6 +23,7 @@ from agents import (
 )
 from openai.types.responses import (
     EasyInputMessageParam,
+    ResponseFunctionToolCall,
     ResponseFunctionToolCallParam,
     ResponseInputContentParam,
     ResponseInputImageParam,
@@ -455,6 +456,24 @@ async def _convert_annotation(
     return None
 
 
+def _function_call_metadata(raw_item: object) -> tuple[str | None, str | None]:
+    if isinstance(raw_item, dict):
+        if raw_item.get("type") != "function_call":
+            return None, None
+
+        call_id = raw_item.get("call_id")
+        item_id = raw_item.get("id")
+        return (
+            call_id if isinstance(call_id, str) else None,
+            item_id if isinstance(item_id, str) else None,
+        )
+
+    if isinstance(raw_item, ResponseFunctionToolCall):
+        return raw_item.call_id, raw_item.id
+
+    return None, None
+
+
 async def stream_agent_response(
     context: AgentContext,
     result: RunResultStreaming,
@@ -554,16 +573,10 @@ async def stream_agent_response(
             if event.type == "run_item_stream_event":
                 event = event.item
                 if event.type == "tool_call_item":
-                    raw_item = event.raw_item
-                    if isinstance(raw_item, dict):
-                        if raw_item.get("type") == "function_call":
-                            current_tool_call = event.call_id
-                            current_item_id = raw_item.get("id")
-                            assert current_item_id
-                            produced_items.add(current_item_id)
-                    elif raw_item.type == "function_call":
-                        current_tool_call = event.call_id
-                        current_item_id = raw_item.id
+                    current_tool_call, current_item_id = _function_call_metadata(
+                        event.raw_item
+                    )
+                    if current_tool_call:
                         assert current_item_id
                         produced_items.add(current_item_id)
                 continue
