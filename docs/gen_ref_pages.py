@@ -3,7 +3,7 @@ from pathlib import Path
 import mkdocs_gen_files
 
 SRC_ROOT = Path("chatkit")
-URL_ROOT = Path("api") / "chatkit"
+URL_ROOT = Path("chatkit") / "chatkit"
 DOCS_ROOT = Path("docs")
 MANUAL_DOCS_ROOT = DOCS_ROOT / URL_ROOT
 
