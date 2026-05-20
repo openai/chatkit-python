@@ -65,6 +65,10 @@ Install the ChatKit Python package and expose a single `/chatkit` endpoint that 
 ```sh
 pip install openai-chatkit
 ```
+or if you are using uv
+```sh
+uv add openai-chatkit
+```
 
 Create `main.py` with a minimal server that is hard-coded to always reply “Hello, world!”—you'll replace this with an actual call to a model in [Respond to a user message](guides/respond-to-user-message.md).
 
@@ -218,6 +222,19 @@ This store implements only the methods required for basic chat while the server 
 
 For production, replace this with a database-backed store (for example, Postgres or MySQL) so threads and items persist across restarts.
 
+
+## Verify your backend
+You can confirm that your server is handling requests correctly by sending a test message directly with curl. With the server running, execute: 
+```sh
+curl -X POST http://localhost:8000/chatkit \
+  -H "Content-Type: application/json" \
+  -d '{"type":"threads.create","params":{"input":{"content":[{"type":"input_text","text":"Hi there!"}],"quoted_text":"","attachments":[],"inference_options":{}}}}'
+```
+
+If your server is set up correctly with the hardcoded "Hello, world!" reply from Run your ChatKit server, you should see a streaming response similar to this:
+```sh
+data: {"type":"thread.item.done","item":{"id":"msg_1771791100.445294","thread_id":"thr_63b87b34","created_at":"2026-02-22T20:11:40.445303Z","type":"assistant_message","content":[{"annotations":[],"text":"Hello, world!","type":"output_text"}]}}
+```
 
 ## Generate model responses
 
