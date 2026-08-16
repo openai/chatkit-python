@@ -922,6 +922,121 @@ async def test_stream_agent_response_maps_events():
     assert future.done() is True
 
 
+async def test_stream_agent_response_replaces_synthetic_chat_completion_ids():
+    generated_ids = iter(["message_1", "message_2"])
+    store = Mock()
+    store.generate_item_id = lambda item_type, thread, context: next(generated_ids)
+    store.load_thread_items = AsyncMock(return_value=Page())
+    store.add_thread_item = AsyncMock()
+    context = AgentContext(
+        previous_response_id=None, thread=thread, store=store, request_context=None
+    )
+    result = make_result()
+
+    for sequence_number, text in enumerate(["First", "Second"]):
+        result.add_event(
+            RawResponsesStreamEvent(
+                type="raw_response_event",
+                data=ResponseOutputItemAddedEvent(
+                    type="response.output_item.added",
+                    item=ResponseOutputMessage(
+                        id="__fake_id__",
+                        content=[],
+                        role="assistant",
+                        status="in_progress",
+                        type="message",
+                    ),
+                    output_index=0,
+                    sequence_number=sequence_number * 5,
+                ),
+            )
+        )
+        result.add_event(
+            RawResponsesStreamEvent(
+                type="raw_response_event",
+                data=ResponseContentPartAddedEvent(
+                    type="response.content_part.added",
+                    part=ResponseOutputText(
+                        type="output_text",
+                        text="",
+                        annotations=[],
+                    ),
+                    content_index=0,
+                    item_id="__fake_id__",
+                    output_index=0,
+                    sequence_number=sequence_number * 5 + 1,
+                ),
+            )
+        )
+        result.add_event(
+            RawResponsesStreamEvent(
+                type="raw_response_event",
+                data=ResponseTextDeltaEvent(
+                    type="response.output_text.delta",
+                    delta=text,
+                    content_index=0,
+                    item_id="__fake_id__",
+                    logprobs=[],
+                    output_index=0,
+                    sequence_number=sequence_number * 5 + 2,
+                ),
+            )
+        )
+        result.add_event(
+            RawResponsesStreamEvent(
+                type="raw_response_event",
+                data=ResponseTextDoneEvent(
+                    type="response.output_text.done",
+                    text=text,
+                    content_index=0,
+                    item_id="__fake_id__",
+                    logprobs=[],
+                    output_index=0,
+                    sequence_number=sequence_number * 5 + 3,
+                ),
+            )
+        )
+        result.add_event(
+            RawResponsesStreamEvent(
+                type="raw_response_event",
+                data=ResponseOutputItemDoneEvent(
+                    type="response.output_item.done",
+                    item=ResponseOutputMessage(
+                        id="__fake_id__",
+                        content=[
+                            ResponseOutputText(
+                                annotations=[], type="output_text", text=text
+                            )
+                        ],
+                        role="assistant",
+                        status="completed",
+                        type="message",
+                    ),
+                    output_index=0,
+                    sequence_number=sequence_number * 5 + 4,
+                ),
+            )
+        )
+
+    result.done()
+    events = await all_events(stream_agent_response(context, result))
+
+    added = [event for event in events if isinstance(event, ThreadItemAddedEvent)]
+    updated = [event for event in events if isinstance(event, ThreadItemUpdatedEvent)]
+    done = [event for event in events if isinstance(event, ThreadItemDoneEvent)]
+
+    assert [event.item.id for event in added] == ["message_1", "message_2"]
+    assert [event.item_id for event in updated] == [
+        "message_1",
+        "message_1",
+        "message_1",
+        "message_2",
+        "message_2",
+        "message_2",
+    ]
+    assert [event.item.id for event in done] == ["message_1", "message_2"]
+
+
 @pytest.mark.parametrize(
     "raw_event,expected_event",
     [
