@@ -91,6 +91,8 @@ from .types import (
 )
 from .widgets import Markdown, Text, WidgetRoot
 
+_AGENTS_SDK_FAKE_RESPONSES_ID = "__fake_id__"
+
 
 class ClientToolCall(BaseModel):
     """
@@ -501,6 +503,7 @@ async def stream_agent_response(
     thread = context.thread
     queue_iterator = _AsyncQueueIterator(context._events)
     produced_items = set()
+    synthetic_message_ids: dict[str, str] = {}
     streaming_thought: None | StreamingThoughtTracker = None
     # item_id -> content_index -> annotation count
     item_annotation_count: defaultdict[str, defaultdict[int, int]] = defaultdict(
@@ -592,7 +595,7 @@ async def stream_agent_response(
                     continue
                 content = await _convert_content(event.part, converter)
                 yield ThreadItemUpdatedEvent(
-                    item_id=event.item_id,
+                    item_id=synthetic_message_ids.get(event.item_id, event.item_id),
                     update=AssistantMessageContentPartAdded(
                         content_index=event.content_index,
                         content=content,
@@ -600,7 +603,7 @@ async def stream_agent_response(
                 )
             elif event.type == "response.output_text.delta":
                 yield ThreadItemUpdatedEvent(
-                    item_id=event.item_id,
+                    item_id=synthetic_message_ids.get(event.item_id, event.item_id),
                     update=AssistantMessageContentPartTextDelta(
                         content_index=event.content_index,
                         delta=event.delta,
@@ -608,7 +611,7 @@ async def stream_agent_response(
                 )
             elif event.type == "response.output_text.done":
                 yield ThreadItemUpdatedEvent(
-                    item_id=event.item_id,
+                    item_id=synthetic_message_ids.get(event.item_id, event.item_id),
                     update=AssistantMessageContentPartDone(
                         content_index=event.content_index,
                         content=AssistantMessageContent(
@@ -620,16 +623,17 @@ async def stream_agent_response(
             elif event.type == "response.output_text.annotation.added":
                 annotation = await _convert_annotation(event.annotation, converter)
                 if annotation:
+                    item_id = synthetic_message_ids.get(event.item_id, event.item_id)
                     # Manually track annotation indices per content part in case we drop an annotation that
                     # we can't convert to our internal representation (e.g. missing filename).
-                    annotation_index = item_annotation_count[event.item_id][
+                    annotation_index = item_annotation_count[item_id][
                         event.content_index
                     ]
-                    item_annotation_count[event.item_id][event.content_index] = (
+                    item_annotation_count[item_id][event.content_index] = (
                         annotation_index + 1
                     )
                     yield ThreadItemUpdatedEvent(
-                        item_id=event.item_id,
+                        item_id=item_id,
                         update=AssistantMessageContentPartAnnotationAdded(
                             content_index=event.content_index,
                             annotation_index=annotation_index,
@@ -651,11 +655,14 @@ async def stream_agent_response(
                 if item.type == "message":
                     if ctx.workflow_item:
                         yield end_workflow(ctx.workflow_item)
-                    produced_items.add(item.id)
+                    item_id = item.id
+                    if item_id == _AGENTS_SDK_FAKE_RESPONSES_ID:
+                        item_id = ctx.generate_id("message")
+                        synthetic_message_ids[item.id] = item_id
+                    produced_items.add(item_id)
                     yield ThreadItemAddedEvent(
                         item=AssistantMessageItem(
-                            # Reusing the Responses message ID
-                            id=item.id,
+                            id=item_id,
                             thread_id=thread.id,
                             content=[
                                 await _convert_content(c, converter)
@@ -763,11 +770,13 @@ async def stream_agent_response(
             elif event.type == "response.output_item.done":
                 item = event.item
                 if item.type == "message":
-                    produced_items.add(item.id)
+                    item_id = synthetic_message_ids.pop(item.id, item.id)
+                    if item_id == _AGENTS_SDK_FAKE_RESPONSES_ID:
+                        item_id = ctx.generate_id("message")
+                    produced_items.add(item_id)
                     yield ThreadItemDoneEvent(
                         item=AssistantMessageItem(
-                            # Reusing the Responses message ID
-                            id=item.id,
+                            id=item_id,
                             thread_id=thread.id,
                             content=[
                                 await _convert_content(c, converter)
