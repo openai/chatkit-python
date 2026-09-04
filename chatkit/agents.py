@@ -438,8 +438,11 @@ async def _convert_content(
 async def _convert_annotation(
     raw_annotation: object, converter: ResponseStreamConverter
 ) -> Annotation | None:
-    # There is a bug in the OpenAPI client that sometimes parses the annotation delta event into the wrong class
-    # resulting into annotation being a dict or untyped object instead instead of a ResponsesAnnotation
+    # OpenAI clients can use event-specific models for annotation delta events.
+    # Normalize those models before validating them as response annotations.
+    if isinstance(raw_annotation, BaseModel):
+        raw_annotation = raw_annotation.model_dump()
+
     annotation = TypeAdapter[ResponsesAnnotation](ResponsesAnnotation).validate_python(
         raw_annotation
     )
