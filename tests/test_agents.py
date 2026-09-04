@@ -3,7 +3,7 @@ import json
 from collections.abc import AsyncIterator
 from datetime import datetime
 from importlib import import_module
-from typing import cast
+from typing import Literal, cast
 from unittest.mock import AsyncMock, Mock
 
 import pytest
@@ -57,6 +57,7 @@ from openai.types.responses.response_output_text import (
 )
 from openai.types.responses.response_text_delta_event import ResponseTextDeltaEvent
 from openai.types.responses.response_text_done_event import ResponseTextDoneEvent
+from pydantic import BaseModel
 
 from chatkit.agents import (
     AgentContext,
@@ -1128,6 +1129,14 @@ async def test_stream_agent_response_emits_annotation_added_events():
 
 
 async def test_stream_agent_response_annotation_added_normalizes_annotations():
+    # OpenAI 3.x defines this event model separately from the response-content model.
+    class EventAnnotationURLCitation(BaseModel):
+        end_index: int
+        start_index: int
+        title: str
+        type: Literal["url_citation"]
+        url: str
+
     context = AgentContext(
         previous_response_id=None, thread=thread, store=mock_store, request_context=None
     )
@@ -1174,13 +1183,13 @@ async def test_stream_agent_response_annotation_added_normalizes_annotations():
         sequence_number=1,
     )
     add_annotation_event(
-        {
-            "type": "url_citation",
-            "url": "https://example.com",
-            "title": "Example",
-            "start_index": 1,
-            "end_index": 5,
-        },
+        EventAnnotationURLCitation(
+            type="url_citation",
+            url="https://example.com",
+            title="Example",
+            start_index=1,
+            end_index=5,
+        ),
         sequence_number=2,
     )
 
