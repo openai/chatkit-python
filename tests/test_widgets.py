@@ -11,10 +11,50 @@ from chatkit.widgets import (
     Card,
     DynamicWidgetComponent,
     DynamicWidgetRoot,
+    Markdown,
     Text,
     WidgetRoot,
     WidgetTemplate,
 )
+
+
+@pytest.mark.parametrize("component", [Text, Markdown])
+def test_appended_text_without_id_replaces_widget(component):
+    before = Card(children=[component(value="Hello")])
+    after = Card(children=[component(value="Hello, world!")])
+
+    updates = diff_widget(before, after)
+
+    assert len(updates) == 1
+    assert updates[0].type == "widget.root.updated"
+    assert updates[0].widget == after
+
+
+@pytest.mark.parametrize("component_type", ["Text", "Markdown"])
+@pytest.mark.parametrize("component_id", [None, ""])
+def test_dynamic_appended_text_without_id_replaces_widget(component_type, component_id):
+    before = DynamicWidgetRoot(
+        type="Card",
+        children=[
+            DynamicWidgetComponent.model_validate(
+                {"type": component_type, "id": component_id, "value": "Hello"}
+            )
+        ],
+    )
+    after = DynamicWidgetRoot(
+        type="Card",
+        children=[
+            DynamicWidgetComponent.model_validate(
+                {"type": component_type, "id": component_id, "value": "Hello, world!"}
+            )
+        ],
+    )
+
+    updates = diff_widget(before, after)
+
+    assert len(updates) == 1
+    assert updates[0].type == "widget.root.updated"
+    assert updates[0].widget == after
 
 
 @pytest.mark.parametrize(
