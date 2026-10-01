@@ -234,36 +234,41 @@ T2 = TypeVar("T2")
 async def _merge_generators(
     a: AsyncIterator[T1],
     b: AsyncIterator[T2],
-) -> AsyncIterator[T1 | T2]:
+) -> AsyncGenerator[T1 | T2, None]:
     pending: list[AsyncIterator[T1 | T2]] = [a, b]
     pending_tasks: dict[asyncio.Task, AsyncIterator[T1 | T2]] = {
         asyncio.ensure_future(g.__anext__()): g for g in pending
     }
-    while len(pending_tasks) > 0:
-        done, _ = await asyncio.wait(
-            pending_tasks.keys(), return_when="FIRST_COMPLETED"
-        )
-        stop = False
-        for d in done:
-            try:
-                result = d.result()
-                yield result
-                dg = pending_tasks[d]
-                pending_tasks[asyncio.ensure_future(dg.__anext__())] = dg
-            except StopAsyncIteration:
-                stop = True
-            finally:
-                del pending_tasks[d]
-        if stop:
-            for task in pending_tasks.keys():
-                if not task.cancel():
-                    try:
-                        yield task.result()
-                    except asyncio.CancelledError:
-                        pass
-                    except asyncio.InvalidStateError:
-                        pass
-            break
+    try:
+        while len(pending_tasks) > 0:
+            done, _ = await asyncio.wait(
+                pending_tasks.keys(), return_when="FIRST_COMPLETED"
+            )
+            stop = False
+            for d in done:
+                try:
+                    result = d.result()
+                    yield result
+                    dg = pending_tasks[d]
+                    pending_tasks[asyncio.ensure_future(dg.__anext__())] = dg
+                except StopAsyncIteration:
+                    stop = True
+                finally:
+                    del pending_tasks[d]
+            if stop:
+                for task in pending_tasks.keys():
+                    if not task.cancel():
+                        try:
+                            yield task.result()
+                        except asyncio.CancelledError:
+                            pass
+                        except asyncio.InvalidStateError:
+                            pass
+                break
+    finally:
+        for task in pending_tasks:
+            task.cancel()
+        await asyncio.gather(*pending_tasks, return_exceptions=True)
 
 
 class _EventWrapper:
