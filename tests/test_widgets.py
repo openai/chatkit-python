@@ -5,7 +5,7 @@ from typing import Any, Literal
 import pytest
 
 from chatkit.server import diff_widget
-from chatkit.types import WidgetItem
+from chatkit.types import WidgetItem, WidgetRootUpdated
 from chatkit.widgets import (
     BasicRoot,
     Card,
@@ -129,6 +129,36 @@ def test_diff(
     assert len(diff) == len(expected)
     for i in range(len(diff)):
         assert diff[i].type == expected[i]
+
+
+@pytest.mark.parametrize("reverse", [False, True])
+@pytest.mark.parametrize(
+    "before, after",
+    [
+        (
+            {"type": "Card", "children": []},
+            {"type": "Card", "children": [], "size": "sm"},
+        ),
+        (
+            {"type": "Card", "children": [{"type": "Text", "value": "Hello"}]},
+            {
+                "type": "Card",
+                "children": [{"type": "Text", "value": "Hello", "color": "secondary"}],
+            },
+        ),
+    ],
+)
+def test_diff_replaces_dynamic_widgets_when_properties_are_added_or_removed(
+    before: dict[str, Any], after: dict[str, Any], reverse: bool
+):
+    before_widget = DynamicWidgetRoot.model_validate(before)
+    after_widget = DynamicWidgetRoot.model_validate(after)
+    if reverse:
+        before_widget, after_widget = after_widget, before_widget
+
+    assert diff_widget(before_widget, after_widget) == [
+        WidgetRootUpdated(widget=after_widget)
+    ]
 
 
 def test_json_dump_excludes_none_fields():
