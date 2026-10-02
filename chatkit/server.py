@@ -143,7 +143,9 @@ def diff_widget(
             ):
                 # Appends to the value prop of Markdown or Text do not trigger a full replace
                 continue
-            if full_replace_value(getattr(before, field), getattr(after, field)):
+            if full_replace_value(
+                getattr(before, field, None), getattr(after, field, None)
+            ):
                 return True
 
         return False
