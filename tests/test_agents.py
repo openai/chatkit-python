@@ -205,6 +205,68 @@ async def all_events(
     return [event async for event in events]
 
 
+@pytest.mark.parametrize("second_title", ["Processing", "Next step"])
+async def test_added_workflow_task_uses_appended_index(second_title):
+    context = AgentContext(thread=thread, store=mock_store, request_context=None)
+    await context.add_workflow_task(CustomTask(title="Processing"))
+    await context.add_workflow_task(CustomTask(title=second_title))
+
+    first_event = context._events.get_nowait()
+    second_event = context._events.get_nowait()
+
+    assert isinstance(first_event, ThreadItemAddedEvent)
+    assert isinstance(second_event, ThreadItemUpdatedEvent)
+    assert isinstance(second_event.update, WorkflowTaskAdded)
+    assert second_event.update.task_index == 1
+    assert context.workflow_item is not None
+    assert second_event.update.task is context.workflow_item.workflow.tasks[1]
+
+
+@pytest.mark.parametrize("second_text", ["Thinking", "Another thought"])
+async def test_completed_reasoning_task_uses_appended_index(second_text):
+    context = AgentContext(thread=thread, store=mock_store, request_context=None)
+    result = make_result()
+    result.add_event(
+        RawResponsesStreamEvent(
+            type="raw_response_event",
+            data=ResponseOutputItemAddedEvent(
+                type="response.output_item.added",
+                item=ResponseReasoningItem(
+                    id="reasoning_1", summary=[], type="reasoning"
+                ),
+                output_index=0,
+                sequence_number=0,
+            ),
+        )
+    )
+    for index, text in enumerate(["Thinking", second_text]):
+        result.add_event(
+            RawResponsesStreamEvent(
+                type="raw_response_event",
+                data=Mock(
+                    type="response.reasoning_summary_text.done",
+                    item_id="reasoning_1",
+                    summary_index=index,
+                    text=text,
+                ),
+            )
+        )
+    result.done()
+
+    events = await all_events(stream_agent_response(context, result))
+    task_updates = [
+        event.update
+        for event in events
+        if isinstance(event, ThreadItemUpdatedEvent)
+        and isinstance(event.update, WorkflowTaskAdded)
+    ]
+    assert [update.task_index for update in task_updates] == [0, 1]
+    assert [update.task for update in task_updates] == [
+        ThoughtTask(content="Thinking"),
+        ThoughtTask(content=second_text),
+    ]
+
+
 async def test_returns_widget_item():
     context = AgentContext(
         previous_response_id=None, thread=thread, store=mock_store, request_context=None

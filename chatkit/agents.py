@@ -214,7 +214,7 @@ class AgentContext(BaseModel, Generic[TContext]):
                     item_id=self.workflow_item.id,
                     update=WorkflowTaskAdded(
                         task=task,
-                        task_index=workflow.tasks.index(task),
+                        task_index=len(workflow.tasks) - 1,
                     ),
                 )
             )
@@ -754,7 +754,7 @@ async def stream_agent_response(
                         ctx.workflow_item.workflow.tasks.append(task)
                         update = WorkflowTaskAdded(
                             task=task,
-                            task_index=ctx.workflow_item.workflow.tasks.index(task),
+                            task_index=len(ctx.workflow_item.workflow.tasks) - 1,
                         )
                     yield ThreadItemUpdatedEvent(
                         item_id=ctx.workflow_item.id,
