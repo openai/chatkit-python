@@ -286,3 +286,41 @@ def test_widget_template_build_basic_is_deprecated():
 
     assert isinstance(widget, BasicRoot)
     assert widget.model_dump(exclude_none=True) == expected_widget_dict
+
+
+def test_list_view_nested_in_card_parses_as_list_view():
+    # A ListView inside a Card is a normal layout (the Widget Builder emits
+    # it), so it should parse as a typed ListView instead of falling back to
+    # a DynamicWidgetComponent. ListViewItem was already a strict component;
+    # ListView itself was missing from the union.
+    from pydantic import TypeAdapter
+
+    from chatkit.widgets import ListView, ListViewItem, StrictWidgetComponent
+
+    payload = {
+        "type": "Card",
+        "size": "sm",
+        "children": [
+            {
+                "type": "ListView",
+                "children": [
+                    {
+                        "type": "ListViewItem",
+                        "children": [{"type": "Text", "value": "Blue line"}],
+                    },
+                    {
+                        "type": "ListViewItem",
+                        "children": [{"type": "Text", "value": "Orange line"}],
+                    },
+                ],
+            }
+        ],
+    }
+
+    widget = TypeAdapter(WidgetRoot).validate_python(payload)
+    assert isinstance(widget, Card)
+    assert isinstance(widget.children[0], ListView)
+    assert all(isinstance(item, ListViewItem) for item in widget.children[0].children)
+
+    strict = TypeAdapter(StrictWidgetComponent).validate_python(payload["children"][0])
+    assert isinstance(strict, ListView)
