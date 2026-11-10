@@ -1,4 +1,5 @@
 import asyncio
+from contextlib import aclosing
 from typing import AsyncIterator
 
 import pytest
@@ -110,9 +111,26 @@ async def test_task_cancellation_restores_headers_before_outer_cleanup():
     assert responses_headers_override.get() is parent_responses
 
 
-async def test_closing_generator_in_another_context_does_not_raise(original_headers):
-    chat_token = chat_completions_headers_override.set(original_headers)
-    responses_token = responses_headers_override.set(original_headers)
+async def test_closing_generator_in_same_context_restores_headers(original_headers):
+    async def stream():
+        with agents_sdk_user_agent_override():
+            yield "event"
+
+    async with aclosing(stream()) as events:
+        assert await anext(events) == "event"
+        assert chat_completions_headers_override.get() is not original_headers
+        assert responses_headers_override.get() is not original_headers
+
+    assert chat_completions_headers_override.get() is original_headers
+    assert responses_headers_override.get() is original_headers
+
+
+async def test_cross_context_close_requires_caller_cleanup(original_headers):
+    # The caller sets its own headers before consuming and owns these tokens.
+    caller_chat = {"User-Agent": "caller-chat"}
+    caller_responses = {"User-Agent": "caller-responses"}
+    chat_token = chat_completions_headers_override.set(caller_chat)
+    responses_token = responses_headers_override.set(caller_responses)
 
     async def stream():
         with agents_sdk_user_agent_override():
@@ -121,11 +139,28 @@ async def test_closing_generator_in_another_context_does_not_raise(original_head
     events = stream()
     try:
         assert await anext(events) == "event"
+        overridden_chat = chat_completions_headers_override.get()
+        overridden_responses = responses_headers_override.get()
+        assert overridden_chat is not original_headers
+        assert overridden_responses is not original_headers
+        assert overridden_chat is not caller_chat
+        assert overridden_responses is not caller_responses
+
         await asyncio.create_task(events.aclose())
+        assert chat_completions_headers_override.get() is overridden_chat
+        assert responses_headers_override.get() is overridden_responses
+
+        # The generator is already closed, so closing it here cannot reset its tokens.
+        await events.aclose()
+        assert chat_completions_headers_override.get() is overridden_chat
+        assert responses_headers_override.get() is overridden_responses
     finally:
         await events.aclose()
         chat_completions_headers_override.reset(chat_token)
         responses_headers_override.reset(responses_token)
+
+    assert chat_completions_headers_override.get() is original_headers
+    assert responses_headers_override.get() is original_headers
 
 
 async def test_respond_failure_restores_headers_after_streaming(original_headers):

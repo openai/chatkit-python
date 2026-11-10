@@ -256,6 +256,20 @@ async def stream_widget(
 
 @contextmanager
 def agents_sdk_user_agent_override():
+    """Temporarily override Agents SDK headers in the current context.
+
+    Headers are restored when this scope exits in the context that entered it.
+    If a generator holding the scope is finalized elsewhere, both overrides
+    remain in the originating context. Closing it again cannot rerun cleanup.
+
+    ChatKit holds this scope in a nested generator. Closing an outer
+    ``StreamingResult`` iterator early does not close that nested generator;
+    it may instead be finalized later in another context. Callers that stop
+    early can isolate consumption in a separate task, or reset their own outer
+    header tokens in the originating context. Those tokens must be saved before
+    consumption; ``reset()`` restores the value from before the corresponding
+    ``set()``.
+    """
     ua = f"Agents/Python {agents.__version__} ChatKit/Python {__version__}"
     chat_completions_token = chat_completions_headers_override.set({"User-Agent": ua})
     responses_token = responses_headers_override.set({"User-Agent": ua})
