@@ -2,7 +2,7 @@ import asyncio
 import base64
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterator
-from contextlib import contextmanager
+from contextlib import aclosing, contextmanager, suppress
 from datetime import datetime
 from typing import (
     Any,
@@ -256,14 +256,23 @@ async def stream_widget(
 
 @contextmanager
 def agents_sdk_user_agent_override():
+    """Temporarily override Agents SDK headers in the current context.
+
+    Enter and exit in the same context to restore the caller's headers.
+    Server streams use one scope per read so no override spans a yielded event.
+    """
     ua = f"Agents/Python {agents.__version__} ChatKit/Python {__version__}"
     chat_completions_token = chat_completions_headers_override.set({"User-Agent": ua})
     responses_token = responses_headers_override.set({"User-Agent": ua})
 
-    yield
-
-    chat_completions_headers_override.reset(chat_completions_token)
-    responses_headers_override.reset(responses_token)
+    try:
+        yield
+    finally:
+        # A token cannot be reset outside the context that created it.
+        with suppress(ValueError):
+            chat_completions_headers_override.reset(chat_completions_token)
+        with suppress(ValueError):
+            responses_headers_override.reset(responses_token)
 
 
 class StreamingResult(AsyncIterable[bytes]):
@@ -853,58 +862,64 @@ class ChatKitServer(ABC, Generic[TContext]):
         # so that we can persist them when the stream is cancelled.
         pending_items: dict[str, ThreadItem] = {}
 
-        try:
-            with agents_sdk_user_agent_override():
-                async for event in stream():
-                    if isinstance(event, ThreadItemAddedEvent):
-                        # Stash an isolated copy in case we need to persist unfinished items
-                        # on cancellation; downstream handlers keep using the original event.item.
-                        pending_items[event.item.id] = event.item.model_copy(deep=True)
+        async def process_events() -> AsyncGenerator[ThreadStreamEvent, None]:
+            nonlocal last_thread
+            async for event in stream():
+                if isinstance(event, ThreadItemAddedEvent):
+                    # Stash an isolated copy in case we need to persist unfinished items
+                    # on cancellation; downstream handlers keep using the original event.item.
+                    pending_items[event.item.id] = event.item.model_copy(deep=True)
 
-                    match event:
-                        case ThreadItemDoneEvent():
-                            await self.store.add_thread_item(
-                                thread.id, event.item, context=context
-                            )
-                            pending_items.pop(event.item.id, None)
-                        case ThreadItemRemovedEvent():
-                            await self.store.delete_thread_item(
-                                thread.id, event.item_id, context=context
-                            )
-                            pending_items.pop(event.item_id, None)
-                        case ThreadItemReplacedEvent():
-                            await self.store.save_item(
-                                thread.id, event.item, context=context
-                            )
-                            pending_items.pop(event.item.id, None)
-                        case ThreadItemUpdatedEvent():
-                            # Keep pending assistant message and workflow items up to date
-                            # so that we have a reference to the latest version of these pending items
-                            # when the stream is cancelled.
-                            self._update_pending_items(pending_items, event)
-
-                    # special case - don't send hidden context items back to the client
-                    should_swallow_event = isinstance(
-                        event, ThreadItemDoneEvent
-                    ) and isinstance(
-                        event.item, (HiddenContextItem, SDKHiddenContextItem)
-                    )
-
-                    if not should_swallow_event:
-                        yield event
-
-                    # in case user updated the thread while streaming
-                    if thread != last_thread:
-                        last_thread = thread.model_copy(deep=True)
-                        await self.store.save_thread(thread, context=context)
-                        yield ThreadUpdatedEvent(
-                            thread=self._to_thread_response(thread)
+                match event:
+                    case ThreadItemDoneEvent():
+                        await self.store.add_thread_item(
+                            thread.id, event.item, context=context
                         )
+                        pending_items.pop(event.item.id, None)
+                    case ThreadItemRemovedEvent():
+                        await self.store.delete_thread_item(
+                            thread.id, event.item_id, context=context
+                        )
+                        pending_items.pop(event.item_id, None)
+                    case ThreadItemReplacedEvent():
+                        await self.store.save_item(
+                            thread.id, event.item, context=context
+                        )
+                        pending_items.pop(event.item.id, None)
+                    case ThreadItemUpdatedEvent():
+                        # Keep pending assistant message and workflow items up to date
+                        # so that we have a reference to the latest version of these pending items
+                        # when the stream is cancelled.
+                        self._update_pending_items(pending_items, event)
+
+                # special case - don't send hidden context items back to the client
+                should_swallow_event = isinstance(
+                    event, ThreadItemDoneEvent
+                ) and isinstance(event.item, (HiddenContextItem, SDKHiddenContextItem))
+
+                if not should_swallow_event:
+                    yield event
+
                 # in case user updated the thread while streaming
                 if thread != last_thread:
                     last_thread = thread.model_copy(deep=True)
                     await self.store.save_thread(thread, context=context)
                     yield ThreadUpdatedEvent(thread=self._to_thread_response(thread))
+            # in case user updated the thread while streaming
+            if thread != last_thread:
+                last_thread = thread.model_copy(deep=True)
+                await self.store.save_thread(thread, context=context)
+                yield ThreadUpdatedEvent(thread=self._to_thread_response(thread))
+
+        try:
+            async with aclosing(process_events()) as events:
+                while True:
+                    # Restore the consumer's headers before handing over each event.
+                    with agents_sdk_user_agent_override():
+                        event = await anext(events, None)
+                    if event is None:
+                        break
+                    yield event
         except asyncio.CancelledError:
             await self.handle_stream_cancelled(
                 thread, list(pending_items.values()), context
