@@ -1,10 +1,12 @@
 import asyncio
 from contextlib import aclosing
 from typing import AsyncIterator
+from unittest.mock import Mock
 
 import pytest
 
 from chatkit.server import (
+    StreamingResult,
     agents_sdk_user_agent_override,
     chat_completions_headers_override,
     responses_headers_override,
@@ -18,7 +20,7 @@ from chatkit.types import (
     UserMessageInput,
     UserMessageTextContent,
 )
-from tests.test_chatkit_server import make_server
+from tests.test_chatkit_server import DEFAULT_CONTEXT, decode_event, make_server
 
 
 @pytest.fixture(params=[None, {"User-Agent": "caller", "X-Request": "existing"}])
@@ -42,6 +44,70 @@ def test_restores_headers_after_normal_exit(original_headers):
 
     assert chat_completions_headers_override.get() is original_headers
     assert responses_headers_override.get() is original_headers
+
+
+def test_responses_headers_are_restored_if_chat_reset_fails(
+    monkeypatch, original_headers
+):
+    chat = Mock()
+    chat.reset.side_effect = ValueError("token from another context")
+    monkeypatch.setattr("chatkit.server.chat_completions_headers_override", chat)
+    with agents_sdk_user_agent_override():
+        assert responses_headers_override.get() is not original_headers
+    chat.reset.assert_called_once_with(chat.set.return_value)
+    assert responses_headers_override.get() is original_headers
+
+
+async def test_closing_server_stream_in_another_task_preserves_caller_headers(
+    original_headers,
+):
+    async def responder(*args) -> AsyncIterator[ThreadStreamEvent]:
+        for text in ("first", "second", "unread"):
+            headers = chat_completions_headers_override.get()
+            assert headers and "ChatKit/Python" in headers["User-Agent"]
+            assert responses_headers_override.get() == headers
+            yield ProgressUpdateEvent(text=text)
+
+    request = ThreadsCreateReq(
+        params=ThreadCreateParams(
+            input=UserMessageInput(
+                content=[UserMessageTextContent(text="Hello")],
+                attachments=[],
+                inference_options=InferenceOptions(),
+            )
+        )
+    )
+    with make_server(responder) as server:
+        result = await server.process(request.model_dump_json(), DEFAULT_CONTEXT)
+        assert isinstance(result, StreamingResult)
+        events = result.__aiter__()
+        try:
+            async for raw in events:
+                event = decode_event(raw)
+                if isinstance(event, ProgressUpdateEvent):
+                    assert event.text == "first"
+                    break
+            else:
+                pytest.fail("the responder did not yield its first progress event")
+            assert chat_completions_headers_override.get() is original_headers
+            assert responses_headers_override.get() is original_headers
+
+            async def consume_and_close():
+                chat = {"User-Agent": "second-task-chat"}
+                responses = {"User-Agent": "second-task-responses"}
+                chat_completions_headers_override.set(chat)
+                responses_headers_override.set(responses)
+                event = decode_event(await anext(events))
+                assert isinstance(event, ProgressUpdateEvent) and event.text == "second"
+                await events.aclose()
+                assert chat_completions_headers_override.get() is chat
+                assert responses_headers_override.get() is responses
+
+            await asyncio.create_task(consume_and_close())
+            assert chat_completions_headers_override.get() is original_headers
+            assert responses_headers_override.get() is original_headers
+        finally:
+            await events.aclose()
 
 
 @pytest.mark.parametrize(
@@ -125,7 +191,9 @@ async def test_closing_generator_in_same_context_restores_headers(original_heade
     assert responses_headers_override.get() is original_headers
 
 
-async def test_cross_context_close_requires_caller_cleanup(original_headers):
+async def test_manually_holding_override_across_yield_requires_same_context_cleanup(
+    original_headers,
+):
     # The caller sets its own headers before consuming and owns these tokens.
     caller_chat = {"User-Agent": "caller-chat"}
     caller_responses = {"User-Agent": "caller-responses"}
