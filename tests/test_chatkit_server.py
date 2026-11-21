@@ -26,6 +26,7 @@ from chatkit.store import (
 )
 from chatkit.types import (
     AssistantMessageContent,
+    AssistantMessageContentPartAdded,
     AssistantMessageContentPartTextDelta,
     AssistantMessageItem,
     Attachment,
@@ -399,6 +400,52 @@ async def test_stream_cancellation_does_not_persist_pending_empty_assistant_mess
             await server.store.load_item(
                 thread.id, "assistant-message-pending", DEFAULT_CONTEXT
             )
+
+
+async def test_streamed_text_delta_does_not_modify_responder_content():
+    part = AssistantMessageContent(text="")
+
+    async def responder(
+        thread: ThreadMetadata, input: UserMessageItem | None, context: Any
+    ) -> AsyncIterator[ThreadStreamEvent]:
+        item = AssistantMessageItem(
+            id="reply", thread_id=thread.id, created_at=datetime.now(), content=[]
+        )
+        yield ThreadItemAddedEvent(item=item)
+        yield ThreadItemUpdatedEvent(
+            item_id=item.id,
+            update=AssistantMessageContentPartAdded(content_index=0, content=part),
+        )
+        yield ThreadItemUpdatedEvent(
+            item_id=item.id,
+            update=AssistantMessageContentPartTextDelta(content_index=0, delta="Hi"),
+        )
+        part.text += "Hi"
+        item.content.append(part)
+        yield ThreadItemDoneEvent(item=item)
+
+    with make_server(responder) as server:
+        events = await server.process_streaming(
+            ThreadsCreateReq(
+                params=ThreadCreateParams(
+                    input=UserMessageInput(
+                        content=[UserMessageTextContent(text="Hello")],
+                        attachments=[],
+                        inference_options=InferenceOptions(),
+                    )
+                )
+            )
+        )
+        done = next(
+            event.item
+            for event in events
+            if isinstance(event, ThreadItemDoneEvent)
+            and isinstance(event.item, AssistantMessageItem)
+        )
+        stored = await server.store.load_item(done.thread_id, done.id, DEFAULT_CONTEXT)
+        assert isinstance(stored, AssistantMessageItem)
+        assert (done.content[0].text, stored.content[0].text) == ("Hi", "Hi")
+        assert part.text == "Hi"
 
 
 async def test_workflow_task_not_duplicated_on_done_event():

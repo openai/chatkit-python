@@ -947,8 +947,10 @@ class ChatKitServer(ABC, Generic[TContext]):
             item.content.append(AssistantMessageContent(text="", annotations=[]))
 
         match update:
-            case AssistantMessageContentPartAdded():
-                item.content[update.content_index] = update.content
+            case AssistantMessageContentPartAdded() | AssistantMessageContentPartDone():
+                item.content[update.content_index] = update.content.model_copy(
+                    deep=True
+                )
             case AssistantMessageContentPartTextDelta():
                 item.content[update.content_index].text += update.delta
             case AssistantMessageContentPartAnnotationAdded():
@@ -957,8 +959,6 @@ class ChatKitServer(ABC, Generic[TContext]):
                     annotations.insert(update.annotation_index, update.annotation)
                 else:
                     annotations.append(update.annotation)
-            case AssistantMessageContentPartDone():
-                item.content[update.content_index] = update.content
         return item
 
     def _update_pending_items(
